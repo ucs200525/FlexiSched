@@ -11,6 +11,7 @@ import {
   loginSchema
 } from "@shared/schema";
 import { generateTimetableWithAI, detectConflicts } from "./services/scheduler";
+import { aiEngineClient } from "./ai_integration";
 
 // Simple session store for demo purposes (in production, use proper session management)
 const userSessions = new Map<string, { userId: string; role: string; username: string; name: string; email: string; timestamp: number }>();
@@ -469,6 +470,169 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         message: "Failed to generate timetable with AI",
         error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // AI Engine Optimization Endpoints
+
+  // Advanced AI optimization with constraint satisfaction
+  app.post("/api/ai/optimize-timetable", async (req, res) => {
+    try {
+      const { program, semester, batch, academicYear, algorithm = "constraint_solver" } = req.body;
+      
+      // Fetch data from database
+      const courses = await storage.getCourses();
+      const faculty = await storage.getFaculty();
+      const rooms = await storage.getRooms();
+      const students = await storage.getStudents();
+      
+      // Filter for the specific program and semester
+      const filteredCourses = courses.filter(course => 
+        course.program === program && course.semester === semester && course.isActive
+      );
+
+      // Prepare optimization request
+      const optimizationRequest = {
+        courses: filteredCourses.map(course => ({
+          id: course.id,
+          course_code: course.courseCode,
+          course_name: course.courseName,
+          credits: course.credits,
+          course_type: course.courseType.toLowerCase(),
+          expected_students: 30,
+          requires_consecutive_slots: course.courseType === "laboratory"
+        })),
+        faculty: faculty.filter(f => f.isActive).map(f => ({
+          id: f.id,
+          name: `${f.firstName} ${f.lastName}`,
+          email: f.email,
+          max_hours_per_week: f.maxWorkload || 40
+        })),
+        rooms: rooms.filter(r => r.isAvailable).map(r => ({
+          id: r.id,
+          room_number: r.roomNumber,
+          room_name: r.roomName || r.roomNumber,
+          capacity: r.capacity,
+          room_type: r.roomType,
+          equipment: []
+        })),
+        students: students.filter(s => s.program === program && s.semester === semester && s.isActive).map(s => ({
+          id: s.id,
+          student_id: s.studentId,
+          name: `${s.firstName} ${s.lastName}`,
+          program: s.program,
+          semester: s.semester,
+          enrolled_courses: filteredCourses.map(c => c.id)
+        })),
+        time_slots: [
+          { day: "Monday", start_time: "09:00", end_time: "10:00", duration: 60 },
+          { day: "Monday", start_time: "10:00", end_time: "11:00", duration: 60 },
+          { day: "Monday", start_time: "11:15", end_time: "12:15", duration: 60 },
+          { day: "Monday", start_time: "12:15", end_time: "13:15", duration: 60 },
+          { day: "Monday", start_time: "13:15", end_time: "14:15", duration: 60 },
+          { day: "Tuesday", start_time: "09:00", end_time: "10:00", duration: 60 },
+          { day: "Tuesday", start_time: "10:00", end_time: "11:00", duration: 60 },
+          { day: "Tuesday", start_time: "11:15", end_time: "12:15", duration: 60 },
+          { day: "Tuesday", start_time: "12:15", end_time: "13:15", duration: 60 },
+          { day: "Tuesday", start_time: "13:15", end_time: "14:15", duration: 60 },
+          { day: "Wednesday", start_time: "09:00", end_time: "10:00", duration: 60 },
+          { day: "Wednesday", start_time: "10:00", end_time: "11:00", duration: 60 },
+          { day: "Wednesday", start_time: "11:15", end_time: "12:15", duration: 60 },
+          { day: "Wednesday", start_time: "12:15", end_time: "13:15", duration: 60 },
+          { day: "Wednesday", start_time: "13:15", end_time: "14:15", duration: 60 },
+          { day: "Thursday", start_time: "09:00", end_time: "10:00", duration: 60 },
+          { day: "Thursday", start_time: "10:00", end_time: "11:00", duration: 60 },
+          { day: "Thursday", start_time: "11:15", end_time: "12:15", duration: 60 },
+          { day: "Thursday", start_time: "12:15", end_time: "13:15", duration: 60 },
+          { day: "Thursday", start_time: "13:15", end_time: "14:15", duration: 60 },
+          { day: "Friday", start_time: "09:00", end_time: "10:00", duration: 60 },
+          { day: "Friday", start_time: "10:00", end_time: "11:00", duration: 60 },
+          { day: "Friday", start_time: "11:15", end_time: "12:15", duration: 60 },
+          { day: "Friday", start_time: "12:15", end_time: "13:15", duration: 60 },
+          { day: "Friday", start_time: "13:15", end_time: "14:15", duration: 60 }
+        ],
+        constraints: {
+          max_hours_per_day: 8,
+          min_break_duration: 15,
+          lunch_break_duration: 60,
+          lunch_break_start: "12:00",
+          consecutive_lab_slots: true,
+          max_consecutive_hours: 3
+        },
+        program,
+        semester,
+        batch,
+        academic_year: academicYear
+      };
+
+      // Call AI optimization engine
+      const result = await aiEngineClient.optimizeTimetable(optimizationRequest, algorithm);
+
+      if (result.success) {
+        // Create timetable record
+        const timetable = await storage.createTimetable({
+          name: `AI Optimized: ${program} Semester ${semester} - ${batch}`,
+          program,
+          semester,
+          batch,
+          academicYear,
+          schedule: result.timetable_slots.map(slot => ({
+            day: slot.day,
+            startTime: slot.start_time,
+            endTime: slot.end_time,
+            courseId: slot.course_id,
+            facultyId: slot.faculty_id,
+            roomId: slot.room_id
+          })),
+          conflicts: result.conflicts,
+          optimizationScore: result.optimization_score,
+          status: 'draft',
+          generatedBy: 'AI Engine',
+        });
+
+        res.json({
+          success: true,
+          timetable,
+          optimization_result: result,
+          message: `Timetable optimized using ${result.algorithm_used}`
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          message: "Optimization failed",
+          warnings: result.warnings,
+          algorithm_used: result.algorithm_used
+        });
+      }
+
+    } catch (error) {
+      console.error("AI optimization error:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "AI optimization failed", 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Analyze existing timetable for conflicts using AI
+  app.post("/api/ai/analyze-conflicts", async (req, res) => {
+    try {
+      const { timetableSlots } = req.body;
+      
+      if (!Array.isArray(timetableSlots)) {
+        return res.status(400).json({ message: "Invalid timetable slots data" });
+      }
+
+      const analysis = await aiEngineClient.analyzeConflicts(timetableSlots);
+      res.json(analysis);
+
+    } catch (error) {
+      console.error("AI conflict analysis error:", error);
+      res.status(500).json({ 
+        message: "Failed to analyze conflicts", 
+        error: error instanceof Error ? error.message : 'Unknown error' 
       });
     }
   });

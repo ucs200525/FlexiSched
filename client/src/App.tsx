@@ -61,8 +61,11 @@ function AuthenticatedApp() {
   }, [location, user?.role, setLocation, isAuthenticated]);
 
   if (!isAuthenticated) {
-    return <Login onLoginSuccess={(userData) => {
-      login(userData);
+    return <Login onLoginSuccess={(userData: any) => {
+      login({
+        ...userData,
+        id: userData.id || `${userData.role}-${Date.now()}`
+      });
       // Redirect to appropriate dashboard after login
       const defaultRoute = getDefaultRoute(userData.role);
       setLocation(defaultRoute);
