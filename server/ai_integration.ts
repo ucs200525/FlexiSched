@@ -101,7 +101,12 @@ class AIEngineClient {
       
       console.log('Starting AI optimization server...');
       
-      this.pythonProcess = spawn('python3', ['-m', 'uvicorn', 'api_server:app', '--host', '0.0.0.0', '--port', String(this.serverPort)], {
+      // Use the correct Python command with absolute path
+      const pythonCommand = process.platform === 'win32' 
+        ? join(process.cwd(), '.venv', 'Scripts', 'python.exe')
+        : 'python3';
+      
+      this.pythonProcess = spawn(pythonCommand, ['-m', 'uvicorn', 'api_server:app', '--host', '0.0.0.0', '--port', String(this.serverPort)], {
         cwd: aiEnginePath,
         stdio: ['pipe', 'pipe', 'pipe']
       });

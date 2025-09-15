@@ -290,6 +290,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const user = (req as any).user;
       
+      console.log(`Available courses request for student ${id} by user ${user.userId} (${user.role})`);
+      
       // Authorization check: Only students can view their own available courses, or admins can view for any student
       if (user.role === 'student') {
         if (user.userId !== id) {
@@ -302,28 +304,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get student
       const student = await storage.getStudent(id);
       if (!student) {
+        console.error(`Student not found: ${id}`);
         return res.status(404).json({ message: "Student not found" });
       }
       
+      console.log(`Student found: ${student.firstName} ${student.lastName}, Program: ${student.program}, Semester: ${student.semester}`);
+      console.log(`Student enrolled courses: ${student.enrolledCourses}`);
+      
       // Get all courses for student's program and semester
       const allCourses = await storage.getCoursesByProgram(student.program, student.semester);
+      console.log(`Found ${allCourses.length} courses for program ${student.program}, semester ${student.semester}`);
       
-      // Filter out courses the student is already enrolled in
+      // Filter to show only active courses that student is not already enrolled in
       const availableCourses = allCourses.filter(course => 
-        !student.enrolledCourses.includes(course.id) && course.isActive
+        course.isActive && !student.enrolledCourses.includes(course.id)
       );
       
-      // Further filter based on prerequisites
-      const eligibleCourses = availableCourses.filter(course => {
-        if (course.prerequisites.length === 0) return true;
-        return course.prerequisites.every(prereq => student.enrolledCourses.includes(prereq));
-      });
+      console.log(`Filtered to ${availableCourses.length} available courses`);
       
-      res.json(eligibleCourses);
+      res.json(availableCourses);
       
     } catch (error) {
       console.error("Available courses error:", error);
-      res.status(500).json({ message: "Failed to fetch available courses" });
+      console.error("Error stack:", error instanceof Error ? error.stack : 'No stack trace');
+      res.status(500).json({ 
+        message: "Failed to fetch available courses",
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 
@@ -688,7 +695,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         course.program === program && course.semester === semester && course.isActive
       );
 
-      // Prepare optimization request
       const optimizationRequest = {
         courses: filteredCourses.map(course => ({
           id: course.id,
