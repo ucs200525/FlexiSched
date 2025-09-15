@@ -43,10 +43,7 @@ app.use((req, res, next) => {
     await connectToMongoDB();
     log('MongoDB health check passed');
   } catch (error) {
-    log(
-      'MongoDB health check failed:',
-      error instanceof Error ? error.message : String(error)
-    );
+    log('MongoDB health check failed:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
 
@@ -74,18 +71,11 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
-
-  const listenOptions: any = {
+  server.listen({
     port,
-    host: process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1',
-  };
-
-  // Only enable reusePort on non-Windows platforms (Linux/macOS)
-  if (process.platform !== 'win32') {
-    listenOptions.reusePort = true;
-  }
-
-  server.listen(listenOptions, () => {
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
     log(`serving on port ${port}`);
   });
 })();
