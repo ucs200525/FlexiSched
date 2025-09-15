@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import { Edit, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TimetableSlot, Course, Faculty, Room } from "@shared/schema";
@@ -31,6 +32,7 @@ export function TimetableGrid({
   editable = true 
 }: TimetableGridProps) {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // Create a map for easier lookups
   const courseMap = new Map(courses.map(c => [c.id, c]));
@@ -77,6 +79,99 @@ export function TimetableGrid({
     onSlotClick?.(slot);
   };
 
+  const handleExportGrid = () => {
+    try {
+      toast({
+        title: "Export Started",
+        description: "Generating timetable export...",
+      });
+
+      // Create comprehensive export data from current grid
+      const exportData = {
+        timetable: {
+          name: "Current Timetable",
+          exportedAt: new Date().toISOString(),
+          exportedBy: "System User"
+        },
+        slots: enhancedSlots,
+        summary: {
+          totalSlots: enhancedSlots.length,
+          filledSlots: enhancedSlots.filter(slot => slot.course).length,
+          emptySlots: enhancedSlots.filter(slot => !slot.course).length
+        }
+      };
+
+      // Convert to CSV format
+      const csvContent = convertGridToCSV(exportData);
+
+      // Create and download the file
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `timetable_grid_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Export Successful",
+        description: "Timetable grid has been exported successfully!",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to export timetable grid. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Helper function to convert grid data to CSV format
+  const convertGridToCSV = (data: any) => {
+    const headers = ['Day', 'Time', 'Course Code', 'Course Name', 'Faculty', 'Room', 'Type'];
+    const rows = [headers.join(',')];
+
+    const timeMapping: { [key: string]: string } = {
+      '09:00': '09:00-10:00',
+      '10:00': '10:00-11:00',
+      '11:15': '11:15-12:15',
+      '12:15': '12:15-13:15',
+      '13:15': '13:15-14:15',
+      '14:15': '14:15-15:15',
+      '15:15': '15:15-16:15'
+    };
+
+    // Add summary header
+    rows.push('');
+    rows.push('Timetable Export Summary');
+    rows.push(`Export Date,${data.timetable.exportedAt}`);
+    rows.push(`Total Slots,${data.summary.totalSlots}`);
+    rows.push(`Filled Slots,${data.summary.filledSlots}`);
+    rows.push(`Empty Slots,${data.summary.emptySlots}`);
+    rows.push('');
+    rows.push('Schedule Details');
+    rows.push(headers.join(','));
+
+    // Add slot data
+    data.slots.forEach((slot: GridSlot) => {
+      const timeSlot = timeMapping[slot.startTime] || slot.startTime;
+      const row = [
+        slot.dayOfWeek || '',
+        timeSlot,
+        slot.course?.courseCode || '',
+        slot.course?.courseName || '',
+        slot.facultyMember ? `${slot.facultyMember.firstName} ${slot.facultyMember.lastName}` : '',
+        slot.room?.roomName || '',
+        slot.course?.courseType || ''
+      ];
+      rows.push(row.map(cell => `"${cell}"`).join(','));
+    });
+
+    return rows.join('\n');
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -92,7 +187,12 @@ export function TimetableGrid({
                 Edit
               </Button>
             )}
-            <Button variant="outline" size="sm" data-testid="button-export-timetable">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleExportGrid}
+              data-testid="button-export-timetable"
+            >
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>

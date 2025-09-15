@@ -115,12 +115,111 @@ export default function Timetables() {
     setIsViewDialogOpen(true);
   };
 
-  const handleExportTimetable = (timetable: Timetable) => {
-    // This would typically trigger a PDF/Excel export
-    toast({
-      title: "Export Started",
-      description: `Exporting ${timetable.name} to PDF...`,
-    });
+  const handleExportTimetable = async (timetable: Timetable) => {
+    try {
+      toast({
+        title: "Export Started",
+        description: `Exporting ${timetable.name}...`,
+      });
+
+      // Get timetable slots for this timetable
+      const slotsResponse = await fetch(`/api/timetables/${timetable.id}/slots`);
+      const slots = slotsResponse.ok ? await slotsResponse.json() : [];
+
+      // Create comprehensive export data
+      const exportData = {
+        timetable: {
+          name: timetable.name,
+          program: timetable.program,
+          semester: timetable.semester,
+          batch: timetable.batch,
+          academicYear: timetable.academicYear,
+          status: timetable.status,
+          optimizationScore: timetable.optimizationScore,
+          conflicts: timetable.conflicts || []
+        },
+        slots: slots,
+        exportedAt: new Date().toISOString(),
+        exportedBy: "System Administrator"
+      };
+
+      // Convert to CSV format for better usability
+      const csvContent = convertTimetableToCSV(exportData);
+
+      // Create and download the file
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${timetable.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_timetable_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Export Successful",
+        description: `${timetable.name} has been exported successfully!`,
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to export timetable. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Helper function to convert timetable data to CSV format
+  const convertTimetableToCSV = (data: any) => {
+    const headers = ['Day', 'Time', 'Course Code', 'Course Name', 'Faculty', 'Room', 'Type'];
+    const rows = [headers.join(',')];
+
+    const timeSlots = ['09:00-10:00', '10:00-11:00', '11:15-12:15', '12:15-13:15', '13:15-14:15', '14:15-15:15', '15:15-16:15'];
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+    // Add timetable info header
+    rows.push('');
+    rows.push(`Timetable Information`);
+    rows.push(`Name,${data.timetable.name}`);
+    rows.push(`Program,${data.timetable.program}`);
+    rows.push(`Semester,${data.timetable.semester}`);
+    rows.push(`Batch,${data.timetable.batch}`);
+    rows.push(`Academic Year,${data.timetable.academicYear}`);
+    rows.push(`Status,${data.timetable.status}`);
+    rows.push(`Optimization Score,${data.timetable.optimizationScore || 'N/A'}%`);
+    rows.push('');
+    rows.push('Schedule');
+    rows.push(headers.join(','));
+
+    // Create a grid for easier processing
+    const timeMapping: { [key: string]: string } = {
+      '09:00': '09:00-10:00',
+      '10:00': '10:00-11:00',
+      '11:15': '11:15-12:15',
+      '12:15': '12:15-13:15',
+      '13:15': '13:15-14:15',
+      '14:15': '14:15-15:15',
+      '15:15': '15:15-16:15'
+    };
+
+    if (Array.isArray(data.slots)) {
+      data.slots.forEach((slot: any) => {
+        const timeSlot = timeMapping[slot.startTime] || slot.startTime;
+        const row = [
+          slot.dayOfWeek || '',
+          timeSlot,
+          slot.courseCode || '',
+          slot.courseName || '',
+          slot.facultyName || '',
+          slot.roomName || '',
+          slot.courseType || ''
+        ];
+        rows.push(row.map(cell => `"${cell}"`).join(','));
+      });
+    }
+
+    return rows.join('\n');
   };
 
   return (
