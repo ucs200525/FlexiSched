@@ -101,7 +101,7 @@ class AIEngineClient {
       
       console.log('Starting AI optimization server...');
       
-      this.pythonProcess = spawn('python', ['-m', 'uvicorn', 'api_server:app', '--host', '0.0.0.0', '--port', String(this.serverPort)], {
+      this.pythonProcess = spawn('python3', ['-m', 'uvicorn', 'api_server:app', '--host', '0.0.0.0', '--port', String(this.serverPort)], {
         cwd: aiEnginePath,
         stdio: ['pipe', 'pipe', 'pipe']
       });

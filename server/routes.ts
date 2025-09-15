@@ -477,9 +477,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Engine Optimization Endpoints
 
   // Advanced AI optimization with constraint satisfaction
-  app.post("/api/ai/optimize-timetable", async (req, res) => {
+  app.post("/api/ai/optimize-timetable", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
-      const { program, semester, batch, academicYear, algorithm = "constraint_solver" } = req.body;
+      const { program, semester, batch, academicYear, algorithm = "constraint_solver", constraints = {} } = req.body;
       
       // Fetch data from database
       const courses = await storage.getCourses();
@@ -503,21 +503,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
           expected_students: 30,
           requires_consecutive_slots: course.courseType === "laboratory"
         })),
-        faculty: faculty.filter(f => f.isActive).map(f => ({
+        faculty: faculty.filter(f => f.isActive !== false).map(f => ({
           id: f.id,
           name: `${f.firstName} ${f.lastName}`,
-          email: f.email,
+          email: f.email || `${f.firstName.toLowerCase()}.${f.lastName.toLowerCase()}@university.edu`,
           max_hours_per_week: f.maxWorkload || 40
         })),
-        rooms: rooms.filter(r => r.isAvailable).map(r => ({
+        rooms: rooms.filter(r => r.isAvailable !== false).map(r => ({
           id: r.id,
           room_number: r.roomNumber,
           room_name: r.roomName || r.roomNumber,
           capacity: r.capacity,
           room_type: r.roomType,
-          equipment: []
+          equipment: Array.isArray(r.equipment) ? r.equipment : []
         })),
-        students: students.filter(s => s.program === program && s.semester === semester && s.isActive).map(s => ({
+        students: students.filter(s => s.program === program && s.semester === semester && s.isActive !== false).map(s => ({
           id: s.id,
           student_id: s.studentId,
           name: `${s.firstName} ${s.lastName}`,
@@ -553,12 +553,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { day: "Friday", start_time: "13:15", end_time: "14:15", duration: 60 }
         ],
         constraints: {
-          max_hours_per_day: 8,
-          min_break_duration: 15,
-          lunch_break_duration: 60,
-          lunch_break_start: "12:00",
-          consecutive_lab_slots: true,
-          max_consecutive_hours: 3
+          max_hours_per_day: constraints.max_hours_per_day || 8,
+          min_break_duration: constraints.min_break_duration || 15,
+          lunch_break_duration: constraints.lunch_break_duration || 60,
+          lunch_break_start: constraints.lunch_break_start || "12:00",
+          consecutive_lab_slots: constraints.consecutive_lab_slots !== false,
+          max_consecutive_hours: constraints.max_consecutive_hours || 3
         },
         program,
         semester,
@@ -617,7 +617,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Analyze existing timetable for conflicts using AI
-  app.post("/api/ai/analyze-conflicts", async (req, res) => {
+  app.post("/api/ai/analyze-conflicts", requireAuth, async (req, res) => {
     try {
       const { timetableSlots } = req.body;
       
