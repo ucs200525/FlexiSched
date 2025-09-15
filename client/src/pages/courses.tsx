@@ -17,6 +17,7 @@ import type { Course, InsertCourse } from "@shared/schema";
 import { courseTypes, programs } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import CourseRegistration from "@/components/course-registration";
+import FacultyCourseRegistration from "@/components/faculty-course-registration";
 
 export default function Courses() {
   const { user } = useAuth();
@@ -24,6 +25,11 @@ export default function Courses() {
   // If user is a student, show course registration interface
   if (user?.role === "student") {
     return <CourseRegistration />;
+  }
+
+  // If user is a faculty, show faculty course registration interface
+  if (user?.role === "faculty") {
+    return <FacultyCourseRegistration />;
   }
 
   // Otherwise, show the admin/faculty course management interface
@@ -346,7 +352,7 @@ export default function Courses() {
                   <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
-                    value={formData.description}
+                    value={formData.description || ""}
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="Course description and learning objectives..."
                     data-testid="input-description"

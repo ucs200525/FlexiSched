@@ -1,6 +1,17 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {
+  if (res.status === 401) {
+    // Clear auth data on 401
+    localStorage.removeItem("timetable_token");
+    localStorage.removeItem("timetable_user");
+    // Redirect to login page
+    if (window.location.pathname !== '/login') {
+      window.location.href = "/login?sessionExpired=true";
+    }
+    throw new Error("Session expired. Please log in again.");
+  }
+  
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
     throw new Error(`${res.status}: ${text}`);
@@ -44,21 +55,27 @@ type UnauthorizedBehavior = "returnNull" | "throw";
 export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
 }) => QueryFunction<T> =
-  ({ on401: unauthorizedBehavior }) =>
+  ({ on401 }) =>
   async ({ queryKey }) => {
-    const headers = getAuthHeaders();
-    
-    const res = await fetch(queryKey.join("/") as string, {
-      headers,
-      credentials: "include",
-    });
-
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+    try {
+      const headers = getAuthHeaders();
+      const url = Array.isArray(queryKey) ? queryKey[0] : String(queryKey);
+      const res = await fetch(url, { 
+        headers,
+        credentials: "include"
+      });
+      
+      if (res.status === 401) {
+        if (on401 === "returnNull") return null;
+        // Let throwIfResNotOk handle the 401
+      }
+      
+      await throwIfResNotOk(res);
+      return await res.json();
+    } catch (error) {
+      console.error("Query error:", error);
+      throw error;
     }
-
-    await throwIfResNotOk(res);
-    return await res.json();
   };
 
 export const queryClient = new QueryClient({

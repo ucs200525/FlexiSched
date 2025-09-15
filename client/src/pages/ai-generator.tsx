@@ -7,11 +7,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Bot, Sparkles, Loader2, CheckCircle, AlertCircle, Clock, TrendingUp } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Bot, Sparkles, Loader2, CheckCircle, AlertCircle, Clock, TrendingUp, Settings, Grid } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { TimetableGenerationRequest } from "@/lib/types";
 import { programs } from "@/lib/types";
+import AdminTimetableConfig from "@/components/admin-timetable-config";
+import ComprehensiveSectioning from "@/components/comprehensive-sectioning";
 
 interface GenerationResult {
   timetable: any;
@@ -169,10 +172,10 @@ export default function AIGenerator() {
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2" data-testid="page-title">
               <Bot className="w-8 h-8 text-primary" />
-              AI Timetable Generator
+              AI Timetable Management
             </h1>
             <p className="text-sm text-muted-foreground">
-              Advanced AI-powered scheduling with conflict resolution and optimization
+              Complete AI-powered timetable generation, sectioning, and optimization suite
             </p>
           </div>
           <div className="flex items-center space-x-2">
@@ -186,6 +189,31 @@ export default function AIGenerator() {
 
       {/* Content */}
       <main className="flex-1 p-6">
+        <Tabs defaultValue="base-config" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="base-config">
+              <Settings className="w-4 h-4 mr-2" />
+              Base Configuration
+            </TabsTrigger>
+            <TabsTrigger value="sectioning">
+              <Grid className="w-4 h-4 mr-2" />
+              Course Sectioning
+            </TabsTrigger>
+            <TabsTrigger value="ai-generation">
+              <Bot className="w-4 h-4 mr-2" />
+              AI Generation
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="base-config">
+            <AdminTimetableConfig />
+          </TabsContent>
+
+          <TabsContent value="sectioning">
+            <ComprehensiveSectioning />
+          </TabsContent>
+
+          <TabsContent value="ai-generation">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Generation Form */}
           <div className="lg:col-span-2">
@@ -489,6 +517,8 @@ export default function AIGenerator() {
             </Card>
           </div>
         </div>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

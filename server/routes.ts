@@ -427,6 +427,201 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Faculty Course Assignment routes
+  app.post("/api/faculty/:id/assign-course", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = (req as any).user;
+      const { courseId } = courseRegistrationSchema.parse(req.body);
+      
+      // Authorization check: Only faculty can assign courses for themselves, or admins can assign for any faculty
+      if (user.role === 'faculty') {
+        if (user.userId !== id) {
+          return res.status(403).json({ message: "You can only assign courses for yourself" });
+        }
+      } else if (user.role !== 'admin') {
+        return res.status(403).json({ message: "Insufficient permissions to assign courses for faculty" });
+      }
+      
+      // Get faculty and course
+      const facultyMember = await storage.getFacultyMember(id);
+      if (!facultyMember) {
+        return res.status(404).json({ message: "Faculty member not found" });
+      }
+      
+      const course = await storage.getCourse(courseId);
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+      
+      // Check if course is active
+      if (!course.isActive) {
+        return res.status(400).json({ message: "Course is not currently available for assignment" });
+      }
+      
+      // Check if faculty is already assigned to this course
+      const assignedCourses = facultyMember.assignedCourses || [];
+      if (assignedCourses.includes(courseId)) {
+        return res.status(400).json({ message: "Faculty is already assigned to this course" });
+      }
+      
+      // Check faculty expertise match (optional validation)
+      const facultyExpertise = Array.isArray(facultyMember.expertise) ? facultyMember.expertise : [];
+      if (facultyExpertise.length > 0 && !facultyExpertise.some(exp => 
+        course.courseName.toLowerCase().includes(exp.toLowerCase()) || 
+        course.courseCode.toLowerCase().includes(exp.toLowerCase())
+      )) {
+        // This is a warning, not a blocker
+        console.warn(`Faculty ${facultyMember.firstName} ${facultyMember.lastName} expertise may not match course ${course.courseCode}`);
+      }
+      
+      // Add course to faculty's assigned courses
+      const updatedFaculty = await storage.updateFaculty(id, {
+        assignedCourses: [...assignedCourses, courseId]
+      });
+      
+      res.json({ 
+        message: "Successfully assigned to course",
+        faculty: updatedFaculty,
+        course: course
+      });
+      
+    } catch (error) {
+      console.error("Course assignment error:", error);
+      res.status(400).json({ message: "Invalid assignment data" });
+    }
+  });
+
+  app.delete("/api/faculty/:id/assign-course/:courseId", requireAuth, async (req, res) => {
+    try {
+      const { id, courseId } = req.params;
+      const user = (req as any).user;
+      
+      // Authorization check: Only faculty can unassign their own courses, or admins can unassign for any faculty
+      if (user.role === 'faculty') {
+        if (user.userId !== id) {
+          return res.status(403).json({ message: "You can only unassign courses for yourself" });
+        }
+      } else if (user.role !== 'admin') {
+        return res.status(403).json({ message: "Insufficient permissions to unassign courses for faculty" });
+      }
+      
+      // Get faculty
+      const facultyMember = await storage.getFacultyMember(id);
+      if (!facultyMember) {
+        return res.status(404).json({ message: "Faculty member not found" });
+      }
+      
+      // Check if faculty is assigned to the course
+      const assignedCourses = facultyMember.assignedCourses || [];
+      if (!assignedCourses.includes(courseId)) {
+        return res.status(400).json({ message: "Faculty is not assigned to this course" });
+      }
+      
+      // Remove course from faculty's assigned courses
+      const updatedFaculty = await storage.updateFaculty(id, {
+        assignedCourses: assignedCourses.filter(id => id !== courseId)
+      });
+      
+      res.json({ 
+        message: "Successfully unassigned from course",
+        faculty: updatedFaculty
+      });
+      
+    } catch (error) {
+      console.error("Course unassignment error:", error);
+      res.status(500).json({ message: "Failed to unassign from course" });
+    }
+  });
+
+  app.get("/api/faculty/:id/available-courses", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = (req as any).user;
+      
+      console.log(`Available courses request for faculty ${id} by user ${user.userId} (${user.role})`);
+      
+      // Authorization check: Only faculty can view their own available courses, or admins can view for any faculty
+      if (user.role === 'faculty') {
+        if (user.userId !== id) {
+          return res.status(403).json({ message: "You can only view your own available courses" });
+        }
+      } else if (user.role !== 'admin') {
+        return res.status(403).json({ message: "Insufficient permissions to view faculty course data" });
+      }
+      
+      // Get faculty
+      const facultyMember = await storage.getFacultyMember(id);
+      if (!facultyMember) {
+        console.error(`Faculty member not found: ${id}`);
+        return res.status(404).json({ message: "Faculty member not found" });
+      }
+      
+      console.log(`Faculty found: ${facultyMember.firstName} ${facultyMember.lastName}`);
+      console.log(`Faculty assigned courses: ${facultyMember.assignedCourses || []}`);
+      
+      // Get all active courses
+      const allCourses = await storage.getCourses();
+      console.log(`Found ${allCourses.length} total courses`);
+      
+      // Filter to show only active courses that faculty is not already assigned to
+      const assignedCourses = facultyMember.assignedCourses || [];
+      const availableCourses = allCourses.filter(course => 
+        course.isActive && !assignedCourses.includes(course.id)
+      );
+      
+      console.log(`Filtered to ${availableCourses.length} available courses`);
+      
+      res.json(availableCourses);
+      
+    } catch (error) {
+      console.error("Available courses error:", error);
+      console.error("Error stack:", error instanceof Error ? error.stack : 'No stack trace');
+      res.status(500).json({ 
+        message: "Failed to fetch available courses",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  app.get("/api/faculty/:id/assigned-courses", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = (req as any).user;
+      
+      // Authorization check: Only faculty can view their own assigned courses, or admins can view for any faculty
+      if (user.role === 'faculty') {
+        if (user.userId !== id) {
+          return res.status(403).json({ message: "You can only view your own assigned courses" });
+        }
+      } else if (user.role !== 'admin') {
+        return res.status(403).json({ message: "Insufficient permissions to view faculty course data" });
+      }
+      
+      // Get faculty
+      const facultyMember = await storage.getFacultyMember(id);
+      if (!facultyMember) {
+        return res.status(404).json({ message: "Faculty member not found" });
+      }
+      
+      // Get assigned courses details using Promise.all for parallel fetching
+      const assignedCourses = facultyMember.assignedCourses || [];
+      const coursePromises = assignedCourses.map(courseId => 
+        storage.getCourse(courseId)
+      );
+      const courses = await Promise.all(coursePromises);
+      
+      // Filter out any null results (courses that don't exist)
+      const assignedCourseDetails = courses.filter(course => course !== null);
+      
+      res.json(assignedCourseDetails);
+      
+    } catch (error) {
+      console.error("Assigned courses error:", error);
+      res.status(500).json({ message: "Failed to fetch assigned courses" });
+    }
+  });
+
   // Courses routes
   app.get("/api/courses", async (req, res) => {
     try {

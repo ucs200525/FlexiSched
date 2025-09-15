@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,108 +6,185 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Bell, Moon, Calendar, User, BookOpen, Clock, GraduationCap, Settings } from "lucide-react";
 import { TimetableGrid } from "@/components/timetable-grid";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Student, Course, TimetableSlot, Faculty, Room } from "@shared/schema";
 
 export default function StudentDashboard() {
-  const [selectedStudent, setSelectedStudent] = useState<string>("student123");
+  const { user } = useAuth();
+  const [selectedStudent, setSelectedStudent] = useState<string>(user?.id || "student-1");
 
-  // Mock student data - in real app this would come from auth context
+  // Get current student data from auth context and API
+  const { data: currentStudentData } = useQuery<Student>({
+    queryKey: ["/api/students", user?.id],
+    enabled: !!user?.id,
+  });
+
   const currentStudent = {
-    id: "student123",
-    name: "Priya Sharma",
-    program: "B.Ed",
-    semester: 3,
-    batch: "2024-25",
+    id: user?.id || "student-1",
+    name: user?.name || currentStudentData?.firstName + " " + currentStudentData?.lastName || "Student User",
+    program: currentStudentData?.program || "Computer Science",
+    semester: currentStudentData?.semester || 1,
+    batch: currentStudentData?.batch || "2024-25",
     section: "A",
-    studentId: "BED2024001"
+    studentId: currentStudentData?.studentId || "STU0001"
   };
 
   // Fetch student's data
-  const { data: courses } = useQuery({
+  const { data: courses } = useQuery<Course[]>({
     queryKey: ["/api/courses"],
   });
 
-  const { data: faculty } = useQuery({
+  const { data: faculty } = useQuery<Faculty[]>({
     queryKey: ["/api/faculty"],
   });
 
-  const { data: rooms } = useQuery({
+  const { data: rooms } = useQuery<Room[]>({
     queryKey: ["/api/rooms"],
   });
 
-  const { data: timetables } = useQuery({
+  const { data: timetables } = useQuery<any[]>({
     queryKey: ["/api/timetables"],
   });
 
-  const { data: timetableSlots } = useQuery({
+  const { data: timetableSlots } = useQuery<TimetableSlot[]>({
     queryKey: ["/api/timetables", Array.isArray(timetables) && timetables[0]?.id, "slots"],
     enabled: !!(Array.isArray(timetables) && timetables[0]?.id),
   });
 
-  // Student-specific stats
-  const studentStats = [
-    {
-      title: "Enrolled Courses",
-      value: 8,
-      subtitle: "Current semester",
-      icon: BookOpen,
-      color: "primary",
-      bgColor: "bg-primary/10",
-      textColor: "text-primary",
-      testId: "stat-enrolled-courses"
-    },
-    {
-      title: "Attendance Rate",
-      value: "92%",
-      subtitle: "Above average",
-      icon: Calendar,
-      color: "secondary", 
-      bgColor: "bg-secondary/10",
-      textColor: "text-secondary",
-      testId: "stat-attendance"
-    },
-    {
-      title: "Completed Credits",
-      value: 45,
-      subtitle: "Out of 120",
-      icon: GraduationCap,
-      color: "accent",
-      bgColor: "bg-accent/10",
-      textColor: "text-accent", 
-      testId: "stat-credits"
-    },
-    {
-      title: "Current CGPA",
-      value: "8.4",
-      subtitle: "Excellent grade",
-      icon: User,
-      color: "chart-1",
-      bgColor: "bg-chart-1/10",
-      textColor: "text-chart-1",
-      testId: "stat-cgpa"
+  // Get enrolled courses for current student
+  const { data: enrolledCoursesData } = useQuery<Course[]>({
+    queryKey: ["/api/students", currentStudent.id, "registered-courses"],
+    enabled: !!currentStudent.id,
+  });
+
+  // Student-specific stats calculated from real data
+  const studentStats = useMemo(() => {
+    const enrolledCount = enrolledCoursesData?.length || 0;
+    const totalCredits = enrolledCoursesData?.reduce((sum, course) => sum + (course.credits || 0), 0) || 0;
+    
+    return [
+      {
+        title: "Enrolled Courses",
+        value: enrolledCount,
+        subtitle: "Current semester",
+        icon: BookOpen,
+        color: "primary",
+        bgColor: "bg-primary/10",
+        textColor: "text-primary",
+        testId: "stat-enrolled-courses"
+      },
+      {
+        title: "Attendance Rate",
+        value: "0%",
+        subtitle: "No data available",
+        icon: Calendar,
+        color: "secondary", 
+        bgColor: "bg-secondary/10",
+        textColor: "text-secondary",
+        testId: "stat-attendance"
+      },
+      {
+        title: "Total Credits",
+        value: totalCredits,
+        subtitle: "This semester",
+        icon: GraduationCap,
+        color: "accent",
+        bgColor: "bg-accent/10",
+        textColor: "text-accent", 
+        testId: "stat-credits"
+      },
+      {
+        title: "Current CGPA",
+        value: "0.0",
+        subtitle: "No grades yet",
+        icon: User,
+        color: "chart-1",
+        bgColor: "bg-chart-1/10",
+        textColor: "text-chart-1",
+        testId: "stat-cgpa"
+      }
+    ];
+  }, [enrolledCoursesData]);
+
+  // Get upcoming classes from timetable API
+  const upcomingClasses: Array<{
+    time: string;
+    course: string;
+    faculty: string;
+    room: string;
+    type: string;
+  }> = useMemo(() => {
+    if (!timetableSlots || !courses || !faculty || !rooms) return [];
+    
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+    const todaySlots = timetableSlots.filter(slot => slot.dayOfWeek === today);
+    
+    return todaySlots.map(slot => {
+      const course = courses.find(c => c.id === slot.courseId);
+      const facultyMember = faculty.find(f => f.id === slot.facultyId);
+      const room = rooms.find(r => r.id === slot.roomId);
+      
+      return {
+        time: slot.startTime,
+        course: course?.courseName || 'Unknown Course',
+        faculty: facultyMember ? `${facultyMember.firstName} ${facultyMember.lastName}` : 'Unknown Faculty',
+        room: room?.roomNumber || 'Unknown Room',
+        type: slot.slotType
+      };
+    }).sort((a, b) => a.time.localeCompare(b.time));
+  }, [timetableSlots, courses, faculty, rooms]);
+
+  // Get enrolled courses with faculty details
+  const enrolledCourses: Array<{
+    name: string;
+    code: string;
+    type: string;
+    credits: number;
+    faculty: string;
+  }> = useMemo(() => {
+    if (!enrolledCoursesData || !faculty) return [];
+    
+    return enrolledCoursesData.map(course => {
+      // Find faculty assigned to this course (simplified - in real app you'd have course-faculty assignments)
+      const assignedFaculty = faculty.find(f => f.assignedCourses?.includes(course.id));
+      
+      return {
+        name: course.courseName,
+        code: course.courseCode,
+        type: course.courseType,
+        credits: course.credits,
+        faculty: assignedFaculty ? `${assignedFaculty.firstName} ${assignedFaculty.lastName}` : 'TBA'
+      };
+    });
+  }, [enrolledCoursesData, faculty]);
+
+  // Academic updates - placeholder for future notifications system
+  const academicUpdates: Array<{
+    message: string;
+    time: string;
+    type: 'success' | 'warning' | 'info';
+  }> = useMemo(() => {
+    // Generate some dynamic updates based on current data
+    const updates = [];
+    
+    if (enrolledCoursesData && enrolledCoursesData.length > 0) {
+      updates.push({
+        message: `You are enrolled in ${enrolledCoursesData.length} courses this semester`,
+        time: '1 hour ago',
+        type: 'info' as const
+      });
     }
-  ];
-
-  const upcomingClasses = [
-    { time: "09:00 AM", course: "Educational Psychology", faculty: "Dr. Singh", room: "R-101", type: "Theory" },
-    { time: "11:00 AM", course: "Teaching Methods", faculty: "Prof. Verma", room: "R-203", type: "Practical" },
-    { time: "02:00 PM", course: "Child Development", faculty: "Dr. Patel", room: "R-105", type: "Theory" },
-  ];
-
-  const enrolledCourses = [
-    { code: "ED301", name: "Educational Psychology", faculty: "Dr. Singh", credits: 4, type: "Core" },
-    { code: "ED302", name: "Teaching Methods", faculty: "Prof. Verma", credits: 4, type: "Core" },
-    { code: "ED303", name: "Child Development", faculty: "Dr. Patel", credits: 4, type: "Core" },
-    { code: "ED304", name: "Assessment & Evaluation", faculty: "Dr. Kumar", credits: 3, type: "Core" },
-    { code: "EL101", name: "Environmental Education", faculty: "Dr. Rao", credits: 2, type: "Elective" },
-  ];
-
-  const academicUpdates = [
-    { type: "success", message: "Assignment submitted for Educational Psychology", time: "1 hour ago" },
-    { type: "info", message: "New timetable published for next week", time: "2 hours ago" },
-    { type: "warning", message: "Mid-term exam scheduled for Child Development", time: "1 day ago" },
-    { type: "info", message: "Elective course registration opens tomorrow", time: "2 days ago" },
-  ];
+    
+    if (timetableSlots && timetableSlots.length > 0) {
+      updates.push({
+        message: 'Your timetable has been updated',
+        time: '2 hours ago',
+        type: 'success' as const
+      });
+    }
+    
+    return updates;
+  }, [enrolledCoursesData, timetableSlots]);
 
   return (
     <div className="flex-1 flex flex-col">
@@ -188,23 +265,30 @@ export default function StudentDashboard() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {upcomingClasses.map((cls, index) => (
-                  <div key={index} className="flex items-center space-x-4 p-4 bg-muted rounded-lg" data-testid={`class-${index}`}>
-                    <div className="text-center min-w-[80px]">
-                      <p className="text-sm font-medium text-foreground">{cls.time}</p>
+                {upcomingClasses.length > 0 ? (
+                  upcomingClasses.map((cls, index) => (
+                    <div key={index} className="flex items-center space-x-4 p-4 bg-muted rounded-lg" data-testid={`class-${index}`}>
+                      <div className="text-center min-w-[80px]">
+                        <p className="text-sm font-medium text-foreground">{cls.time}</p>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-foreground">{cls.course}</h4>
+                        <p className="text-sm text-muted-foreground">{cls.faculty} • {cls.room}</p>
+                      </div>
+                      <Badge 
+                        variant={cls.type === "Theory" ? "secondary" : "outline"}
+                        className="text-xs"
+                      >
+                        {cls.type}
+                      </Badge>
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-foreground">{cls.course}</h4>
-                      <p className="text-sm text-muted-foreground">{cls.faculty} • {cls.room}</p>
-                    </div>
-                    <Badge 
-                      variant={cls.type === "Theory" ? "secondary" : "outline"}
-                      className="text-xs"
-                    >
-                      {cls.type}
-                    </Badge>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No classes scheduled for today</p>
                   </div>
-                ))}
+                )}
                 
                 <Button className="w-full mt-4" variant="outline" data-testid="button-view-weekly-schedule">
                   <Calendar className="w-4 h-4 mr-2" />
@@ -252,19 +336,26 @@ export default function StudentDashboard() {
                 <CardTitle>Academic Updates</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {academicUpdates.map((update, index) => (
-                  <div key={index} className="flex items-start space-x-3" data-testid={`update-${index}`}>
-                    <div className={`w-2 h-2 rounded-full mt-2 ${
-                      update.type === "success" ? "bg-secondary" :
-                      update.type === "warning" ? "bg-accent" :
-                      "bg-primary"
-                    }`} />
-                    <div className="flex-1">
-                      <p className="text-sm text-foreground">{update.message}</p>
-                      <p className="text-xs text-muted-foreground">{update.time}</p>
+                {academicUpdates.length > 0 ? (
+                  academicUpdates.map((update, index) => (
+                    <div key={index} className="flex items-start space-x-3" data-testid={`update-${index}`}>
+                      <div className={`w-2 h-2 rounded-full mt-2 ${
+                        update.type === "success" ? "bg-secondary" :
+                        update.type === "warning" ? "bg-accent" :
+                        "bg-primary"
+                      }`} />
+                      <div className="flex-1">
+                        <p className="text-sm text-foreground">{update.message}</p>
+                        <p className="text-xs text-muted-foreground">{update.time}</p>
+                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4">
+                    <Bell className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">No recent updates</p>
                   </div>
-                ))}
+                )}
               </CardContent>
             </Card>
           </div>
@@ -279,25 +370,37 @@ export default function StudentDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {enrolledCourses.map((course, index) => (
-                <Card key={index} className="p-4" data-testid={`course-${index}`}>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Badge variant={course.type === "Core" ? "default" : "secondary"}>
-                        {course.type}
-                      </Badge>
-                      <span className="text-sm text-muted-foreground">{course.credits} Credits</span>
+            {enrolledCourses.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {enrolledCourses.map((course, index) => (
+                  <Card key={index} className="p-4" data-testid={`course-${index}`}>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Badge variant={course.type === "Core" ? "default" : "secondary"}>
+                          {course.type}
+                        </Badge>
+                        <span className="text-sm text-muted-foreground">{course.credits} Credits</span>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-foreground">{course.name}</h4>
+                        <p className="text-sm text-muted-foreground">{course.code}</p>
+                      </div>
+                      <p className="text-sm text-muted-foreground">Faculty: {course.faculty}</p>
                     </div>
-                    <div>
-                      <h4 className="font-medium text-foreground">{course.name}</h4>
-                      <p className="text-sm text-muted-foreground">{course.code}</p>
-                    </div>
-                    <p className="text-sm text-muted-foreground">Faculty: {course.faculty}</p>
-                  </div>
-                </Card>
-              ))}
-            </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-foreground mb-2">No Enrolled Courses</h3>
+                <p className="text-muted-foreground mb-4">You haven't enrolled in any courses yet.</p>
+                <Button className="bg-gradient-to-r from-primary to-secondary">
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  Browse Available Courses
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
