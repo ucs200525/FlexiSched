@@ -8,7 +8,8 @@ import {
   insertRoomSchema,
   insertTimetableSchema,
   insertTimetableSlotSchema,
-  loginSchema
+  loginSchema,
+  courseRegistrationSchema
 } from "@shared/schema";
 import { generateTimetableWithAI, detectConflicts } from "./services/scheduler";
 import { aiEngineClient } from "./ai_integration";
@@ -165,6 +166,201 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete student" });
+    }
+  });
+
+  // Course Registration routes
+  app.post("/api/students/:id/register-course", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = (req as any).user;
+      const { courseId } = courseRegistrationSchema.parse(req.body);
+      
+      // Authorization check: Only students can register for their own courses, or admins can register for any student
+      if (user.role === 'student') {
+        if (user.userId !== id) {
+          return res.status(403).json({ message: "You can only register courses for yourself" });
+        }
+      } else if (user.role !== 'admin') {
+        return res.status(403).json({ message: "Insufficient permissions to register courses for students" });
+      }
+      
+      // Get student and course
+      const student = await storage.getStudent(id);
+      if (!student) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+      
+      const course = await storage.getCourse(courseId);
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+      
+      // Check if course is active
+      if (!course.isActive) {
+        return res.status(400).json({ message: "Course is not currently available for registration" });
+      }
+      
+      // Check if student is already enrolled
+      if (student.enrolledCourses.includes(courseId)) {
+        return res.status(400).json({ message: "Student is already enrolled in this course" });
+      }
+      
+      // Validate course eligibility (program and semester match)
+      if (course.program !== student.program) {
+        return res.status(400).json({ message: "Course is not available for your program" });
+      }
+      
+      if (course.semester !== student.semester) {
+        return res.status(400).json({ message: "Course is not available for your semester" });
+      }
+      
+      // Check prerequisites
+      if (course.prerequisites.length > 0) {
+        const studentCourses = student.enrolledCourses;
+        const missingPrerequisites = course.prerequisites.filter(prereq => !studentCourses.includes(prereq));
+        if (missingPrerequisites.length > 0) {
+          return res.status(400).json({ 
+            message: "Missing prerequisites", 
+            missingPrerequisites 
+          });
+        }
+      }
+      
+      // Add course to student's enrolled courses
+      const updatedStudent = await storage.updateStudent(id, {
+        enrolledCourses: [...student.enrolledCourses, courseId]
+      });
+      
+      res.json({ 
+        message: "Successfully registered for course",
+        student: updatedStudent,
+        course: course
+      });
+      
+    } catch (error) {
+      console.error("Course registration error:", error);
+      res.status(400).json({ message: "Invalid registration data" });
+    }
+  });
+
+  app.delete("/api/students/:id/register-course/:courseId", requireAuth, async (req, res) => {
+    try {
+      const { id, courseId } = req.params;
+      const user = (req as any).user;
+      
+      // Authorization check: Only students can unregister their own courses, or admins can unregister for any student
+      if (user.role === 'student') {
+        if (user.userId !== id) {
+          return res.status(403).json({ message: "You can only unregister courses for yourself" });
+        }
+      } else if (user.role !== 'admin') {
+        return res.status(403).json({ message: "Insufficient permissions to unregister courses for students" });
+      }
+      
+      // Get student
+      const student = await storage.getStudent(id);
+      if (!student) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+      
+      // Check if student is enrolled in the course
+      if (!student.enrolledCourses.includes(courseId)) {
+        return res.status(400).json({ message: "Student is not enrolled in this course" });
+      }
+      
+      // Remove course from student's enrolled courses
+      const updatedStudent = await storage.updateStudent(id, {
+        enrolledCourses: student.enrolledCourses.filter(id => id !== courseId)
+      });
+      
+      res.json({ 
+        message: "Successfully unregistered from course",
+        student: updatedStudent
+      });
+      
+    } catch (error) {
+      console.error("Course unregistration error:", error);
+      res.status(500).json({ message: "Failed to unregister from course" });
+    }
+  });
+
+  app.get("/api/students/:id/available-courses", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = (req as any).user;
+      
+      // Authorization check: Only students can view their own available courses, or admins can view for any student
+      if (user.role === 'student') {
+        if (user.userId !== id) {
+          return res.status(403).json({ message: "You can only view your own available courses" });
+        }
+      } else if (user.role !== 'admin') {
+        return res.status(403).json({ message: "Insufficient permissions to view student course data" });
+      }
+      
+      // Get student
+      const student = await storage.getStudent(id);
+      if (!student) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+      
+      // Get all courses for student's program and semester
+      const allCourses = await storage.getCoursesByProgram(student.program, student.semester);
+      
+      // Filter out courses the student is already enrolled in
+      const availableCourses = allCourses.filter(course => 
+        !student.enrolledCourses.includes(course.id) && course.isActive
+      );
+      
+      // Further filter based on prerequisites
+      const eligibleCourses = availableCourses.filter(course => {
+        if (course.prerequisites.length === 0) return true;
+        return course.prerequisites.every(prereq => student.enrolledCourses.includes(prereq));
+      });
+      
+      res.json(eligibleCourses);
+      
+    } catch (error) {
+      console.error("Available courses error:", error);
+      res.status(500).json({ message: "Failed to fetch available courses" });
+    }
+  });
+
+  app.get("/api/students/:id/registered-courses", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = (req as any).user;
+      
+      // Authorization check: Only students can view their own registered courses, or admins can view for any student
+      if (user.role === 'student') {
+        if (user.userId !== id) {
+          return res.status(403).json({ message: "You can only view your own registered courses" });
+        }
+      } else if (user.role !== 'admin') {
+        return res.status(403).json({ message: "Insufficient permissions to view student course data" });
+      }
+      
+      // Get student
+      const student = await storage.getStudent(id);
+      if (!student) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+      
+      // Get enrolled courses details using Promise.all for parallel fetching
+      const coursePromises = student.enrolledCourses.map(courseId => 
+        storage.getCourse(courseId)
+      );
+      const courses = await Promise.all(coursePromises);
+      
+      // Filter out any null results (courses that don't exist)
+      const enrolledCourses = courses.filter(course => course !== null);
+      
+      res.json(enrolledCourses);
+      
+    } catch (error) {
+      console.error("Registered courses error:", error);
+      res.status(500).json({ message: "Failed to fetch registered courses" });
     }
   });
 

@@ -346,3 +346,10 @@ export const loginSchema = z.object({
 });
 
 export type LoginRequest = z.infer<typeof loginSchema>;
+
+// Course Registration schemas
+export const courseRegistrationSchema = z.object({
+  courseId: z.string().min(1, "Course ID is required")
+});
+
+export type CourseRegistrationRequest = z.infer<typeof courseRegistrationSchema>;
