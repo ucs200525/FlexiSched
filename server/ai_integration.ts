@@ -89,7 +89,7 @@ export interface OptimizationResult {
 class AIEngineClient {
   private pythonProcess: any = null;
   private isServerRunning = false;
-  private serverPort = 8001;
+  private serverPort = 8000;
 
   async startAIServer(): Promise<boolean> {
     if (this.isServerRunning) {
