@@ -2,7 +2,7 @@ import random
 import numpy as np
 from typing import List, Dict, Tuple
 import time
-from .models import (
+from models import (
     Course, Faculty, Room, Student, TimetableSlot, 
     OptimizationRequest, OptimizationResult, TimeSlot
 )

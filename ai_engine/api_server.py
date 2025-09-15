@@ -12,9 +12,9 @@ from typing import Dict, List, Optional
 import uuid
 from datetime import datetime
 
-from .models import OptimizationRequest, OptimizationResult, TimeSlot, Course, Faculty, Room, Student
-from .constraint_solver import TimetableConstraintSolver
-from .genetic_solver import GeneticTimetableSolver
+from models import OptimizationRequest, OptimizationResult, TimeSlot, Course, Faculty, Room, Student
+from constraint_solver import TimetableConstraintSolver
+from genetic_solver import GeneticTimetableSolver
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

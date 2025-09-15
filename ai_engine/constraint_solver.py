@@ -2,7 +2,7 @@ import logging
 from typing import List, Dict, Tuple, Set, Optional
 from ortools.sat.python import cp_model
 import time
-from .models import (
+from models import (
     Course, Faculty, Room, Student, TimetableSlot, 
     OptimizationRequest, OptimizationResult, Conflict, 
     ConflictType, TimeSlot
