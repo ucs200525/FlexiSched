@@ -15,6 +15,7 @@ import type { TimetableGenerationRequest } from "@/lib/types";
 import { programs } from "@/lib/types";
 import AdminTimetableConfig from "@/components/admin-timetable-config";
 import ComprehensiveSectioning from "@/components/comprehensive-sectioning";
+import UnifiedAIGenerator from "@/components/unified-ai-generator";
 
 interface GenerationResult {
   timetable: any;
@@ -189,8 +190,12 @@ export default function AIGenerator() {
 
       {/* Content */}
       <main className="flex-1 p-6">
-        <Tabs defaultValue="base-config" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="unified-ai" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="unified-ai">
+              <Sparkles className="w-4 h-4 mr-2" />
+              Unified AI Generator
+            </TabsTrigger>
             <TabsTrigger value="base-config">
               <Settings className="w-4 h-4 mr-2" />
               Base Configuration
@@ -199,11 +204,15 @@ export default function AIGenerator() {
               <Grid className="w-4 h-4 mr-2" />
               Course Sectioning
             </TabsTrigger>
-            <TabsTrigger value="ai-generation">
+            <TabsTrigger value="legacy-ai">
               <Bot className="w-4 h-4 mr-2" />
-              AI Generation
+              Legacy AI Generation
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="unified-ai">
+            <UnifiedAIGenerator />
+          </TabsContent>
 
           <TabsContent value="base-config">
             <AdminTimetableConfig />
@@ -213,7 +222,7 @@ export default function AIGenerator() {
             <ComprehensiveSectioning />
           </TabsContent>
 
-          <TabsContent value="ai-generation">
+          <TabsContent value="legacy-ai">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Generation Form */}
           <div className="lg:col-span-2">

@@ -46,9 +46,13 @@ class UnifiedTimetableAPI:
         """
         try:
             logger.info("Processing unified timetable generation request")
+            logger.info(f"Request keys: {list(request_data.keys())}")
             
             # Parse natural language question if provided
-            config = self._parse_admin_question(request_data.get("question", ""))
+            question = request_data.get("question", "")
+            logger.info(f"Parsing question: '{question}'")
+            config = self._parse_admin_question(question)
+            logger.info(f"Parsed config: {config}")
             
             # Override with explicit parameters
             if "college_start_time" in request_data:
@@ -82,15 +86,50 @@ class UnifiedTimetableAPI:
             # Generate complete timetable
             result = self.generator.generate_complete_timetable(unified_request)
             
+            # Debug logging
+            logger.info(f"Time slots generated: {len(self.generator.time_slots)}")
+            if self.generator.time_slots:
+                logger.info(f"First slot: {self.generator.time_slots[0].slot_id} - {self.generator.time_slots[0].start_time}")
+            
             # Format response
             response = {
                 "success": result.success,
                 "message": "Complete timetable generated successfully" if result.success else "Timetable generated with conflicts",
+                "base_timetable": {
+                    "slot_grid": result.slot_grid,
+                    "time_slots": [
+                        {
+                            "slot_id": slot.slot_id,
+                            "day": slot.day,
+                            "start_time": slot.start_time,
+                            "end_time": slot.end_time,
+                            "duration": slot.duration,
+                            "slot_type": slot.slot_type.value
+                        }
+                        for slot in self.generator.time_slots
+                    ],
+                    "configuration": {
+                        "college_start_time": unified_request.college_start_time,
+                        "college_end_time": unified_request.college_end_time,
+                        "slot_duration": unified_request.slot_duration,
+                        "grace_time": unified_request.grace_time,
+                        "working_days": unified_request.working_days,
+                        "breaks": unified_request.breaks
+                    }
+                },
                 "timetable": {
                     "schedule": result.timetable_schedule,
                     "sections": [self._section_to_dict(section) for section in result.sections_created],
                     "student_allocations": result.student_allocations,
-                    "slot_grid": result.slot_grid
+                    "slot_grid": result.slot_grid,
+                    "configuration": {
+                        "college_start_time": unified_request.college_start_time,
+                        "college_end_time": unified_request.college_end_time,
+                        "slot_duration": unified_request.slot_duration,
+                        "grace_time": unified_request.grace_time,
+                        "working_days": unified_request.working_days,
+                        "breaks": unified_request.breaks
+                    }
                 },
                 "optimization": {
                     "score": result.optimization_score,
@@ -112,6 +151,7 @@ class UnifiedTimetableAPI:
             }
             
             logger.info(f"Unified timetable generation completed: {result.optimization_score:.1f}% score")
+            logger.info(f"🔍 base_timetable has {len(response['base_timetable']['time_slots'])} time slots")
             return response
             
         except Exception as e:
@@ -138,20 +178,24 @@ class UnifiedTimetableAPI:
         question_lower = question.lower()
         
         # Parse start time
-        if "8:30" in question or "8.30" in question:
-            config["college_start_time"] = "08:30"
-        elif "9:00" in question or "9 am" in question:
+        if "9 am" in question_lower or "9:00" in question or "9.00" in question:
             config["college_start_time"] = "09:00"
-        elif "8:00" in question or "8 am" in question:
+        elif "8:30" in question or "8.30" in question:
+            config["college_start_time"] = "08:30"
+        elif "8:00" in question or "8 am" in question_lower:
             config["college_start_time"] = "08:00"
+        elif "10 am" in question_lower or "10:00" in question:
+            config["college_start_time"] = "10:00"
         
         # Parse end time
-        if "5:30" in question or "5.30" in question:
-            config["college_end_time"] = "17:30"
-        elif "6:00" in question or "6 pm" in question:
+        if "6 pm" in question_lower or "6:00" in question or "6.00" in question:
             config["college_end_time"] = "18:00"
+        elif "5:30" in question or "5.30" in question:
+            config["college_end_time"] = "17:30"
         elif "4:30" in question or "4.30" in question:
             config["college_end_time"] = "16:30"
+        elif "5 pm" in question_lower or "5:00" in question:
+            config["college_end_time"] = "17:00"
         
         # Parse slot duration
         if "50 minute" in question_lower or "50-minute" in question_lower:

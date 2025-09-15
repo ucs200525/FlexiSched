@@ -732,12 +732,25 @@ async def unified_timetable_generation(request_data: dict):
     """
     try:
         logger.info("🎯 Processing unified AI timetable generation request")
+        logger.info(f"📝 Request data keys: {list(request_data.keys())}")
+        
         result = await generate_unified_timetable(request_data)
-        logger.info(f"✅ Unified generation completed with {result['optimization']['score']:.1f}% optimization score")
+        
+        logger.info(f"✅ Unified generation completed with {result.get('optimization', {}).get('score', 0):.1f}% optimization score")
+        logger.info(f"🔍 Response keys: {list(result.keys())}")
+        
+        # Check if base_timetable is in response
+        if 'base_timetable' in result:
+            logger.info(f"✅ base_timetable included with {len(result['base_timetable'].get('time_slots', []))} time slots")
+        else:
+            logger.warning("❌ base_timetable missing from response!")
+            
         return result
         
     except Exception as e:
         logger.error(f"❌ Unified timetable generation failed: {str(e)}")
+        import traceback
+        logger.error(f"🔍 Full traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Unified generation failed: {str(e)}")
 
 @app.get("/ai/sample-unified-request")

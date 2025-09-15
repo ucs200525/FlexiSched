@@ -153,6 +153,12 @@ class UnifiedTimetableGenerator:
             self.time_slots = self._generate_time_slots(request)
             logger.info(f"Generated {len(self.time_slots)} time slots")
             
+            # Debug: Print first few slots
+            if self.time_slots:
+                logger.info(f"Sample slots: {[(slot.slot_id, slot.day, slot.start_time, slot.end_time) for slot in self.time_slots[:5]]}")
+            else:
+                logger.warning("No time slots generated!")
+            
             # Step 2: Process and validate input data
             self.courses = self._process_courses(request.courses, request.total_students)
             self.faculty = self._process_faculty(request.faculty)
@@ -213,49 +219,64 @@ class UnifiedTimetableGenerator:
     def _generate_time_slots(self, request: UnifiedTimetableRequest) -> List[TimeSlot]:
         """Generate time slot grid based on configuration"""
         slots = []
-        slot_counter = 1
         
         # Parse times
         start_time = datetime.strptime(request.college_start_time, "%H:%M").time()
         end_time = datetime.strptime(request.college_end_time, "%H:%M").time()
         
+        # Generate slot labels (A1, B1, C1, etc.)
+        slot_labels = []
+        for i in range(10):  # Generate enough slot labels
+            slot_labels.append(chr(65 + i))  # A, B, C, D, E, F, G, H, I, J
+        
         for day in request.working_days:
             current_time = datetime.combine(datetime.today(), start_time)
             end_datetime = datetime.combine(datetime.today(), end_time)
+            slot_index = 0
             
             while current_time < end_datetime:
                 slot_end = current_time + timedelta(minutes=request.slot_duration)
                 
-                # Check if this slot conflicts with breaks
+                # Check if this time falls within any break
                 is_break = False
-                slot_type = SlotType.THEORY
-                
                 for break_info in request.breaks:
                     break_start = datetime.strptime(break_info["start_time"], "%H:%M").time()
                     break_end = datetime.strptime(break_info["end_time"], "%H:%M").time()
                     
-                    if (current_time.time() >= break_start and current_time.time() < break_end):
+                    # Check if current slot overlaps with break time
+                    if (current_time.time() < break_end and slot_end.time() > break_start):
                         is_break = True
-                        slot_type = SlotType.BREAK
                         break
                 
-                if not is_break:
-                    slot_id = f"{day[:3].upper()}{slot_counter}"
+                if not is_break and slot_end.time() <= end_time:
+                    # Create slot with proper labeling
+                    slot_label = slot_labels[slot_index % len(slot_labels)]
+                    slot_number = (slot_index // len(slot_labels)) + 1
+                    slot_id = f"{slot_label}{slot_number}"
+                    
                     slots.append(TimeSlot(
                         slot_id=slot_id,
                         day=day,
                         start_time=current_time.strftime("%H:%M"),
                         end_time=slot_end.strftime("%H:%M"),
                         duration=request.slot_duration,
-                        slot_type=slot_type,
+                        slot_type=SlotType.THEORY,
                         is_available=True
                     ))
+                    slot_index += 1
                 
+                # Move to next time slot
                 current_time = slot_end + timedelta(minutes=request.grace_time)
-                if current_time.time() >= end_time:
-                    break
-            
-            slot_counter = 1  # Reset for each day
+                
+                # Skip break times
+                for break_info in request.breaks:
+                    break_start = datetime.strptime(break_info["start_time"], "%H:%M").time()
+                    break_end = datetime.strptime(break_info["end_time"], "%H:%M").time()
+                    
+                    if current_time.time() >= break_start and current_time.time() < break_end:
+                        # Skip to end of break
+                        current_time = datetime.combine(datetime.today(), break_end)
+                        break
         
         return slots
     
