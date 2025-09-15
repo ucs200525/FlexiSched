@@ -12,11 +12,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Search, Edit, Trash2, BookOpen, Clock, Star } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Course, InsertCourse } from "@shared/schema";
 import { courseTypes, programs } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import CourseRegistration from "@/components/course-registration";
 
 export default function Courses() {
+  const { user } = useAuth();
+  
+  // If user is a student, show course registration interface
+  if (user?.role === "student") {
+    return <CourseRegistration />;
+  }
+
+  // Otherwise, show the admin/faculty course management interface
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterProgram, setFilterProgram] = useState<string>("all");
