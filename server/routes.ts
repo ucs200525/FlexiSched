@@ -165,6 +165,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Debug endpoint to check specific student's enrolled courses
+  app.get("/api/debug/student/:studentId/enrolled-count", async (req, res) => {
+    try {
+      const { studentId } = req.params;
+      console.log(`🔍 Debug: Checking enrolled courses for studentId: ${studentId}`);
+      
+      // Find student by studentId
+      const students = await storage.getStudents();
+      const student = students.find(s => s.studentId === studentId);
+      
+      if (!student) {
+        console.log(`❌ Student not found with studentId: ${studentId}`);
+        return res.status(404).json({ message: "Student not found" });
+      }
+      
+      console.log(`📚 Student found: ${student.firstName} ${student.lastName}`);
+      console.log(`📋 enrolledCourses array:`, student.enrolledCourses);
+      console.log(`📊 enrolledCourses count: ${student.enrolledCourses?.length || 0}`);
+      console.log(`🆔 Student database ID: ${student.id}`);
+      
+      res.json({
+        studentId: student.studentId,
+        name: `${student.firstName} ${student.lastName}`,
+        databaseId: student.id,
+        enrolledCourses: student.enrolledCourses,
+        enrolledCoursesCount: student.enrolledCourses?.length || 0
+      });
+      
+    } catch (error) {
+      console.error("Debug endpoint error:", error);
+      res.status(500).json({ message: "Failed to fetch student data" });
+    }
+  });
+
   // Students routes
   app.get("/api/students", async (req, res) => {
     try {
@@ -391,6 +425,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const user = (req as any).user;
       
+      console.log(`🔍 Registered courses request for student ${id} by user ${user.userId} (${user.role})`);
+      
       // Authorization check: Only students can view their own registered courses, or admins can view for any student
       if (user.role === 'student') {
         if (user.userId !== id) {
@@ -403,8 +439,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get student
       const student = await storage.getStudent(id);
       if (!student) {
+        console.error(`❌ Student not found: ${id}`);
         return res.status(404).json({ message: "Student not found" });
       }
+      
+      console.log(`📚 Student found: ${student.firstName} ${student.lastName}`);
+      console.log(`📋 Student enrolled courses array:`, student.enrolledCourses);
+      console.log(`📊 Enrolled courses count: ${student.enrolledCourses?.length || 0}`);
       
       // Get enrolled courses details using Promise.all for parallel fetching
       const coursePromises = student.enrolledCourses.map(courseId => 
@@ -414,6 +455,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Filter out any null results (courses that don't exist)
       const enrolledCourses = courses.filter(course => course !== null);
+      
+      console.log(`✅ Returning ${enrolledCourses.length} enrolled courses`);
       
       res.json(enrolledCourses);
       

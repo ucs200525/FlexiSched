@@ -20,7 +20,7 @@ export default function StudentDashboard() {
   });
 
   const currentStudent = {
-    id: user?.id || "student-1",
+    id: user?.id || "", // Don't fallback to student-1, use empty string to prevent wrong data
     name: user?.name || currentStudentData?.firstName + " " + currentStudentData?.lastName || "Student User",
     program: currentStudentData?.program || "Computer Science",
     semester: currentStudentData?.semester || 1,
@@ -54,7 +54,7 @@ export default function StudentDashboard() {
   // Get enrolled courses for current student
   const { data: enrolledCoursesData } = useQuery<Course[]>({
     queryKey: ["/api/students", currentStudent.id, "registered-courses"],
-    enabled: !!currentStudent.id,
+    enabled: !!currentStudent.id && !!user?.id, // Only fetch if we have a real user ID
   });
 
   // Student-specific stats calculated from real data
