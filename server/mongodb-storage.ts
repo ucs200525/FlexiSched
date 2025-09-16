@@ -282,6 +282,10 @@ const ConstraintProfileModel = mongoose.model('ConstraintProfile', ConstraintPro
 const StudentPreferencesModel = mongoose.model('StudentPreferences', StudentPreferencesSchema);
 
 export class MongoDBStorage implements IStorage {
+  private timetables = new Map<string, Timetable>();
+  private timetableSlots = new Map<string, TimetableSlot>();
+  private timeSlotTemplates = new Map<string, TimeSlotTemplate>();
+
   constructor() {
     this.initializeDatabase();
   }
@@ -724,15 +728,63 @@ export class MongoDBStorage implements IStorage {
   }
 
   // Placeholder implementations for other methods (implement as needed)
-  async getTimetables(): Promise<Timetable[]> { return []; }
+  async getTimetables(): Promise<Timetable[]> { 
+    return Array.from(this.timetables.values());
+  }
   async getTimetable(id: string): Promise<Timetable | undefined> { return undefined; }
   async getTimetablesByProgram(program: string, semester?: number): Promise<Timetable[]> { return []; }
-  async createTimetable(timetable: InsertTimetable): Promise<Timetable> { throw new Error('Not implemented'); }
+  async createTimetable(timetable: InsertTimetable): Promise<Timetable> { 
+    const id = `timetable-${Date.now()}`;
+    const newTimetable: Timetable = {
+      id,
+      name: timetable.name,
+      program: timetable.program,
+      semester: timetable.semester,
+      batch: timetable.batch,
+      academicYear: timetable.academicYear,
+      sectionId: timetable.sectionId || null,
+      status: timetable.status || "draft",
+      generatedBy: timetable.generatedBy || null,
+      schedule: timetable.schedule || {},
+      conflicts: timetable.conflicts || [],
+      optimizationScore: timetable.optimizationScore || 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.timetables.set(id, newTimetable);
+    return newTimetable;
+  }
   async updateTimetable(id: string, timetable: Partial<Timetable>): Promise<Timetable | undefined> { return undefined; }
   async deleteTimetable(id: string): Promise<boolean> { return false; }
 
-  async getTimetableSlots(timetableId: string): Promise<TimetableSlot[]> { return []; }
-  async createTimetableSlot(slot: InsertTimetableSlot): Promise<TimetableSlot> { throw new Error('Not implemented'); }
+  async getTimetableSlots(timetableId: string): Promise<TimetableSlot[]> { 
+    if (!this.timetableSlots) return [];
+    return Array.from(this.timetableSlots.values()).filter(slot => slot.timetableId === timetableId);
+  }
+  async createTimetableSlot(slot: InsertTimetableSlot): Promise<TimetableSlot> { 
+    const id = `slot-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const newSlot: TimetableSlot = {
+      id,
+      timetableId: slot.timetableId,
+      courseId: slot.courseId,
+      facultyId: slot.facultyId,
+      roomId: slot.roomId,
+      sectionIds: slot.sectionIds || [],
+      dayOfWeek: slot.dayOfWeek,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+      slotType: slot.slotType,
+      isLabBlock: slot.isLabBlock || false,
+      specialInstructions: slot.specialInstructions || null,
+      createdAt: new Date()
+    };
+    
+    if (!this.timetableSlots) {
+      this.timetableSlots = new Map();
+    }
+    this.timetableSlots.set(id, newSlot);
+    return newSlot;
+  }
   async updateTimetableSlot(id: string, slot: Partial<TimetableSlot>): Promise<TimetableSlot | undefined> { return undefined; }
   async deleteTimetableSlot(id: string): Promise<boolean> { return false; }
   async deleteTimetableSlots(timetableId: string): Promise<boolean> { return false; }
@@ -761,7 +813,24 @@ export class MongoDBStorage implements IStorage {
   async getTimeSlotTemplates(): Promise<TimeSlotTemplate[]> { return []; }
   async getTimeSlotTemplate(id: string): Promise<TimeSlotTemplate | undefined> { return undefined; }
   async getDefaultTimeSlotTemplate(): Promise<TimeSlotTemplate | undefined> { return undefined; }
-  async createTimeSlotTemplate(template: InsertTimeSlotTemplate): Promise<TimeSlotTemplate> { throw new Error('Not implemented'); }
+  async createTimeSlotTemplate(template: InsertTimeSlotTemplate): Promise<TimeSlotTemplate> { 
+    const id = `template-${Date.now()}`;
+    const newTemplate: TimeSlotTemplate = {
+      id,
+      templateName: template.templateName,
+      workingDays: template.workingDays || ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      startTime: template.startTime,
+      endTime: template.endTime,
+      periodDuration: template.periodDuration || 60,
+      labBlockDuration: template.labBlockDuration || 120,
+      dailyPeriods: template.dailyPeriods || [],
+      breaks: template.breaks || [],
+      isDefault: template.isDefault || false,
+      createdAt: new Date()
+    };
+    this.timeSlotTemplates.set(id, newTemplate);
+    return newTemplate;
+  }
   async updateTimeSlotTemplate(id: string, template: Partial<TimeSlotTemplate>): Promise<TimeSlotTemplate | undefined> { return undefined; }
   async deleteTimeSlotTemplate(id: string): Promise<boolean> { return false; }
 

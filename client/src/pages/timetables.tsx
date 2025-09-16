@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { TimetableGrid } from "@/components/timetable-grid";
-import { Plus, Search, Edit, Trash2, Calendar, Download, Eye, BarChart3, Bot } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Calendar, Download, Eye, BarChart3, Bot, Clock } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Timetable, TimetableSlot, Course, Faculty, Room } from "@shared/schema";
@@ -21,6 +21,21 @@ export default function Timetables() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selectedTimetable, setSelectedTimetable] = useState<Timetable | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isBaseGenerateDialogOpen, setIsBaseGenerateDialogOpen] = useState(false);
+  const [isManualCreateDialogOpen, setIsManualCreateDialogOpen] = useState(false);
+  const [baseGenerateForm, setBaseGenerateForm] = useState({
+    program: "",
+    semester: "",
+    batch: "",
+    academicYear: new Date().getFullYear().toString()
+  });
+  const [manualCreateForm, setManualCreateForm] = useState({
+    name: "",
+    program: "",
+    semester: "",
+    batch: "",
+    academicYear: new Date().getFullYear().toString()
+  });
 
   const { data: timetables, isLoading } = useQuery<Timetable[]>({
     queryKey: ["/api/timetables"],
@@ -80,6 +95,77 @@ export default function Timetables() {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to detect conflicts",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const generateBaseTimetableMutation = useMutation({
+    mutationFn: async (formData: typeof baseGenerateForm) => {
+      const response = await apiRequest("POST", "/api/timetables/generate-base", formData);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: "Base timetable generated successfully!",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/timetables"] });
+      setIsBaseGenerateDialogOpen(false);
+      setBaseGenerateForm({
+        program: "",
+        semester: "",
+        batch: "",
+        academicYear: new Date().getFullYear().toString()
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to generate base timetable",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createManualTimetableMutation = useMutation({
+    mutationFn: async (formData: typeof manualCreateForm) => {
+      const timetableData = {
+        name: formData.name,
+        program: formData.program,
+        semester: parseInt(formData.semester),
+        batch: formData.batch,
+        academicYear: formData.academicYear,
+        status: "draft",
+        generatedBy: "manual",
+        slots: [],
+        conflicts: [],
+        optimizationScore: null,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      const response = await apiRequest("POST", "/api/timetables", timetableData);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: "Manual timetable created successfully!",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/timetables"] });
+      setIsManualCreateDialogOpen(false);
+      setManualCreateForm({
+        name: "",
+        program: "",
+        semester: "",
+        batch: "",
+        academicYear: new Date().getFullYear().toString()
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create manual timetable",
         variant: "destructive",
       });
     },
@@ -233,10 +319,39 @@ export default function Timetables() {
               View, manage, and export generated timetables
             </p>
           </div>
-          <Button data-testid="button-create-timetable">
-            <Plus className="w-4 h-4 mr-2" />
-            Create Manual Timetable
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => {
+                const testData = {
+                  program: "CSE",
+                  semester: "5",
+                  batch: "2024-2028",
+                  academicYear: "2024"
+                };
+                generateBaseTimetableMutation.mutate(testData);
+              }}
+              variant="default"
+              data-testid="button-test-generate"
+            >
+              <Clock className="w-4 h-4 mr-2" />
+              Test Generate
+            </Button>
+            <Button 
+              onClick={() => setIsBaseGenerateDialogOpen(true)}
+              variant="outline"
+              data-testid="button-generate-base-timetable"
+            >
+              <Clock className="w-4 h-4 mr-2" />
+              Generate Base Timetable
+            </Button>
+            <Button 
+              onClick={() => setIsManualCreateDialogOpen(true)}
+              data-testid="button-create-timetable"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Manual Timetable
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -427,6 +542,177 @@ export default function Timetables() {
             )}
           </CardContent>
         </Card>
+
+        {/* Manual Timetable Creation Dialog */}
+        <Dialog open={isManualCreateDialogOpen} onOpenChange={setIsManualCreateDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Create Manual Timetable</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Timetable Name</label>
+                <Input
+                  value={manualCreateForm.name}
+                  onChange={(e) => setManualCreateForm(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="e.g., CSE Semester 5 - 2024"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Program</label>
+                <Select 
+                  value={manualCreateForm.program} 
+                  onValueChange={(value) => setManualCreateForm(prev => ({ ...prev, program: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select program" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {programs.map(program => (
+                      <SelectItem key={program.value} value={program.value}>
+                        {program.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Semester</label>
+                <Select 
+                  value={manualCreateForm.semester} 
+                  onValueChange={(value) => setManualCreateForm(prev => ({ ...prev, semester: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select semester" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => (
+                      <SelectItem key={sem} value={sem.toString()}>
+                        Semester {sem}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Batch</label>
+                <Input
+                  value={manualCreateForm.batch}
+                  onChange={(e) => setManualCreateForm(prev => ({ ...prev, batch: e.target.value }))}
+                  placeholder="e.g., 2024-2028"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Academic Year</label>
+                <Input
+                  value={manualCreateForm.academicYear}
+                  onChange={(e) => setManualCreateForm(prev => ({ ...prev, academicYear: e.target.value }))}
+                  placeholder="e.g., 2024"
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsManualCreateDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={() => createManualTimetableMutation.mutate(manualCreateForm)}
+                  disabled={createManualTimetableMutation.isPending || !manualCreateForm.name || !manualCreateForm.program || !manualCreateForm.semester || !manualCreateForm.batch}
+                >
+                  {createManualTimetableMutation.isPending ? "Creating..." : "Create Timetable"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Base Timetable Generation Dialog */}
+        <Dialog open={isBaseGenerateDialogOpen} onOpenChange={setIsBaseGenerateDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Generate Base Timetable</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Program</label>
+                <Select 
+                  value={baseGenerateForm.program} 
+                  onValueChange={(value) => setBaseGenerateForm(prev => ({ ...prev, program: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select program" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {programs.map(program => (
+                      <SelectItem key={program.value} value={program.value}>
+                        {program.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Semester</label>
+                <Select 
+                  value={baseGenerateForm.semester} 
+                  onValueChange={(value) => setBaseGenerateForm(prev => ({ ...prev, semester: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select semester" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => (
+                      <SelectItem key={sem} value={sem.toString()}>
+                        Semester {sem}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Batch</label>
+                <Input
+                  value={baseGenerateForm.batch}
+                  onChange={(e) => setBaseGenerateForm(prev => ({ ...prev, batch: e.target.value }))}
+                  placeholder="e.g., 2024-2028"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Academic Year</label>
+                <Input
+                  value={baseGenerateForm.academicYear}
+                  onChange={(e) => setBaseGenerateForm(prev => ({ ...prev, academicYear: e.target.value }))}
+                  placeholder="e.g., 2024"
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsBaseGenerateDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={() => generateBaseTimetableMutation.mutate(baseGenerateForm)}
+                  disabled={generateBaseTimetableMutation.isPending || !baseGenerateForm.program || !baseGenerateForm.semester || !baseGenerateForm.batch}
+                >
+                  {generateBaseTimetableMutation.isPending ? "Generating..." : "Generate Base Timetable"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Timetable View Dialog */}
         <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
