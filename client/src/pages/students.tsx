@@ -24,6 +24,8 @@ export default function Students() {
     firstName: "",
     lastName: "",
     email: "",
+    password: "",
+    plainPassword: "",
     phone: "",
     program: "B.Ed",
     semester: 1,
@@ -118,6 +120,8 @@ export default function Students() {
       firstName: "",
       lastName: "",
       email: "",
+      password: "",
+      plainPassword: "",
       phone: "",
       program: "B.Ed",
       semester: 1,
@@ -136,6 +140,8 @@ export default function Students() {
       firstName: student.firstName,
       lastName: student.lastName,
       email: student.email,
+      password: student.password,
+      plainPassword: student.plainPassword,
       phone: student.phone || "",
       program: student.program,
       semester: student.semester,
@@ -236,7 +242,7 @@ export default function Students() {
                     <Label htmlFor="phone">Phone</Label>
                     <Input
                       id="phone"
-                      value={formData.phone}
+                      value={formData.phone || ""}
                       onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                       placeholder="+91 9876543210"
                       data-testid="input-phone"
@@ -251,6 +257,37 @@ export default function Students() {
                       placeholder="2024-25"
                       required
                       data-testid="input-batch"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="plainPassword">Password</Label>
+                    <Input
+                      id="plainPassword"
+                      type="password"
+                      value={formData.plainPassword}
+                      onChange={(e) => {
+                        const plainPassword = e.target.value;
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          plainPassword,
+                          password: `hashed_${plainPassword}`
+                        }));
+                      }}
+                      placeholder="Enter password"
+                      required
+                      data-testid="input-password"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="Confirm password"
+                      data-testid="input-confirm-password"
                     />
                   </div>
                 </div>

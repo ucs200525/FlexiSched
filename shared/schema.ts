@@ -7,6 +7,8 @@ export interface Student {
   firstName: string;
   lastName: string;
   email: string;
+  password: string;
+  plainPassword: string;
   phone: string | null;
   program: string;
   semester: number;
@@ -24,6 +26,8 @@ export interface Faculty {
   firstName: string;
   lastName: string;
   email: string;
+  password: string;
+  plainPassword: string;
   phone: string | null;
   department: string;
   designation: string;
@@ -179,6 +183,8 @@ export const insertStudentSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   email: z.string().email(),
+  password: z.string().min(1),
+  plainPassword: z.string().min(1),
   phone: z.string().nullable().optional(),
   program: z.string().min(1),
   semester: z.number().int().positive(),
@@ -194,6 +200,8 @@ export const insertFacultySchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   email: z.string().email(),
+  password: z.string().min(1),
+  plainPassword: z.string().min(1),
   phone: z.string().nullable().optional(),
   department: z.string().min(1),
   designation: z.string().min(1),

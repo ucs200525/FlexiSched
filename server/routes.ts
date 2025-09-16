@@ -68,38 +68,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = loginSchema.parse(req.body);
       const { username, password, role } = validatedData;
       
-      // Demo authentication - in production, use proper password hashing
-      const demoCredentials = {
-        admin: { username: "admin", password: "admin123", name: "Administrator", email: "admin@timetable.ai" },
-        faculty: { username: "faculty", password: "faculty123", name: "Dr. Faculty Member", email: "faculty@timetable.ai" },
-        student: { username: "student", password: "student123", name: "Student User", email: "student@timetable.ai" }
-      };
+      let authenticatedUser = null;
       
-      const demo = demoCredentials[role];
+      // Try to authenticate from database first
+      if (role === 'student') {
+        // Check if username is studentId or email
+        let student = await storage.getStudentByStudentId(username);
+        
+        // If not found by studentId, search by email
+        if (!student) {
+          const allStudents = await storage.getStudents();
+          student = allStudents.find(s => s.email === username);
+        }
+        
+        if (student && student.isActive) {
+          // Simple password verification (in production, use proper bcrypt comparison)
+          const isValidPassword = student.password === `hashed_${password}` || student.plainPassword === password;
+          
+          if (isValidPassword) {
+            authenticatedUser = {
+              id: student.id,
+              username: student.studentId,
+              name: `${student.firstName} ${student.lastName}`,
+              role: 'student',
+              email: student.email
+            };
+          }
+        }
+      } else if (role === 'faculty') {
+        // Check if username is facultyId or email
+        const faculty = await storage.getFacultyByFacultyId(username) || 
+                       (await storage.getFaculty()).find(f => f.email === username);
+        
+        if (faculty && faculty.isActive) {
+          // Simple password verification (in production, use proper bcrypt comparison)
+          const isValidPassword = faculty.password === `hashed_${password}` || faculty.plainPassword === password;
+          
+          if (isValidPassword) {
+            authenticatedUser = {
+              id: faculty.id,
+              username: faculty.facultyId,
+              name: `${faculty.firstName} ${faculty.lastName}`,
+              role: 'faculty',
+              email: faculty.email
+            };
+          }
+        }
+      }
       
-      if (demo && username === demo.username && password === demo.password) {
+      // Fallback to demo credentials if database authentication failed
+      if (!authenticatedUser) {
+        const demoCredentials = {
+          admin: { username: "admin", password: "admin123", name: "Administrator", email: "admin@timetable.ai" },
+          faculty: { username: "faculty", password: "faculty123", name: "Dr. Faculty Member", email: "faculty@timetable.ai" },
+          student: { username: "student", password: "student123", name: "Student User", email: "student@timetable.ai" }
+        };
+        
+        const demo = demoCredentials[role];
+        
+        if (demo && username === demo.username && password === demo.password) {
+          authenticatedUser = {
+            id: `${role}-demo`,
+            username: demo.username,
+            name: demo.name,
+            role,
+            email: demo.email
+          };
+        }
+      }
+      
+      if (authenticatedUser) {
         // Generate a simple token (in production, use proper JWT or session management)
         const token = `token_${Date.now()}_${Math.random().toString(36).substring(2)}`;
         
-        const user = {
-          id: `${role}-1`,
-          username: demo.username,
-          name: demo.name,
-          role,
-          email: demo.email
-        };
-
         // Store session
         userSessions.set(token, {
-          userId: user.id,
-          role: user.role,
-          username: user.username,
-          name: user.name,
-          email: user.email,
+          userId: authenticatedUser.id,
+          role: authenticatedUser.role,
+          username: authenticatedUser.username,
+          name: authenticatedUser.name,
+          email: authenticatedUser.email,
           timestamp: Date.now()
         });
         
-        res.json({ ...user, token });
+        res.json({ ...authenticatedUser, token });
       } else {
         res.status(401).json({ error: "Invalid credentials" });
       }
@@ -1130,11 +1182,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const program = programs[i % programs.length];
         const department = departments[i % departments.length];
         
+        const plainPassword = `${firstName}@123`;
         await storage.createStudent({
           studentId: `ST${String(i).padStart(4, '0')}`,
           firstName,
           lastName,
           email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@student.university.edu`,
+          password: `hashed_${plainPassword}`,
+          plainPassword,
           phone: `+91${String(9000000000 + i)}`,
           program,
           semester: (i % 8) + 1, // 1-8 semesters
@@ -1193,11 +1248,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const expertise = expertiseAreas[i % expertiseAreas.length];
         const department = departments[i % departments.length];
         
+        const plainPassword = `${faculty.firstName}@123`;
         await storage.createFaculty({
           facultyId: `FAC${String(i + 1).padStart(3, '0')}`,
           firstName: faculty.firstName,
           lastName: faculty.lastName,
           email: `${faculty.firstName.toLowerCase().replace(/[^a-z]/g, '')}.${faculty.lastName.toLowerCase()}@university.edu`,
+          password: `hashed_${plainPassword}`,
+          plainPassword,
           phone: `+91${String(9500000000 + i)}`,
           department,
           designation,
@@ -1363,11 +1421,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const program = programs[i % programs.length];
         const department = departments[i % departments.length];
         
+        const plainPassword = `${firstName}@123`;
         await storage.createStudent({
           studentId: `ST${String(i).padStart(4, '0')}`,
           firstName,
           lastName,
           email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@student.edu`,
+          password: `hashed_${plainPassword}`,
+          plainPassword,
           phone: `+91${String(9000000000 + i)}`,
           program,
           semester: (i % 8) + 1, // 1-8 semesters
@@ -1412,11 +1473,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const expertise = expertiseAreas[i % expertiseAreas.length];
         const department = departments[i % departments.length];
         
+        const plainPassword = `${faculty.firstName}@123`;
         await storage.createFaculty({
           facultyId: `FAC${String(i + 1).padStart(3, '0')}`,
           firstName: faculty.firstName,
           lastName: faculty.lastName,
           email: `${faculty.firstName.toLowerCase().replace(/[^a-z]/g, '')}.${faculty.lastName.toLowerCase()}@college.edu`,
+          password: `hashed_${plainPassword}`,
+          plainPassword,
           phone: `+91${String(9500000000 + i)}`,
           department,
           designation,

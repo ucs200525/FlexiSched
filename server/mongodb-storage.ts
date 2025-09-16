@@ -104,6 +104,8 @@ const StudentSchema = new mongoose.Schema({
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  plainPassword: { type: String, required: true }, // For reference only
   phone: { type: String, default: null },
   program: { type: String, required: true },
   semester: { type: Number, required: true },
@@ -121,6 +123,8 @@ const FacultySchema = new mongoose.Schema({
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  plainPassword: { type: String, required: true }, // For reference only
   phone: { type: String, default: null },
   department: { type: String, required: true },
   designation: { type: String, required: true },
@@ -287,6 +291,12 @@ export class MongoDBStorage implements IStorage {
     await this.populateWithSampleData();
   }
 
+  // Simple password hashing for demo purposes
+  private hashPassword(password: string): string {
+    // In production, use proper bcrypt hashing
+    return `hashed_${password}`;
+  }
+
   private async populateWithSampleData() {
     try {
       // Check if data already exists
@@ -338,12 +348,15 @@ export class MongoDBStorage implements IStorage {
         const firstName = nameParts[0];
         const lastName = nameParts.slice(1).join(' ');
         
+        const plainPassword = `${firstName}@123`;
         const facultyMember: Faculty = {
           id: facultyId,
           facultyId: `FAC${(i + 1).toString().padStart(3, '0')}`,
           firstName,
           lastName,
           email: `${firstName.toLowerCase()}.${lastName.toLowerCase().replace(' ', '')}@university.edu`,
+          password: this.hashPassword(plainPassword),
+          plainPassword,
           phone: `+91${Math.floor(Math.random() * 9000000000) + 1000000000}`,
           department: departments[i % departments.length],
           designation: Math.random() > 0.5 ? 'Professor' : 'Assistant Professor',
@@ -411,12 +424,15 @@ export class MongoDBStorage implements IStorage {
         const firstName = firstNames[i % firstNames.length];
         const lastName = lastNames[i % lastNames.length];
         
+        const plainPassword = `${firstName}@123`;
         const student: Student = {
           id: studentId,
           studentId: `STU${(i + 1).toString().padStart(4, '0')}`,
           firstName,
           lastName,
           email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i + 1}@student.university.edu`,
+          password: this.hashPassword(plainPassword),
+          plainPassword,
           phone: `+91${Math.floor(Math.random() * 9000000000) + 1000000000}`,
           program: programs[i % programs.length],
           semester: (i % 8) + 1,
@@ -453,6 +469,8 @@ export class MongoDBStorage implements IStorage {
       firstName: doc.firstName,
       lastName: doc.lastName,
       email: doc.email,
+      password: doc.password,
+      plainPassword: doc.plainPassword,
       phone: doc.phone,
       program: doc.program,
       semester: doc.semester,
@@ -472,6 +490,8 @@ export class MongoDBStorage implements IStorage {
       firstName: doc.firstName,
       lastName: doc.lastName,
       email: doc.email,
+      password: doc.password,
+      plainPassword: doc.plainPassword,
       phone: doc.phone,
       department: doc.department,
       designation: doc.designation,
