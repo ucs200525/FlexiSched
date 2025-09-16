@@ -870,12 +870,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get TimeSlotTemplates endpoint
+  app.get("/api/timeslot-templates", async (req, res) => {
+    try {
+      const templates = await storage.getTimeSlotTemplates();
+      res.json(templates);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch time slot templates" });
+    }
+  });
+
   // Base timetable generation endpoint
   app.post("/api/timetables/generate-base", async (req, res) => {
     try {
       const { program, semester, batch, academicYear } = req.body;
       
-      // Create base timetable structure (8 AM to 8 PM, 10 min grace, 1 hr lunch)
+      // Get existing courses for the specified program and semester
+      const existingCourses = await storage.getCourses();
+      const filteredCourses = existingCourses.filter(course => 
+        course.program === program && course.semester === parseInt(semester) && course.isActive
+      );
+      
+      // If no courses found for this program/semester, use available courses
+      const coursesToUse = filteredCourses.length > 0 ? filteredCourses : existingCourses.slice(0, 10);
+      
+      // Create a repeating pattern of course codes for the schedule
+      const getCourseCodeForSlot = (slotIndex: number) => {
+        if (coursesToUse.length === 0) return "FREE";
+        return coursesToUse[slotIndex % coursesToUse.length].courseCode;
+      };
+      
+      // Define time slots for the schedule
+      const timeSlots = [
+        { id: "slot-1", startTime: "08:00", endTime: "08:50", duration: 50, type: "theory" },
+        { id: "slot-2", startTime: "09:00", endTime: "09:50", duration: 50, type: "theory" },
+        { id: "slot-3", startTime: "10:00", endTime: "10:50", duration: 50, type: "theory" },
+        { id: "slot-4", startTime: "11:00", endTime: "11:50", duration: 50, type: "theory" },
+        { id: "slot-5", startTime: "12:00", endTime: "12:50", duration: 50, type: "theory" },
+        { id: "lunch", startTime: "12:50", endTime: "13:50", duration: 60, type: "break" },
+        { id: "slot-6", startTime: "14:00", endTime: "14:50", duration: 50, type: "theory" },
+        { id: "slot-7", startTime: "15:00", endTime: "15:50", duration: 50, type: "theory" },
+        { id: "slot-8", startTime: "16:00", endTime: "16:50", duration: 50, type: "theory" },
+        { id: "slot-9", startTime: "17:00", endTime: "17:50", duration: 50, type: "theory" },
+        { id: "slot-10", startTime: "18:00", endTime: "18:50", duration: 50, type: "theory" },
+        { id: "slot-11", startTime: "19:00", endTime: "19:50", duration: 50, type: "theory" }
+      ];
+      
+      // Generate slots for all days using actual course codes
+      const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const slots: any[] = [];
+      let slotCounter = 0;
+      
+      days.forEach((day, dayIndex) => {
+        timeSlots.forEach((timeSlot, slotIndex) => {
+          if (timeSlot.type !== "break") { // Skip lunch break
+            const courseCode = getCourseCodeForSlot(slotCounter);
+            const slotType = slotIndex >= 8 ? "lab" : "theory"; // Last few slots as lab
+            
+            slots.push({
+              id: `${day.toLowerCase().substr(0,3)}-${slotIndex + 1}`,
+              dayOfWeek: day,
+              startTime: timeSlot.startTime,
+              endTime: timeSlot.endTime,
+              courseCode: courseCode,
+              slotType: slotType
+            });
+            slotCounter++;
+          }
+        });
+      });
+      
+      // Create base timetable structure
       const baseTimetable = {
         name: `Base Timetable - ${program} Semester ${semester}`,
         program,
@@ -886,103 +951,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: "active",
         generatedBy: "base-template",
         schedule: {
-          timeSlots: [
-            { id: "slot-1", startTime: "08:00", endTime: "08:50", duration: 50, type: "theory" },
-            { id: "slot-2", startTime: "09:00", endTime: "09:50", duration: 50, type: "theory" },
-            { id: "slot-3", startTime: "10:00", endTime: "10:50", duration: 50, type: "theory" },
-            { id: "slot-4", startTime: "11:00", endTime: "11:50", duration: 50, type: "theory" },
-            { id: "slot-5", startTime: "12:00", endTime: "12:50", duration: 50, type: "theory" },
-            { id: "lunch", startTime: "12:50", endTime: "13:50", duration: 60, type: "break" },
-            { id: "slot-6", startTime: "14:00", endTime: "14:50", duration: 50, type: "theory" },
-            { id: "slot-7", startTime: "15:00", endTime: "15:50", duration: 50, type: "theory" },
-            { id: "slot-8", startTime: "16:00", endTime: "16:50", duration: 50, type: "theory" },
-            { id: "slot-9", startTime: "17:00", endTime: "17:50", duration: 50, type: "theory" },
-            { id: "slot-10", startTime: "18:00", endTime: "18:50", duration: 50, type: "theory" },
-            { id: "slot-11", startTime: "19:00", endTime: "19:50", duration: 50, type: "theory" }
-          ],
-          workingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+          timeSlots,
+          workingDays: days,
           graceTime: 10,
           lunchBreak: { startTime: "12:50", endTime: "13:50", duration: 60 }
         },
-        slots: [
-          // Monday
-          { id: "mon-1", dayOfWeek: "Monday", startTime: "08:00", endTime: "08:50", courseCode: "TE1", slotType: "theory" },
-          { id: "mon-2", dayOfWeek: "Monday", startTime: "09:00", endTime: "09:50", courseCode: "A1", slotType: "theory" },
-          { id: "mon-3", dayOfWeek: "Monday", startTime: "10:00", endTime: "10:50", courseCode: "B1", slotType: "theory" },
-          { id: "mon-4", dayOfWeek: "Monday", startTime: "11:00", endTime: "11:50", courseCode: "C1", slotType: "theory" },
-          { id: "mon-5", dayOfWeek: "Monday", startTime: "12:00", endTime: "12:50", courseCode: "D1", slotType: "theory" },
-          { id: "mon-6", dayOfWeek: "Monday", startTime: "14:00", endTime: "14:50", courseCode: "E2/SE1", slotType: "theory" },
-          { id: "mon-7", dayOfWeek: "Monday", startTime: "15:00", endTime: "15:50", courseCode: "A2", slotType: "theory" },
-          { id: "mon-8", dayOfWeek: "Monday", startTime: "16:00", endTime: "16:50", courseCode: "TB2/G2", slotType: "theory" },
-          { id: "mon-9", dayOfWeek: "Monday", startTime: "17:00", endTime: "17:50", courseCode: "C2", slotType: "theory" },
-          { id: "mon-10", dayOfWeek: "Monday", startTime: "18:00", endTime: "18:50", courseCode: "TD02", slotType: "theory" },
-          { id: "mon-11", dayOfWeek: "Monday", startTime: "19:00", endTime: "19:50", courseCode: "L39", slotType: "lab" },
-          
-          // Tuesday
-          { id: "tue-1", dayOfWeek: "Tuesday", startTime: "08:00", endTime: "08:50", courseCode: "TG1", slotType: "theory" },
-          { id: "tue-2", dayOfWeek: "Tuesday", startTime: "09:00", endTime: "09:50", courseCode: "D1", slotType: "theory" },
-          { id: "tue-3", dayOfWeek: "Tuesday", startTime: "10:00", endTime: "10:50", courseCode: "F1", slotType: "theory" },
-          { id: "tue-4", dayOfWeek: "Tuesday", startTime: "11:00", endTime: "11:50", courseCode: "E1/SC2", slotType: "theory" },
-          { id: "tue-5", dayOfWeek: "Tuesday", startTime: "12:00", endTime: "12:50", courseCode: "B1", slotType: "theory" },
-          { id: "tue-6", dayOfWeek: "Tuesday", startTime: "14:00", endTime: "14:50", courseCode: "D2", slotType: "theory" },
-          { id: "tue-7", dayOfWeek: "Tuesday", startTime: "15:00", endTime: "15:50", courseCode: "E2/SC1", slotType: "theory" },
-          { id: "tue-8", dayOfWeek: "Tuesday", startTime: "16:00", endTime: "16:50", courseCode: "F2", slotType: "theory" },
-          { id: "tue-9", dayOfWeek: "Tuesday", startTime: "17:00", endTime: "17:50", courseCode: "B2", slotType: "theory" },
-          { id: "tue-10", dayOfWeek: "Tuesday", startTime: "18:00", endTime: "18:50", courseCode: "TCC2", slotType: "theory" },
-          { id: "tue-11", dayOfWeek: "Tuesday", startTime: "19:00", endTime: "19:50", courseCode: "L42", slotType: "lab" },
-          
-          // Wednesday
-          { id: "wed-1", dayOfWeek: "Wednesday", startTime: "08:00", endTime: "08:50", courseCode: "TG1", slotType: "theory" },
-          { id: "wed-2", dayOfWeek: "Wednesday", startTime: "09:00", endTime: "09:50", courseCode: "D1", slotType: "theory" },
-          { id: "wed-3", dayOfWeek: "Wednesday", startTime: "10:00", endTime: "10:50", courseCode: "F1", slotType: "theory" },
-          { id: "wed-4", dayOfWeek: "Wednesday", startTime: "11:00", endTime: "11:50", courseCode: "E1/SC2", slotType: "theory" },
-          { id: "wed-5", dayOfWeek: "Wednesday", startTime: "12:00", endTime: "12:50", courseCode: "B1", slotType: "theory" },
-          { id: "wed-6", dayOfWeek: "Wednesday", startTime: "14:00", endTime: "14:50", courseCode: "D2", slotType: "theory" },
-          { id: "wed-7", dayOfWeek: "Wednesday", startTime: "15:00", endTime: "15:50", courseCode: "E2/SC1", slotType: "theory" },
-          { id: "wed-8", dayOfWeek: "Wednesday", startTime: "16:00", endTime: "16:50", courseCode: "F2", slotType: "theory" },
-          { id: "wed-9", dayOfWeek: "Wednesday", startTime: "17:00", endTime: "17:50", courseCode: "B2", slotType: "theory" },
-          { id: "wed-10", dayOfWeek: "Wednesday", startTime: "18:00", endTime: "18:50", courseCode: "TCC2", slotType: "theory" },
-          { id: "wed-11", dayOfWeek: "Wednesday", startTime: "19:00", endTime: "19:50", courseCode: "L37", slotType: "lab" },
-          
-          // Thursday
-          { id: "thu-1", dayOfWeek: "Thursday", startTime: "08:00", endTime: "08:50", courseCode: "L7", slotType: "lab" },
-          { id: "thu-2", dayOfWeek: "Thursday", startTime: "09:00", endTime: "09:50", courseCode: "L8", slotType: "lab" },
-          { id: "thu-3", dayOfWeek: "Thursday", startTime: "10:00", endTime: "10:50", courseCode: "L9", slotType: "lab" },
-          { id: "thu-4", dayOfWeek: "Thursday", startTime: "11:00", endTime: "11:50", courseCode: "L10", slotType: "lab" },
-          { id: "thu-5", dayOfWeek: "Thursday", startTime: "12:00", endTime: "12:50", courseCode: "TF1/CLUBS/ECS", slotType: "theory" },
-          { id: "thu-6", dayOfWeek: "Thursday", startTime: "14:00", endTime: "14:50", courseCode: "L38", slotType: "lab" },
-          { id: "thu-7", dayOfWeek: "Thursday", startTime: "15:00", endTime: "15:50", courseCode: "L39", slotType: "lab" },
-          { id: "thu-8", dayOfWeek: "Thursday", startTime: "16:00", endTime: "16:50", courseCode: "L40", slotType: "lab" },
-          { id: "thu-9", dayOfWeek: "Thursday", startTime: "17:00", endTime: "17:50", courseCode: "L41", slotType: "lab" },
-          { id: "thu-10", dayOfWeek: "Thursday", startTime: "18:00", endTime: "18:50", courseCode: "L42", slotType: "lab" },
-          { id: "thu-11", dayOfWeek: "Thursday", startTime: "19:00", endTime: "19:50", courseCode: "L48", slotType: "lab" },
-          
-          // Friday
-          { id: "fri-1", dayOfWeek: "Friday", startTime: "08:00", endTime: "08:50", courseCode: "L13", slotType: "lab" },
-          { id: "fri-2", dayOfWeek: "Friday", startTime: "09:00", endTime: "09:50", courseCode: "L14", slotType: "lab" },
-          { id: "fri-3", dayOfWeek: "Friday", startTime: "10:00", endTime: "10:50", courseCode: "L15", slotType: "lab" },
-          { id: "fri-4", dayOfWeek: "Friday", startTime: "11:00", endTime: "11:50", courseCode: "L16", slotType: "lab" },
-          { id: "fri-5", dayOfWeek: "Friday", startTime: "12:00", endTime: "12:50", courseCode: "L17", slotType: "lab" },
-          { id: "fri-6", dayOfWeek: "Friday", startTime: "14:00", endTime: "14:50", courseCode: "L43", slotType: "lab" },
-          { id: "fri-7", dayOfWeek: "Friday", startTime: "15:00", endTime: "15:50", courseCode: "L44", slotType: "lab" },
-          { id: "fri-8", dayOfWeek: "Friday", startTime: "16:00", endTime: "16:50", courseCode: "L45", slotType: "lab" },
-          { id: "fri-9", dayOfWeek: "Friday", startTime: "17:00", endTime: "17:50", courseCode: "L46", slotType: "lab" },
-          { id: "fri-10", dayOfWeek: "Friday", startTime: "18:00", endTime: "18:50", courseCode: "L47", slotType: "lab" },
-          { id: "fri-11", dayOfWeek: "Friday", startTime: "19:00", endTime: "19:50", courseCode: "L72", slotType: "lab" },
-          
-          // Saturday
-          { id: "sat-1", dayOfWeek: "Saturday", startTime: "08:00", endTime: "08:50", courseCode: "L19", slotType: "lab" },
-          { id: "sat-2", dayOfWeek: "Saturday", startTime: "09:00", endTime: "09:50", courseCode: "L20", slotType: "lab" },
-          { id: "sat-3", dayOfWeek: "Saturday", startTime: "10:00", endTime: "10:50", courseCode: "L21", slotType: "lab" },
-          { id: "sat-4", dayOfWeek: "Saturday", startTime: "11:00", endTime: "11:50", courseCode: "L22", slotType: "lab" },
-          { id: "sat-5", dayOfWeek: "Saturday", startTime: "12:00", endTime: "12:50", courseCode: "L23", slotType: "lab" },
-          { id: "sat-6", dayOfWeek: "Saturday", startTime: "14:00", endTime: "14:50", courseCode: "L49", slotType: "lab" },
-          { id: "sat-7", dayOfWeek: "Saturday", startTime: "15:00", endTime: "15:50", courseCode: "L50", slotType: "lab" },
-          { id: "sat-8", dayOfWeek: "Saturday", startTime: "16:00", endTime: "16:50", courseCode: "L51", slotType: "lab" },
-          { id: "sat-9", dayOfWeek: "Saturday", startTime: "17:00", endTime: "17:50", courseCode: "A2", slotType: "theory" },
-          { id: "sat-10", dayOfWeek: "Saturday", startTime: "18:00", endTime: "18:50", courseCode: "SF1/CLUBS/ECS", slotType: "theory" },
-          { id: "sat-11", dayOfWeek: "Saturday", startTime: "19:00", endTime: "19:50", courseCode: "TG2/CLUBS/ECS", slotType: "theory" }
-        ],
+        slots,
         conflicts: [],
         optimizationScore: 85
       };
@@ -1008,54 +982,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const savedTemplate = await storage.createTimeSlotTemplate(timeSlotTemplate);
       
       // Save to database  
-      const savedTimetable = await storage.createTimetable(baseTimetable);
-      
-      // Print the slot time mapping for debugging
-      console.log("=== BASE TIMETABLE SLOT TIME MAPPING ===");
-      console.log("Timetable Name:", savedTimetable.name);
-      console.log("Program:", savedTimetable.program, "| Semester:", savedTimetable.semester);
-      console.log("Batch:", savedTimetable.batch, "| Academic Year:", savedTimetable.academicYear);
-      console.log("\n--- TIME SLOTS STRUCTURE ---");
-      if (savedTimetable.schedule && savedTimetable.schedule.timeSlots) {
-        savedTimetable.schedule.timeSlots.forEach((slot: any) => {
-          console.log(`${slot.id}: ${slot.startTime}-${slot.endTime} (${slot.duration}min, ${slot.type})`);
-        });
-      }
-      console.log("\n--- WEEKLY SCHEDULE MAPPING ---");
-      const slotsByDay: Record<string, any[]> = {};
-      
-      // Group slots by day for better visualization
-      baseTimetable.slots.forEach((slot: any) => {
-        if (!slotsByDay[slot.dayOfWeek]) {
-          slotsByDay[slot.dayOfWeek] = [];
-        }
-        slotsByDay[slot.dayOfWeek].push(slot);
+      const savedTimetable = await storage.createTimetable({
+        ...baseTimetable,
+        timeSlotTemplateId: savedTemplate.id
       });
       
-      // Print day-wise schedule
-      ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].forEach(day => {
-        if (slotsByDay[day]) {
+      // Get faculty and rooms for slot mapping
+      const existingFaculty = await storage.getFaculty();
+      const existingRooms = await storage.getRooms();
+      
+      // Create a mapping of course codes to course IDs (reuse existingCourses from above)
+      const courseCodeMap = new Map(existingCourses.map(c => [c.courseCode, c.id]));
+      
+      // Save each slot mapping as TimetableSlot records
+      const savedSlots: any[] = [];
+      for (const slot of baseTimetable.slots) {
+        // Try to find matching course, otherwise use first available or create placeholder
+        const matchedCourseId = courseCodeMap.get(slot.courseCode) || 
+                               (existingCourses.length > 0 ? existingCourses[0].id : "placeholder-course");
+        
+        const timetableSlot = {
+          timetableId: savedTimetable.id,
+          courseId: matchedCourseId,
+          facultyId: existingFaculty.length > 0 ? existingFaculty[0].id : "placeholder-faculty",
+          roomId: existingRooms.length > 0 ? existingRooms[0].id : "placeholder-room",
+          sectionIds: ["placeholder-section"],
+          dayOfWeek: slot.dayOfWeek,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          slotType: slot.slotType,
+          isLabBlock: slot.slotType === "lab",
+          specialInstructions: `Course Code: ${slot.courseCode}`
+        };
+        
+        const savedSlot = await storage.createTimetableSlot(timetableSlot);
+        savedSlots.push(savedSlot);
+      }
+      
+      // Print the TimeSlotTemplate data for debugging
+      console.log("=== TIME SLOT TEMPLATE CREATED ===");
+      console.log("Template ID:", savedTemplate.id);
+      console.log("Template Name:", savedTemplate.templateName);
+      console.log("Working Days:", savedTemplate.workingDays);
+      console.log("Period Duration:", savedTemplate.periodDuration, "minutes");
+      console.log("Lab Block Duration:", savedTemplate.labBlockDuration, "minutes");
+      console.log("Daily Periods:", savedTemplate.dailyPeriods.length);
+      console.log("Timetable Slots Created:", savedSlots.length);
+      
+      // Print slot mapping from saved slots
+      console.log("\n--- SAVED TIMETABLE SLOTS ---");
+      const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      dayOrder.forEach(day => {
+        const daySlots = savedSlots.filter((slot: any) => slot.dayOfWeek === day);
+        if (daySlots.length > 0) {
           console.log(`\n${day.toUpperCase()}:`);
-          slotsByDay[day].forEach((slot: any) => {
-            console.log(`  ${slot.startTime}-${slot.endTime}: ${slot.courseCode} (${slot.slotType})`);
+          daySlots.forEach((slot: any) => {
+            // Extract course code from specialInstructions
+            const courseCode = slot.specialInstructions?.replace('Course Code: ', '') || 'Unknown';
+            console.log(`  ${slot.startTime}-${slot.endTime}: ${courseCode} (${slot.slotType})`);
           });
         }
       });
-      
-      console.log("\n--- SUMMARY ---");
-      console.log(`Total Slots: ${baseTimetable.slots.length}`);
-      console.log(`Theory Slots: ${baseTimetable.slots.filter((s: any) => s.slotType === 'theory').length}`);
-      console.log(`Lab Slots: ${baseTimetable.slots.filter((s: any) => s.slotType === 'lab').length}`);
-      console.log("Working Days:", baseTimetable.schedule.workingDays.join(", "));
-      console.log("Grace Time:", baseTimetable.schedule.graceTime, "minutes");
-      console.log("Lunch Break:", baseTimetable.schedule.lunchBreak.startTime, "-", baseTimetable.schedule.lunchBreak.endTime);
-      console.log("=====================================\n");
-      
+
       res.json({
         success: true,
+        message: "Base timetable and template created successfully",
         timetable: savedTimetable,
-        slotMapping: slotsByDay,
-        message: "Base timetable generated successfully with complete slot mapping"
+        template: savedTemplate,
+        slots: savedSlots,
+        slotsCount: savedSlots.length
       });
       
     } catch (error) {

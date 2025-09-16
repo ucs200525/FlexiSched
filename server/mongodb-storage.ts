@@ -745,6 +745,7 @@ export class MongoDBStorage implements IStorage {
       sectionId: timetable.sectionId || null,
       status: timetable.status || "draft",
       generatedBy: timetable.generatedBy || null,
+      timeSlotTemplateId: timetable.timeSlotTemplateId || null,
       schedule: timetable.schedule || {},
       conflicts: timetable.conflicts || [],
       optimizationScore: timetable.optimizationScore || 0,
@@ -810,7 +811,10 @@ export class MongoDBStorage implements IStorage {
   async updateAcademicCalendar(id: string, calendar: Partial<AcademicCalendar>): Promise<AcademicCalendar | undefined> { return undefined; }
   async deleteAcademicCalendar(id: string): Promise<boolean> { return false; }
 
-  async getTimeSlotTemplates(): Promise<TimeSlotTemplate[]> { return []; }
+  async getTimeSlotTemplates(): Promise<TimeSlotTemplate[]> { 
+    if (!this.timeSlotTemplates) return [];
+    return Array.from(this.timeSlotTemplates.values());
+  }
   async getTimeSlotTemplate(id: string): Promise<TimeSlotTemplate | undefined> { return undefined; }
   async getDefaultTimeSlotTemplate(): Promise<TimeSlotTemplate | undefined> { return undefined; }
   async createTimeSlotTemplate(template: InsertTimeSlotTemplate): Promise<TimeSlotTemplate> { 
@@ -819,8 +823,6 @@ export class MongoDBStorage implements IStorage {
       id,
       templateName: template.templateName,
       workingDays: template.workingDays || ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-      startTime: template.startTime,
-      endTime: template.endTime,
       periodDuration: template.periodDuration || 60,
       labBlockDuration: template.labBlockDuration || 120,
       dailyPeriods: template.dailyPeriods || [],

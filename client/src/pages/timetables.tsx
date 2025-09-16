@@ -1,18 +1,23 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { TimetableGrid } from "@/components/timetable-grid";
-import { Plus, Search, Edit, Trash2, Calendar, Download, Eye, BarChart3, Bot, Clock } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Calendar, Clock, Users, BookOpen, MapPin, AlertTriangle, CheckCircle, XCircle, Plus, Wand2, TestTube2, Grid3X3, Search, Bot, BarChart3, Eye, Download, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Timetable, TimetableSlot, Course, Faculty, Room } from "@shared/schema";
 import { programs } from "@/lib/types";
+import { TimetableGrid } from "@/components/timetable-grid";
 
 export default function Timetables() {
   const { toast } = useToast();
@@ -56,6 +61,10 @@ export default function Timetables() {
   const { data: timetableSlots } = useQuery<TimetableSlot[]>({
     queryKey: ["/api/timetables", selectedTimetable?.id, "slots"],
     enabled: !!selectedTimetable?.id,
+  });
+
+  const { data: timeSlotTemplates } = useQuery<any[]>({
+    queryKey: ["/api/timeslot-templates"],
   });
 
   const deleteTimetableMutation = useMutation({
@@ -722,59 +731,364 @@ export default function Timetables() {
                 {selectedTimetable?.name} - Detailed View
               </DialogTitle>
             </DialogHeader>
-            {selectedTimetable && timetableSlots && courses && faculty && rooms && (
-              <div className="space-y-4">
-                {/* Timetable Info */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
-                  <div>
-                    <div className="text-sm font-medium">Program</div>
-                    <div className="text-sm text-muted-foreground">{selectedTimetable.program}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">Semester</div>
-                    <div className="text-sm text-muted-foreground">Semester {selectedTimetable.semester}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">Batch</div>
-                    <div className="text-sm text-muted-foreground">{selectedTimetable.batch}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">Academic Year</div>
-                    <div className="text-sm text-muted-foreground">{selectedTimetable.academicYear}</div>
-                  </div>
-                </div>
+            {selectedTimetable && timetableSlots && courses && faculty && rooms && ( 
+              <Tabs defaultValue="overview" className="space-y-4">
+                <TabsList>
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="schedule">Schedule</TabsTrigger>
+                  <TabsTrigger value="template">Template</TabsTrigger>
+                  {Array.isArray(selectedTimetable.conflicts) && selectedTimetable.conflicts.length > 0 && (
+                    <TabsTrigger value="conflicts">
+                      <div className="flex items-center gap-2">
+                        <span>Conflicts</span>
+                        <Badge variant="destructive" className="h-5 w-5 p-0 flex items-center justify-center">
+                          {selectedTimetable.conflicts.length}
+                        </Badge>
+                      </div>
+                    </TabsTrigger>
+                  )}
+                </TabsList>
 
-                {/* Timetable Grid */}
-                <TimetableGrid
-                  slots={timetableSlots}
-                  courses={courses}
-                  faculty={faculty}
-                  rooms={rooms}
-                  editable={false}
-                />
-
-                {/* Conflicts */}
-                {Array.isArray(selectedTimetable.conflicts) && selectedTimetable.conflicts.length > 0 && (
+                {/* Overview Tab */}
+                <TabsContent value="overview" className="space-y-4">
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-base">Detected Conflicts</CardTitle>
+                      <CardTitle>Timetable Information</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-2">
-                      {selectedTimetable.conflicts.map((conflict: any, index: number) => (
-                        <div key={index} className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-medium">{conflict.type}</span>
-                            <Badge variant="destructive" className="text-xs">
-                              {conflict.severity}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">{conflict.description}</p>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">Program</p>
+                          <p className="text-sm text-muted-foreground">{selectedTimetable.program}</p>
                         </div>
-                      ))}
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">Semester</p>
+                          <p className="text-sm text-muted-foreground">Semester {selectedTimetable.semester}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">Batch</p>
+                          <p className="text-sm text-muted-foreground">{selectedTimetable.batch}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">Academic Year</p>
+                          <p className="text-sm text-muted-foreground">{selectedTimetable.academicYear}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">Status</p>
+                          <Badge variant={selectedTimetable.status === 'DRAFT' ? 'outline' : 'default'}>
+                            {selectedTimetable.status}
+                          </Badge>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">Created</p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(selectedTimetable.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Quick Stats</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="p-4 bg-muted/50 rounded-lg text-center">
+                          <p className="text-2xl font-bold">{timetableSlots.length}</p>
+                          <p className="text-sm text-muted-foreground">Scheduled Slots</p>
+                        </div>
+                        <div className="p-4 bg-muted/50 rounded-lg text-center">
+                          <p className="text-2xl font-bold">
+                            {new Set(timetableSlots.map(slot => slot.courseId)).size}
+                          </p>
+                          <p className="text-sm text-muted-foreground">Unique Courses</p>
+                        </div>
+                        <div className="p-4 bg-muted/50 rounded-lg text-center">
+                          <p className="text-2xl font-bold">
+                            {new Set(timetableSlots.map(slot => slot.facultyId)).size}
+                          </p>
+                          <p className="text-sm text-muted-foreground">Faculty Members</p>
+                        </div>
+                        <div className="p-4 bg-muted/50 rounded-lg text-center">
+                          <p className="text-2xl font-bold">
+                            {new Set(timetableSlots.map(slot => slot.roomId)).size}
+                          </p>
+                          <p className="text-sm text-muted-foreground">Rooms Used</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Schedule Tab */}
+                <TabsContent value="schedule" className="space-y-6">
+                  {/* Slot Time Mapping Table */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Slot Time Mapping Table</CardTitle>
+                      <CardDescription>
+                        Complete schedule showing all time slots and their assigned courses
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <table className="w-full border-collapse border border-border">
+                          <thead>
+                            <tr className="bg-muted">
+                              <th className="border border-border px-3 py-2 text-left font-semibold">Time Slot</th>
+                              <th className="border border-border px-3 py-2 text-left font-semibold">Monday</th>
+                              <th className="border border-border px-3 py-2 text-left font-semibold">Tuesday</th>
+                              <th className="border border-border px-3 py-2 text-left font-semibold">Wednesday</th>
+                              <th className="border border-border px-3 py-2 text-left font-semibold">Thursday</th>
+                              <th className="border border-border px-3 py-2 text-left font-semibold">Friday</th>
+                              <th className="border border-border px-3 py-2 text-left font-semibold">Saturday</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(() => {
+                              // Create time slots array
+                              const timeSlots = [
+                                "08:00-08:50", "09:00-09:50", "10:00-10:50", "11:00-11:50", 
+                                "12:00-12:50", "12:50-13:50", "14:00-14:50", "15:00-15:50", 
+                                "16:00-16:50", "17:00-17:50", "18:00-18:50", "19:00-19:50"
+                              ];
+                              const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                              
+                              // Group slots by time and day
+                              const slotGrid: Record<string, Record<string, any>> = {};
+                              timeSlots.forEach(time => {
+                                slotGrid[time] = {};
+                                days.forEach(day => {
+                                  slotGrid[time][day] = null;
+                                });
+                              });
+                              
+                              // Fill the grid with actual slots
+                              timetableSlots.forEach(slot => {
+                                const timeSlot = `${slot.startTime}-${slot.endTime}`;
+                                if (slotGrid[timeSlot]) {
+                                  slotGrid[timeSlot][slot.dayOfWeek] = slot;
+                                }
+                              });
+                              
+                              return timeSlots.map(timeSlot => (
+                                <tr key={timeSlot} className={timeSlot === "12:50-13:50" ? "bg-orange-50" : ""}>
+                                  <td className="border border-border px-3 py-2 font-medium bg-muted/50">
+                                    {timeSlot === "12:50-13:50" ? "Lunch Break" : timeSlot}
+                                  </td>
+                                  {days.map(day => {
+                                    const slot = slotGrid[timeSlot][day];
+                                    if (timeSlot === "12:50-13:50") {
+                                      return (
+                                        <td key={day} className="border border-border px-3 py-2 text-center text-orange-600 bg-orange-50">
+                                          Lunch
+                                        </td>
+                                      );
+                                    }
+                                    
+                                    return (
+                                      <td key={day} className="border border-border px-3 py-2">
+                                        {slot ? (
+                                          <div className="space-y-1">
+                                            <div className="font-medium text-sm">
+                                              {slot.specialInstructions?.replace('Course Code: ', '') || 'Course'}
+                                            </div>
+                                            <div className="text-xs text-muted-foreground">
+                                              {slot.slotType}
+                                            </div>
+                                            {slot.courseId !== "placeholder-course" && (
+                                              <div className="text-xs text-blue-600">
+                                                {courses.find(c => c.id === slot.courseId)?.courseName}
+                                              </div>
+                                            )}
+                                          </div>
+                                        ) : (
+                                          <div className="text-xs text-muted-foreground text-center py-2">
+                                            Free
+                                          </div>
+                                        )}
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                              ));
+                            })()}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Original Timetable Grid */}
+                  <TimetableGrid
+                    slots={timetableSlots}
+                    courses={courses}
+                    faculty={faculty}
+                    rooms={rooms}
+                    editable={false}
+                  />
+                </TabsContent>
+
+                {/* Template Tab */}
+                <TabsContent value="template">
+                  {selectedTimetable.timeSlotTemplateId ? (
+                    <div className="space-y-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Template Information</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          {timeSlotTemplates?.find(t => t.id === selectedTimetable.timeSlotTemplateId) ? (
+                            <div className="space-y-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <p className="text-sm font-medium">Template Name</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {timeSlotTemplates.find(t => t.id === selectedTimetable.timeSlotTemplateId)?.templateName}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium">Period Duration</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {timeSlotTemplates.find(t => t.id === selectedTimetable.timeSlotTemplateId)?.periodDuration} minutes
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium">Lab Block Duration</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {timeSlotTemplates.find(t => t.id === selectedTimetable.timeSlotTemplateId)?.labBlockDuration} minutes
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium">Working Days</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {timeSlotTemplates.find(t => t.id === selectedTimetable.timeSlotTemplateId)?.workingDays.join(', ')}
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <p className="text-sm font-medium mb-2">Daily Schedule</p>
+                                <div className="border rounded-md">
+                                  <table className="w-full text-sm">
+                                    <thead>
+                                      <tr className="border-b">
+                                        <th className="text-left p-2">Period</th>
+                                        <th className="text-left p-2">Start Time</th>
+                                        <th className="text-left p-2">End Time</th>
+                                        <th className="text-left p-2">Type</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {timeSlotTemplates
+                                        .find(t => t.id === selectedTimetable.timeSlotTemplateId)
+                                        ?.dailyPeriods.map((period, index) => (
+                                          <tr key={index} className="border-b last:border-b-0">
+                                            <td className="p-2">{period.name}</td>
+                                            <td className="p-2">{period.startTime}</td>
+                                            <td className="p-2">{period.endTime}</td>
+                                            <td className="p-2">
+                                              <Badge variant={period.type === 'LECTURE' ? 'default' : 'secondary'}>
+                                                {period.type}
+                                              </Badge>
+                                            </td>
+                                          </tr>
+                                        ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                              
+                              {timeSlotTemplates.find(t => t.id === selectedTimetable.timeSlotTemplateId)?.breaks?.length > 0 && (
+                                <div>
+                                  <p className="text-sm font-medium mb-2">Breaks</p>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {timeSlotTemplates
+                                      .find(t => t.id === selectedTimetable.timeSlotTemplateId)
+                                      ?.breaks.map((breakItem, index) => (
+                                        <div key={index} className="border p-3 rounded-md">
+                                          <p className="font-medium">{breakItem.name}</p>
+                                          <p className="text-sm text-muted-foreground">
+                                            {breakItem.startTime} - {breakItem.endTime}
+                                          </p>
+                                          {breakItem.description && (
+                                            <p className="text-sm text-muted-foreground mt-1">
+                                              {breakItem.description}
+                                            </p>
+                                          )}
+                                        </div>
+                                      ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8">
+                              <p className="text-muted-foreground">Loading template information...</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <p className="text-muted-foreground">No template is associated with this timetable.</p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* Conflicts Tab */}
+                {Array.isArray(selectedTimetable.conflicts) && selectedTimetable.conflicts.length > 0 && (
+                  <TabsContent value="conflicts">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Detected Conflicts</CardTitle>
+                        <CardDescription>
+                          The following conflicts were detected in this timetable. Please review and resolve them.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {selectedTimetable.conflicts.map((conflict: any, index: number) => (
+                          <div key={index} className="p-4 border rounded-lg bg-destructive/5">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="font-medium">{conflict.type}</span>
+                                  <Badge variant="destructive" className="text-xs">
+                                    {conflict.severity}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground">{conflict.description}</p>
+                              </div>
+                              {conflict.slotIds && conflict.slotIds.length > 0 && (
+                                <Button variant="outline" size="sm">
+                                  View Slots
+                                </Button>
+                              )}
+                            </div>
+                            {conflict.suggestions && (
+                              <div className="mt-3 pt-3 border-t">
+                                <p className="text-sm font-medium mb-1">Suggestions:</p>
+                                <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
+                                  {Array.isArray(conflict.suggestions) ? (
+                                    conflict.suggestions.map((suggestion: string, i: number) => (
+                                      <li key={i}>{suggestion}</li>
+                                    ))
+                                  ) : (
+                                    <li>{conflict.suggestions}</li>
+                                  )}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
                 )}
-              </div>
+              </Tabs>
             )}
           </DialogContent>
         </Dialog>

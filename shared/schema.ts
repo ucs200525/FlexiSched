@@ -81,6 +81,7 @@ export interface Timetable {
   optimizationScore: number;
   status: string; // draft, active, archived
   generatedBy: string | null; // AI or manual
+  timeSlotTemplateId?: string | null; // Reference to TimeSlotTemplate
   createdAt: Date;
   updatedAt: Date;
 }
@@ -249,6 +250,7 @@ export const insertTimetableSchema = z.object({
   optimizationScore: z.number().int().default(0),
   status: z.string().default('draft'),
   generatedBy: z.string().nullable().optional(),
+  timeSlotTemplateId: z.string().nullable().optional(),
 });
 
 export const insertTimetableSlotSchema = z.object({
