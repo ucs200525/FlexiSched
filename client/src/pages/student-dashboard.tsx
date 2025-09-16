@@ -20,13 +20,21 @@ export default function StudentDashboard() {
   });
 
   const currentStudent = {
-    id: user?.id || "", // Don't fallback to student-1, use empty string to prevent wrong data
-    name: user?.name || currentStudentData?.firstName + " " + currentStudentData?.lastName || "Student User",
+    id: user?.id || "",
+    studentId: currentStudentData?.studentId || user?.username || "",
+    name: user?.name || (currentStudentData ? `${currentStudentData.firstName} ${currentStudentData.lastName}` : "Student User"),
+    firstName: currentStudentData?.firstName || "",
+    lastName: currentStudentData?.lastName || "",
+    email: currentStudentData?.email || user?.email || "",
+    phone: currentStudentData?.phone || null,
     program: currentStudentData?.program || "Computer Science",
     semester: currentStudentData?.semester || 1,
     batch: currentStudentData?.batch || "2024-25",
-    section: "A",
-    studentId: currentStudentData?.studentId || "STU0001"
+    sectionId: currentStudentData?.sectionId || null,
+    enrolledCourses: currentStudentData?.enrolledCourses || [],
+    preferences: currentStudentData?.preferences || {},
+    isActive: currentStudentData?.isActive ?? true,
+    createdAt: currentStudentData?.createdAt || new Date()
   };
 
   // Fetch student's data
@@ -53,9 +61,17 @@ export default function StudentDashboard() {
 
   // Get enrolled courses for current student
   const { data: enrolledCoursesData } = useQuery<Course[]>({
-    queryKey: ["/api/students", currentStudent.id, "registered-courses"],
+    queryKey: [`/api/students/${currentStudent.id}/registered-courses`],
     enabled: !!currentStudent.id && !!user?.id, // Only fetch if we have a real user ID
   });
+
+  // Debug logging
+  console.log("🔍 Dashboard Debug Info:");
+  console.log("user?.id:", user?.id);
+  console.log("currentStudent.id:", currentStudent.id);
+  console.log("currentStudentData:", currentStudentData);
+  console.log("enrolledCoursesData:", enrolledCoursesData);
+  console.log("enrolledCoursesData length:", enrolledCoursesData?.length);
 
   // Student-specific stats calculated from real data
   const studentStats = useMemo(() => {
@@ -194,7 +210,7 @@ export default function StudentDashboard() {
           <div>
             <h1 className="text-2xl font-bold text-foreground" data-testid="page-title">Student Dashboard</h1>
             <p className="text-sm text-muted-foreground">
-              Welcome back, {currentStudent.name} • {currentStudent.program} Semester {currentStudent.semester}
+              Welcome back, {currentStudent.name} • {currentStudent.studentId} • {currentStudent.program} Semester {currentStudent.semester} • {currentStudent.batch}
             </p>
           </div>
           <div className="flex items-center space-x-4">
@@ -216,6 +232,58 @@ export default function StudentDashboard() {
 
       {/* Dashboard Content */}
       <main className="flex-1 p-6 overflow-auto">
+        {/* Student Profile Card */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="w-5 h-5" />
+              Student Profile
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Student ID</p>
+                <p className="text-lg font-semibold">{currentStudent.studentId}</p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Full Name</p>
+                <p className="text-lg font-semibold">{currentStudent.firstName} {currentStudent.lastName}</p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Email</p>
+                <p className="text-lg font-semibold">{currentStudent.email}</p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Phone</p>
+                <p className="text-lg font-semibold">{currentStudent.phone || "Not provided"}</p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Program</p>
+                <p className="text-lg font-semibold">{currentStudent.program}</p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Semester</p>
+                <p className="text-lg font-semibold">{currentStudent.semester}</p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Batch</p>
+                <p className="text-lg font-semibold">{currentStudent.batch}</p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Section</p>
+                <p className="text-lg font-semibold">{currentStudent.sectionId || "Not assigned"}</p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Status</p>
+                <Badge variant={currentStudent.isActive ? "default" : "secondary"}>
+                  {currentStudent.isActive ? "Active" : "Inactive"}
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {studentStats.map((stat, index) => {
@@ -310,6 +378,7 @@ export default function StudentDashboard() {
                   { icon: BookOpen, label: "Course Registration", href: "/courses" },
                   { icon: Settings, label: "Update Preferences", href: "/preferences" },
                   { icon: Calendar, label: "View Timetable", href: "/timetables" },
+                  { icon: User, label: "Edit Profile", href: "/profile" },
                 ].map((action, index) => {
                   const Icon = action.icon;
                   return (
@@ -329,6 +398,25 @@ export default function StudentDashboard() {
                 })}
               </CardContent>
             </Card>
+
+            {/* Student Preferences */}
+            {currentStudent.preferences && Object.keys(currentStudent.preferences).length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Preferences</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {Object.entries(currentStudent.preferences).map(([key, value]) => (
+                      <div key={key} className="flex justify-between items-center">
+                        <span className="text-sm font-medium capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
+                        <span className="text-sm text-muted-foreground">{String(value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Academic Updates */}
             <Card>
