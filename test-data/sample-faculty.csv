@@ -1,0 +1,11 @@
+firstName,lastName,email,department,designation,expertise,maxWorkload
+John,Doe,john.doe@university.edu,Computer Science,Professor,Programming,Database Systems,20
+Jane,Smith,jane.smith@university.edu,Computer Science,Associate Professor,Data Structures,Algorithms,18
+Michael,Johnson,michael.johnson@university.edu,Computer Science,Assistant Professor,Machine Learning,AI,16
+Sarah,Williams,sarah.williams@university.edu,Computer Science,Professor,Software Engineering,Web Development,20
+David,Brown,david.brown@university.edu,Computer Science,Associate Professor,Computer Networks,Operating Systems,18
+Lisa,Davis,lisa.davis@university.edu,Computer Science,Assistant Professor,Database Systems,Data Mining,16
+Robert,Miller,robert.miller@university.edu,Computer Science,Professor,Artificial Intelligence,Machine Learning,20
+Emily,Wilson,emily.wilson@university.edu,Computer Science,Associate Professor,Mobile Development,Web Development,18
+James,Moore,james.moore@university.edu,Computer Science,Assistant Professor,Computer Graphics,Game Development,16
+Anna,Taylor,anna.taylor@university.edu,Computer Science,Professor,Cybersecurity,Network Security,20

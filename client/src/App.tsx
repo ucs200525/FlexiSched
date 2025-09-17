@@ -20,6 +20,8 @@ import AIGenerator from "@/pages/ai-generator";
 import Timetables from "@/pages/timetables";
 import Export from "@/pages/export";
 import NotFound from "@/pages/not-found";
+import FacultyWorkflow from "@/components/workflows/faculty-workflow";
+import StudentWorkflow from "@/components/workflows/student-workflow";
 
 // Route configuration outside component to avoid hooks issues
 const getDefaultRoute = (role?: string) => {
@@ -36,9 +38,9 @@ const getAllowedRoutes = (role?: string) => {
     case "admin": 
       return ["/", "/students", "/faculty", "/courses", "/rooms", "/ai-generator", "/timetables", "/export"];
     case "faculty": 
-      return ["/faculty-dashboard", "/courses", "/timetables", "/ai-generator"];
+      return ["/faculty-dashboard", "/faculty-workflow", "/courses", "/timetables", "/ai-generator"];
     case "student": 
-      return ["/student-dashboard", "/courses"];
+      return ["/student-dashboard", "/student-workflow", "/courses"];
     default: 
       return ["/"];
   }
@@ -87,6 +89,8 @@ function AuthenticatedApp() {
           <Route path="/ai-generator" component={AIGenerator} />
           <Route path="/timetables" component={Timetables} />
           <Route path="/export" component={Export} />
+          <Route path="/faculty-workflow" component={FacultyWorkflow} />
+          <Route path="/student-workflow" component={StudentWorkflow} />
           <Route component={NotFound} />
         </Switch>
       </div>
