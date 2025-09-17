@@ -1322,6 +1322,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Comprehensive AI System Endpoints
+  
+  // Save comprehensive admin configuration
+  app.post("/api/comprehensive/admin/config", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const result = await aiEngineClient.saveComprehensiveAdminConfig(req.body);
+      res.json(result);
+    } catch (error) {
+      console.error("Comprehensive admin config save error:", error);
+      res.status(500).json({ 
+        message: "Failed to save comprehensive admin config", 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Generate comprehensive time slots
+  app.post("/api/comprehensive/generate-slots", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const result = await aiEngineClient.generateComprehensiveSlots(req.body);
+      res.json(result);
+    } catch (error) {
+      console.error("Comprehensive slot generation error:", error);
+      res.status(500).json({ 
+        message: "Failed to generate comprehensive slots", 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Create comprehensive sections
+  app.post("/api/comprehensive/sectioning", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const result = await aiEngineClient.createComprehensiveSections(req.body);
+      res.json(result);
+    } catch (error) {
+      console.error("Comprehensive sectioning error:", error);
+      res.status(500).json({ 
+        message: "Failed to create comprehensive sections", 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  // Generate comprehensive timetable using OR-Tools CP-SAT
+  app.post("/api/comprehensive/generate-timetable", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const result = await aiEngineClient.generateComprehensiveTimetable(req.body);
+      res.json(result);
+    } catch (error) {
+      console.error("Comprehensive timetable generation error:", error);
+      res.status(500).json({ 
+        message: "Failed to generate comprehensive timetable", 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
   // Conflict detection
   app.post("/api/timetables/:id/detect-conflicts", async (req, res) => {
     try {

@@ -286,6 +286,108 @@ class AIEngineClient {
     }
   }
 
+  // Comprehensive AI System methods
+
+  async saveComprehensiveAdminConfig(config: any): Promise<any> {
+    if (!this.isServerRunning) {
+      await this.startAIServer();
+    }
+
+    try {
+      const response = await fetch(`http://localhost:${this.serverPort}/api/comprehensive/admin/config`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(config)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Admin config save failed: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Admin config save error:', error);
+      throw error;
+    }
+  }
+
+  async generateComprehensiveSlots(config: any): Promise<any> {
+    if (!this.isServerRunning) {
+      await this.startAIServer();
+    }
+
+    try {
+      const response = await fetch(`http://localhost:${this.serverPort}/api/comprehensive/generate_slots`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(config)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Slot generation failed: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Slot generation error:', error);
+      throw error;
+    }
+  }
+
+  async createComprehensiveSections(request: any): Promise<any> {
+    if (!this.isServerRunning) {
+      await this.startAIServer();
+    }
+
+    try {
+      const response = await fetch(`http://localhost:${this.serverPort}/api/comprehensive/sectioning`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Section creation failed: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Section creation error:', error);
+      throw error;
+    }
+  }
+
+  async generateComprehensiveTimetable(request: any): Promise<any> {
+    if (!this.isServerRunning) {
+      await this.startAIServer();
+    }
+
+    try {
+      const response = await fetch(`http://localhost:${this.serverPort}/api/comprehensive/generate_timetable`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Comprehensive timetable generation failed: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Comprehensive timetable generation error:', error);
+      throw error;
+    }
+  }
+
   stopAIServer(): void {
     if (this.pythonProcess) {
       this.pythonProcess.kill();
