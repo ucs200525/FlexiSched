@@ -106,7 +106,7 @@ class AIEngineClient {
         ? join(process.cwd(), '.venv', 'Scripts', 'python.exe')
         : 'python3';
       
-      this.pythonProcess = spawn(pythonCommand, ['-m', 'uvicorn', 'api_server:app', '--host', '0.0.0.0', '--port', String(this.serverPort)], {
+      this.pythonProcess = spawn(pythonCommand, ['-m', 'uvicorn', 'api_server:app', '--host', '127.0.0.1', '--port', String(this.serverPort)], {
         cwd: aiEnginePath,
         stdio: ['pipe', 'pipe', 'pipe']
       });
