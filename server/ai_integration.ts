@@ -89,7 +89,7 @@ export interface OptimizationResult {
 class AIEngineClient {
   private pythonProcess: any = null;
   private isServerRunning = false;
-  private serverPort = 8000;
+  private serverPort = 8001;
 
   async startAIServer(): Promise<boolean> {
     if (this.isServerRunning) {
@@ -159,6 +159,18 @@ class AIEngineClient {
     }
 
     try {
+      console.log('Sending request to AI server:', {
+        endpoint: `http://localhost:${this.serverPort}/optimize/sync`,
+        algorithm,
+        requestSummary: {
+          courses: request.courses?.length || 0,
+          faculty: request.faculty?.length || 0,
+          rooms: request.rooms?.length || 0,
+          students: request.students?.length || 0,
+          time_slots: request.time_slots?.length || 0
+        }
+      });
+
       const response = await fetch(`http://localhost:${this.serverPort}/optimize/sync`, {
         method: 'POST',
         headers: {

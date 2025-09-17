@@ -26,7 +26,7 @@ class Course(BaseModel):
     course_code: str
     course_name: str
     credits: int
-    course_type: CourseType
+    course_type: str
     expected_students: int
     requires_consecutive_slots: bool = False
     preferred_time_slots: List[str] = []

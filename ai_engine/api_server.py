@@ -85,7 +85,23 @@ async def optimize_timetable_sync(job_request: OptimizationJobRequest):
     Returns result immediately (suitable for small problems)
     """
     try:
-        logger.info(f"Starting synchronous optimization with algorithm: {job_request.algorithm}")
+        logger.info(f"Received optimization request with algorithm: {job_request.algorithm}")
+        logger.info(f"Request data: courses={len(job_request.request.courses)}, faculty={len(job_request.request.faculty)}, rooms={len(job_request.request.rooms)}")
+        
+        # Validate request data
+        if not job_request.request.courses:
+            logger.warning("No courses provided in request")
+            return OptimizationResult(
+                success=False,
+                timetable_slots=[],
+                conflicts=[],
+                optimization_score=0.0,
+                faculty_workload={},
+                room_utilization={},
+                warnings=["No courses provided"],
+                execution_time=0.0,
+                algorithm_used=job_request.algorithm
+            )
         
         if job_request.algorithm == "genetic_algorithm":
             solver = GeneticTimetableSolver(
@@ -104,6 +120,9 @@ async def optimize_timetable_sync(job_request: OptimizationJobRequest):
         
     except Exception as e:
         logger.error(f"Optimization error: {str(e)}")
+        logger.error(f"Request validation failed: {str(e)}")
+        import traceback
+        logger.error(f"Full traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Optimization failed: {str(e)}")
 
 @app.post("/optimize/async", response_model=Dict[str, str])

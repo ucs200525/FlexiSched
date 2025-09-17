@@ -476,6 +476,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk import faculty from CSV/Excel
+  app.post("/api/faculty/import", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const { faculty } = req.body;
+      const results = [];
+      
+      for (const facultyData of faculty) {
+        try {
+          const newFaculty = await storage.createFaculty({
+            firstName: facultyData.firstName,
+            lastName: facultyData.lastName,
+            email: facultyData.email,
+            password: 'defaultPassword123',
+            plainPassword: 'defaultPassword123',
+            facultyId: `FAC${Date.now()}${Math.random().toString(36).substr(2, 5)}`,
+            department: facultyData.department || 'General',
+            designation: facultyData.designation || 'Assistant Professor',
+            expertise: facultyData.expertise ? facultyData.expertise.split(',').map((e: string) => e.trim()) : [],
+            maxWorkload: parseInt(facultyData.maxWorkload) || 20,
+            isActive: facultyData.isActive !== 'false',
+            assignedCourses: [],
+            availability: facultyData.availability ? JSON.parse(facultyData.availability) : {
+              Monday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
+              Tuesday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
+              Wednesday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
+              Thursday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
+              Friday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00']
+            }
+          });
+          results.push({ success: true, name: `${facultyData.firstName} ${facultyData.lastName}`, id: newFaculty.id });
+        } catch (error) {
+          results.push({ 
+            success: false, 
+            name: `${facultyData.firstName} ${facultyData.lastName}`, 
+            error: error instanceof Error ? error.message : 'Unknown error' 
+          });
+        }
+      }
+      
+      res.json({ 
+        message: `Imported ${results.filter(r => r.success).length} of ${faculty.length} faculty members`,
+        results 
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to import faculty" });
+    }
+  });
+
   app.get("/api/faculty/:id", async (req, res) => {
     try {
       const facultyMember = await storage.getFacultyMember(req.params.id);
@@ -727,6 +775,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk import courses from CSV/Excel
+  app.post("/api/courses/import", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const { courses } = req.body;
+      const results = [];
+      
+      for (const courseData of courses) {
+        try {
+          const course = await storage.createCourse({
+            courseCode: courseData.courseCode,
+            courseName: courseData.courseName,
+            credits: parseInt(courseData.credits) || 3,
+            courseType: courseData.courseType || 'theory',
+            program: courseData.program || 'General',
+            semester: parseInt(courseData.semester) || 1,
+            theoryHours: parseInt(courseData.theoryHours) || 3,
+            practicalHours: parseInt(courseData.practicalHours) || 0,
+            isActive: true,
+            prerequisites: courseData.prerequisites ? courseData.prerequisites.split(',').map((p: string) => p.trim()) : []
+          });
+          results.push({ success: true, courseCode: courseData.courseCode, id: course.id });
+        } catch (error) {
+          results.push({ 
+            success: false, 
+            courseCode: courseData.courseCode, 
+            error: error instanceof Error ? error.message : 'Unknown error' 
+          });
+        }
+      }
+      
+      res.json({ 
+        message: `Imported ${results.filter(r => r.success).length} of ${courses.length} courses`,
+        results 
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to import courses" });
+    }
+  });
+
   app.get("/api/courses/:id", async (req, res) => {
     try {
       const course = await storage.getCourse(req.params.id);
@@ -780,6 +867,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(rooms);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch rooms" });
+    }
+  });
+
+  // Bulk import rooms from CSV/Excel
+  app.post("/api/rooms/import", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const { rooms } = req.body;
+      const results = [];
+      
+      for (const roomData of rooms) {
+        try {
+          const room = await storage.createRoom({
+            roomNumber: roomData.roomNumber,
+            roomName: roomData.roomName || roomData.roomNumber,
+            roomType: roomData.roomType || 'Classroom',
+            capacity: parseInt(roomData.capacity) || 30,
+            location: roomData.location || '',
+            equipment: roomData.equipment ? roomData.equipment.split(',').map((e: string) => e.trim()) : [],
+            isAvailable: roomData.isAvailable !== 'false',
+            maintenanceSchedule: []
+          });
+          results.push({ success: true, roomNumber: roomData.roomNumber, id: room.id });
+        } catch (error) {
+          results.push({ 
+            success: false, 
+            roomNumber: roomData.roomNumber, 
+            error: error instanceof Error ? error.message : 'Unknown error' 
+          });
+        }
+      }
+      
+      res.json({ 
+        message: `Imported ${results.filter(r => r.success).length} of ${rooms.length} rooms`,
+        results 
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to import rooms" });
     }
   });
 
@@ -1165,7 +1289,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Advanced AI optimization with constraint satisfaction
   app.post("/api/ai/optimize-timetable", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
-      const { program, semester, batch, academicYear, algorithm = "constraint_solver", constraints = {} } = req.body;
+      const { program, semester, batch, academic_year, algorithm = "constraint_solver", constraints = {} } = req.body;
       
       // Fetch data from database
       const courses = await storage.getCourses();
@@ -1173,95 +1297,131 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const rooms = await storage.getRooms();
       const students = await storage.getStudents();
       
-      // Filter for the specific program and semester
-      const filteredCourses = courses.filter(course => 
-        course.program === program && course.semester === semester && course.isActive
-      );
+      // Validate required data
+      if (!courses.length) {
+        return res.status(400).json({
+          success: false,
+          message: "No courses found. Please add courses before generating timetable.",
+          error: "Missing courses data"
+        });
+      }
+
+      if (!faculty.length) {
+        return res.status(400).json({
+          success: false,
+          message: "No faculty found. Please add faculty before generating timetable.",
+          error: "Missing faculty data"
+        });
+      }
+
+      if (!rooms.length) {
+        return res.status(400).json({
+          success: false,
+          message: "No rooms found. Please add rooms before generating timetable.",
+          error: "Missing rooms data"
+        });
+      }
+      
+      // Generate time slots based on working hours
+      const time_slots = [
+        { day: "Monday", start_time: "09:00", end_time: "10:00", duration: 60 },
+        { day: "Monday", start_time: "10:00", end_time: "11:00", duration: 60 },
+        { day: "Monday", start_time: "11:00", end_time: "12:00", duration: 60 },
+        { day: "Monday", start_time: "14:00", end_time: "15:00", duration: 60 },
+        { day: "Monday", start_time: "15:00", end_time: "16:00", duration: 60 },
+        { day: "Tuesday", start_time: "09:00", end_time: "10:00", duration: 60 },
+        { day: "Tuesday", start_time: "10:00", end_time: "11:00", duration: 60 },
+        { day: "Tuesday", start_time: "11:00", end_time: "12:00", duration: 60 },
+        { day: "Tuesday", start_time: "14:00", end_time: "15:00", duration: 60 },
+        { day: "Tuesday", start_time: "15:00", end_time: "16:00", duration: 60 },
+        { day: "Wednesday", start_time: "09:00", end_time: "10:00", duration: 60 },
+        { day: "Wednesday", start_time: "10:00", end_time: "11:00", duration: 60 },
+        { day: "Wednesday", start_time: "11:00", end_time: "12:00", duration: 60 },
+        { day: "Wednesday", start_time: "14:00", end_time: "15:00", duration: 60 },
+        { day: "Wednesday", start_time: "15:00", end_time: "16:00", duration: 60 },
+        { day: "Thursday", start_time: "09:00", end_time: "10:00", duration: 60 },
+        { day: "Thursday", start_time: "10:00", end_time: "11:00", duration: 60 },
+        { day: "Thursday", start_time: "11:00", end_time: "12:00", duration: 60 },
+        { day: "Thursday", start_time: "14:00", end_time: "15:00", duration: 60 },
+        { day: "Thursday", start_time: "15:00", end_time: "16:00", duration: 60 },
+        { day: "Friday", start_time: "09:00", end_time: "10:00", duration: 60 },
+        { day: "Friday", start_time: "10:00", end_time: "11:00", duration: 60 },
+        { day: "Friday", start_time: "11:00", end_time: "12:00", duration: 60 },
+        { day: "Friday", start_time: "14:00", end_time: "15:00", duration: 60 },
+        { day: "Friday", start_time: "15:00", end_time: "16:00", duration: 60 }
+      ];
 
       const optimizationRequest = {
-        courses: filteredCourses.map(course => ({
-          id: course.id,
+        courses: courses.map(course => ({
+          id: course.id || course._id?.toString() || '',
           course_code: course.courseCode,
           course_name: course.courseName,
           credits: course.credits,
-          course_type: course.courseType.toLowerCase(),
-          expected_students: 30,
+          course_type: (course.courseType || 'theory').toLowerCase(),
+          expected_students: course.expectedStrength || 30,
           requires_consecutive_slots: course.courseType === "laboratory"
         })),
-        faculty: faculty.filter(f => f.isActive !== false).map(f => ({
-          id: f.id,
+        faculty: faculty.map(f => ({
+          id: f.id || f._id?.toString() || '',
           name: `${f.firstName} ${f.lastName}`,
           email: f.email || `${f.firstName.toLowerCase()}.${f.lastName.toLowerCase()}@university.edu`,
-          max_hours_per_week: f.maxWorkload || 40
+          expertise: f.specialization || [],
+          max_hours_per_week: f.maxWorkload || 40,
+          preferred_days: Object.keys(f.availability || {}),
+          unavailable_slots: []
         })),
-        rooms: rooms.filter(r => r.isAvailable !== false).map(r => ({
-          id: r.id,
+        rooms: rooms.map(r => ({
+          id: r.id || r._id?.toString() || '',
           room_number: r.roomNumber,
           room_name: r.roomName || r.roomNumber,
-          capacity: r.capacity,
-          room_type: r.roomType,
-          equipment: Array.isArray(r.equipment) ? r.equipment : []
+          capacity: r.capacity || 30,
+          room_type: r.roomType || 'classroom',
+          equipment: r.equipment || []
         })),
-        students: students.filter(s => s.program === program && s.semester === semester && s.isActive !== false).map(s => ({
-          id: s.id,
-          student_id: s.studentId,
-          name: `${s.firstName} ${s.lastName}`,
-          program: s.program,
-          semester: s.semester,
-          enrolled_courses: filteredCourses.map(c => c.id)
+        students: students.map(student => ({
+          id: student.id || student._id?.toString() || '',
+          student_id: student.studentId,
+          name: `${student.firstName} ${student.lastName}`,
+          program: student.program,
+          semester: student.semester,
+          enrolled_courses: student.enrolledCourses || []
         })),
-        time_slots: [
-          { day: "Monday", start_time: "09:00", end_time: "10:00", duration: 60 },
-          { day: "Monday", start_time: "10:00", end_time: "11:00", duration: 60 },
-          { day: "Monday", start_time: "11:15", end_time: "12:15", duration: 60 },
-          { day: "Monday", start_time: "12:15", end_time: "13:15", duration: 60 },
-          { day: "Monday", start_time: "13:15", end_time: "14:15", duration: 60 },
-          { day: "Tuesday", start_time: "09:00", end_time: "10:00", duration: 60 },
-          { day: "Tuesday", start_time: "10:00", end_time: "11:00", duration: 60 },
-          { day: "Tuesday", start_time: "11:15", end_time: "12:15", duration: 60 },
-          { day: "Tuesday", start_time: "12:15", end_time: "13:15", duration: 60 },
-          { day: "Tuesday", start_time: "13:15", end_time: "14:15", duration: 60 },
-          { day: "Wednesday", start_time: "09:00", end_time: "10:00", duration: 60 },
-          { day: "Wednesday", start_time: "10:00", end_time: "11:00", duration: 60 },
-          { day: "Wednesday", start_time: "11:15", end_time: "12:15", duration: 60 },
-          { day: "Wednesday", start_time: "12:15", end_time: "13:15", duration: 60 },
-          { day: "Wednesday", start_time: "13:15", end_time: "14:15", duration: 60 },
-          { day: "Thursday", start_time: "09:00", end_time: "10:00", duration: 60 },
-          { day: "Thursday", start_time: "10:00", end_time: "11:00", duration: 60 },
-          { day: "Thursday", start_time: "11:15", end_time: "12:15", duration: 60 },
-          { day: "Thursday", start_time: "12:15", end_time: "13:15", duration: 60 },
-          { day: "Thursday", start_time: "13:15", end_time: "14:15", duration: 60 },
-          { day: "Friday", start_time: "09:00", end_time: "10:00", duration: 60 },
-          { day: "Friday", start_time: "10:00", end_time: "11:00", duration: 60 },
-          { day: "Friday", start_time: "11:15", end_time: "12:15", duration: 60 },
-          { day: "Friday", start_time: "12:15", end_time: "13:15", duration: 60 },
-          { day: "Friday", start_time: "13:15", end_time: "14:15", duration: 60 }
-        ],
+        time_slots,
         constraints: {
-          max_hours_per_day: constraints.max_hours_per_day || 8,
-          min_break_duration: constraints.min_break_duration || 15,
-          lunch_break_duration: constraints.lunch_break_duration || 60,
-          lunch_break_start: constraints.lunch_break_start || "12:00",
-          consecutive_lab_slots: constraints.consecutive_lab_slots !== false,
-          max_consecutive_hours: constraints.max_consecutive_hours || 3
+          max_hours_per_day: constraints?.max_hours_per_day || 8,
+          min_break_duration: constraints?.min_break_duration || 15,
+          lunch_break_duration: constraints?.lunch_break_duration || 60,
+          lunch_break_start: constraints?.lunch_break_start || "12:00",
+          consecutive_lab_slots: constraints?.consecutive_lab_slots || true,
+          max_consecutive_hours: constraints?.max_consecutive_hours || 3
         },
         program,
         semester,
         batch,
-        academic_year: academicYear
+        academic_year
       };
 
-      // Call AI optimization engine
+      console.log("Sending optimization request to AI engine...");
+      console.log("Request summary:", {
+        courses: optimizationRequest.courses.length,
+        faculty: optimizationRequest.faculty.length,
+        rooms: optimizationRequest.rooms.length,
+        students: optimizationRequest.students.length,
+        time_slots: optimizationRequest.time_slots.length,
+        algorithm
+      });
+
+      // Call AI optimization service
       const result = await aiEngineClient.optimizeTimetable(optimizationRequest, algorithm);
 
       if (result.success) {
-        // Create timetable record
+        // Store the timetable in database
         const timetable = await storage.createTimetable({
-          name: `AI Optimized: ${program} Semester ${semester} - ${batch}`,
+          name: `AI Generated Timetable - ${program} Sem ${semester}`,
           program,
           semester,
           batch,
-          academicYear,
+          academicYear: academic_year,
           schedule: result.timetable_slots.map(slot => ({
             day: slot.day,
             startTime: slot.start_time,
