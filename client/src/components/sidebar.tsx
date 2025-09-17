@@ -34,13 +34,13 @@ const getNavigationItems = (userRole?: string) => {
 
   const facultyItems = [
     { href: "/faculty-dashboard", icon: User, label: "Faculty Dashboard" },
+    { href: "/faculty-workflow", icon: Calendar, label: "My Schedule" },
     { href: "/courses", icon: BookOpen, label: "Courses" },
-    { href: "/ai-generator", icon: Bot, label: "AI Generator" },
-    { href: "/timetables", icon: CalendarCheck, label: "Timetables" },
   ];
 
   const studentItems = [
     { href: "/student-dashboard", icon: GraduationCap, label: "Student Dashboard" },
+    { href: "/student-workflow", icon: Calendar, label: "My Timetable" },
     { href: "/courses", icon: BookOpen, label: "Courses" },
   ];
 
@@ -110,12 +110,17 @@ export function Sidebar({ className }: SidebarProps) {
             <p className="text-sm font-medium" data-testid="user-name">{user?.name || 'User'}</p>
             <p className="text-xs text-muted-foreground" data-testid="user-role">{user?.role || 'Role'}</p>
           </div>
-          <Settings 
-            className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-pointer" 
-            data-testid="button-logout"
-            onClick={logout}
-            title="Logout"
-          />
+          <div className="relative group">
+            <Settings 
+              className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-pointer" 
+              data-testid="button-logout"
+              onClick={logout}
+              aria-label="Logout"
+            />
+            <div className="absolute right-0 bottom-full mb-2 hidden group-hover:block bg-foreground text-background text-xs px-2 py-1 rounded whitespace-nowrap">
+              Logout
+            </div>
+          </div>
         </div>
       </div>
     </div>
