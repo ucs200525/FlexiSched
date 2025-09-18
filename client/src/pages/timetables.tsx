@@ -854,15 +854,15 @@ export default function Timetables() {
 
                 {/* Schedule Tab */}
                 <TabsContent value="schedule" className="space-y-6">
-                  {/* AI-Generated Slot Time Mapping Table */}
+                  {/* Slot-Time Mapping Table */}
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <Bot className="w-5 h-5 text-primary" />
-                        AI-Generated Slot Time Mapping Table
+                        <Clock className="w-5 h-5 text-primary" />
+                        Slot-Time Mapping Table
                       </CardTitle>
                       <CardDescription>
-                        Schedule generated using backend AI engine with real course, faculty, and room data
+                        Time slot configuration based on admin settings (Slot ID → Time Range)
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -870,113 +870,125 @@ export default function Timetables() {
                         <table className="w-full border-collapse border border-border">
                           <thead>
                             <tr className="bg-muted">
-                              <th className="border border-border px-3 py-2 text-left font-semibold">Time Slot</th>
-                              <th className="border border-border px-3 py-2 text-left font-semibold">Monday</th>
-                              <th className="border border-border px-3 py-2 text-left font-semibold">Tuesday</th>
-                              <th className="border border-border px-3 py-2 text-left font-semibold">Wednesday</th>
-                              <th className="border border-border px-3 py-2 text-left font-semibold">Thursday</th>
-                              <th className="border border-border px-3 py-2 text-left font-semibold">Friday</th>
-                              <th className="border border-border px-3 py-2 text-left font-semibold">Saturday</th>
+                              <th className="border border-border px-4 py-3 text-left font-semibold">Slot ID</th>
+                              <th className="border border-border px-4 py-3 text-left font-semibold">Time Range</th>
+                              <th className="border border-border px-4 py-3 text-left font-semibold">Duration</th>
+                              <th className="border border-border px-4 py-3 text-left font-semibold">Day</th>
+                              <th className="border border-border px-4 py-3 text-left font-semibold">Type</th>
                             </tr>
                           </thead>
                           <tbody>
                             {(() => {
-                              // Extract time slots from timetable schedule or use default
-                              let timeSlots: string[] = [];
-                              let slotMappings: any[] = [];
+                              // Extract time slots from timetable schedule
+                              let timeSlots: any[] = [];
                               
                               if (selectedTimetable.schedule && typeof selectedTimetable.schedule === 'object') {
                                 const schedule = selectedTimetable.schedule as any;
                                 if (schedule.timeSlots && Array.isArray(schedule.timeSlots)) {
-                                  timeSlots = schedule.timeSlots.map((slot: any) => `${slot.startTime}-${slot.endTime}`);
-                                }
-                                if (schedule.slotMappings && Array.isArray(schedule.slotMappings)) {
-                                  slotMappings = schedule.slotMappings;
+                                  timeSlots = schedule.timeSlots;
                                 }
                               }
                               
-                              // Fallback to default time slots if none found
+                              // Fallback to generate default slots if none found
                               if (timeSlots.length === 0) {
-                                timeSlots = [
-                                  "08:30-09:20", "09:30-10:20", "10:30-11:20", "11:30-12:20", 
-                                  "12:50-13:40", "13:50-14:40", "14:50-15:40", "15:50-16:40", "16:50-17:30"
+                                const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                                const times = [
+                                  { start: "08:30", end: "09:20", duration: 50 },
+                                  { start: "09:30", end: "10:20", duration: 50 },
+                                  { start: "10:30", end: "11:20", duration: 50 },
+                                  { start: "11:30", end: "12:20", duration: 50 },
+                                  { start: "12:50", end: "13:40", duration: 50, isLunch: true },
+                                  { start: "13:50", end: "14:40", duration: 50 },
+                                  { start: "14:50", end: "15:40", duration: 50 },
+                                  { start: "15:50", end: "16:40", duration: 50 },
+                                  { start: "16:50", end: "17:30", duration: 40 }
                                 ];
+                                
+                                days.forEach(day => {
+                                  times.forEach((time, index) => {
+                                    timeSlots.push({
+                                      id: `${day.substring(0, 3).toUpperCase()}${index + 1}`,
+                                      dayOfWeek: day,
+                                      startTime: time.start,
+                                      endTime: time.end,
+                                      duration: time.duration,
+                                      type: index > 5 ? "lab" : "theory",
+                                      isLunch: time.isLunch || false
+                                    });
+                                  });
+                                });
                               }
                               
-                              const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-                              
-                              // Create grid from AI-generated slot mappings
-                              const slotGrid: Record<string, Record<string, any>> = {};
-                              timeSlots.forEach(time => {
-                                slotGrid[time] = {};
-                                days.forEach(day => {
-                                  slotGrid[time][day] = null;
-                                });
-                              });
-                              
-                              // Fill grid with slot mappings from AI engine
-                              slotMappings.forEach(mapping => {
-                                const timeSlot = `${mapping.startTime}-${mapping.endTime}`;
-                                if (slotGrid[timeSlot] && mapping.dayOfWeek) {
-                                  slotGrid[timeSlot][mapping.dayOfWeek] = mapping;
-                                }
-                              });
-                              
-                              return timeSlots.map(timeSlot => {
-                                const isLunchBreak = timeSlot.includes("12:50-13:50") || timeSlot.includes("13:00-14:00");
+                              return timeSlots.map((slot, index) => {
+                                const isLunchTime = slot.isLunch || 
+                                  (slot.startTime >= "12:50" && slot.startTime <= "13:50");
                                 
                                 return (
-                                  <tr key={timeSlot} className={isLunchBreak ? "bg-orange-50" : ""}>
-                                    <td className="border border-border px-3 py-2 font-medium bg-muted/50">
-                                      {isLunchBreak ? "Lunch Break" : timeSlot}
+                                  <tr key={index} className={isLunchTime ? "bg-orange-50" : index % 2 === 0 ? "bg-muted/30" : ""}>
+                                    <td className="border border-border px-4 py-3 font-medium">
+                                      <Badge variant="outline" className="font-mono">
+                                        {slot.id}
+                                      </Badge>
                                     </td>
-                                    {days.map(day => {
-                                      const mapping = slotGrid[timeSlot][day];
-                                      
-                                      if (isLunchBreak) {
-                                        return (
-                                          <td key={day} className="border border-border px-3 py-2 text-center text-orange-600 bg-orange-50">
-                                            Lunch
-                                          </td>
-                                        );
-                                      }
-                                      
-                                      return (
-                                        <td key={day} className="border border-border px-3 py-2 min-h-[80px]">
-                                          {mapping ? (
-                                            <div className="space-y-1 p-1">
-                                              <div className="font-medium text-sm text-primary">
-                                                {mapping.courseCode}
-                                              </div>
-                                              <div className="text-xs text-foreground">
-                                                {mapping.courseName}
-                                              </div>
-                                              <div className="text-xs text-muted-foreground">
-                                                👨‍🏫 {mapping.facultyName || 'TBA'}
-                                              </div>
-                                              <div className="text-xs text-muted-foreground">
-                                                🏛️ {mapping.roomNumber || 'TBA'}
-                                              </div>
-                                              <div className="text-xs">
-                                                <Badge variant={mapping.slotType === 'lab' ? 'destructive' : 'secondary'} className="text-xs">
-                                                  {mapping.slotType || 'theory'}
-                                                </Badge>
-                                              </div>
-                                            </div>
-                                          ) : (
-                                            <div className="text-xs text-muted-foreground text-center py-4">
-                                              Free
-                                            </div>
-                                          )}
-                                        </td>
-                                      );
-                                    })}
+                                    <td className="border border-border px-4 py-3">
+                                      <div className="flex items-center gap-2">
+                                        <Clock className="w-4 h-4 text-muted-foreground" />
+                                        <span className="font-mono">
+                                          {slot.startTime} - {slot.endTime}
+                                        </span>
+                                      </div>
+                                    </td>
+                                    <td className="border border-border px-4 py-3">
+                                      <span className="text-sm text-muted-foreground">
+                                        {slot.duration} min
+                                      </span>
+                                    </td>
+                                    <td className="border border-border px-4 py-3">
+                                      <Badge variant="secondary">
+                                        {slot.dayOfWeek}
+                                      </Badge>
+                                    </td>
+                                    <td className="border border-border px-4 py-3">
+                                      {isLunchTime ? (
+                                        <Badge variant="outline" className="text-orange-600 border-orange-200">
+                                          Lunch Break
+                                        </Badge>
+                                      ) : (
+                                        <Badge variant={slot.type === 'lab' ? 'destructive' : 'default'}>
+                                          {slot.type || 'theory'}
+                                        </Badge>
+                                      )}
+                                    </td>
                                   </tr>
                                 );
                               });
                             })()}
                           </tbody>
                         </table>
+                      </div>
+                      
+                      {/* Summary Info */}
+                      <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                          <div>
+                            <span className="font-medium">Total Slots:</span>
+                            <span className="ml-2">
+                              {(() => {
+                                const schedule = selectedTimetable.schedule as any;
+                                const timeSlots = schedule?.timeSlots || [];
+                                return timeSlots.length || 54; // 6 days × 9 slots
+                              })()}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-medium">Working Days:</span>
+                            <span className="ml-2">Monday - Saturday</span>
+                          </div>
+                          <div>
+                            <span className="font-medium">Slot Duration:</span>
+                            <span className="ml-2">50 minutes (configurable)</span>
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
