@@ -8,9 +8,11 @@ import { Bell, Moon, Calendar, User, BookOpen, Clock, GraduationCap, Settings } 
 import { TimetableGrid } from "@/components/timetable-grid";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Student, Course, TimetableSlot, Faculty, Room } from "@shared/schema";
+import { useLocation } from "wouter";
 
 export default function StudentDashboard() {
   const { user } = useAuth();
+  const [location, setLocation] = useLocation();
   const [selectedStudent, setSelectedStudent] = useState<string>(user?.id || "student-1");
 
   // Get current student data from auth context and API
@@ -54,9 +56,16 @@ export default function StudentDashboard() {
     queryKey: ["/api/timetables"],
   });
 
+  // Determine active timetable (prefer status==='active')
+  const activeTimetable = useMemo(() => {
+    if (!Array.isArray(timetables) || timetables.length === 0) return null;
+    return timetables.find(t => t.status === "active") || timetables[0];
+  }, [timetables]);
+
+  // Fetch slots for the active timetable only
   const { data: timetableSlots } = useQuery<TimetableSlot[]>({
-    queryKey: ["/api/timetables", Array.isArray(timetables) && timetables[0]?.id, "slots"],
-    enabled: !!(Array.isArray(timetables) && timetables[0]?.id),
+    queryKey: ["/api/timetables", activeTimetable?.id, "slots"],
+    enabled: !!activeTimetable?.id,
   });
 
   // Get enrolled courses for current student
@@ -65,13 +74,46 @@ export default function StudentDashboard() {
     enabled: !!currentStudent.id && !!user?.id, // Only fetch if we have a real user ID
   });
 
-  // Debug logging
-  console.log("🔍 Dashboard Debug Info:");
-  console.log("user?.id:", user?.id);
-  console.log("currentStudent.id:", currentStudent.id);
-  console.log("currentStudentData:", currentStudentData);
-  console.log("enrolledCoursesData:", enrolledCoursesData);
-  console.log("enrolledCoursesData length:", enrolledCoursesData?.length);
+  // Compute student's own slots: filter timetable slots by enrolled courses and section (if assigned)
+  const studentSlots = useMemo(() => {
+    if (!timetableSlots) return [] as TimetableSlot[];
+    const enrolledIds = new Set((enrolledCoursesData || []).map(c => c.id));
+    return timetableSlots.filter(slot => {
+      const courseMatch = enrolledIds.has(slot.courseId);
+      const sectionMatch = currentStudent.sectionId
+        ? (Array.isArray(slot.sectionIds) ? slot.sectionIds.includes(currentStudent.sectionId as string) : true)
+        : true;
+      return courseMatch && sectionMatch;
+    });
+  }, [timetableSlots, enrolledCoursesData, currentStudent.sectionId]);
+
+  // Build today's classes from student's slots
+  const upcomingClasses: Array<{
+    time: string;
+    course: string;
+    faculty: string;
+    room: string;
+    type: string;
+  }> = useMemo(() => {
+    if (!studentSlots || !courses || !faculty || !rooms) return [];
+    
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+    const todaySlots = studentSlots.filter(slot => slot.dayOfWeek === today);
+    
+    return todaySlots.map(slot => {
+      const course = courses.find(c => c.id === slot.courseId);
+      const facultyMember = faculty.find(f => f.id === slot.facultyId);
+      const room = rooms.find(r => r.id === slot.roomId);
+      
+      return {
+        time: slot.startTime,
+        course: course?.courseName || 'Unknown Course',
+        faculty: facultyMember ? `${facultyMember.firstName} ${facultyMember.lastName}` : 'Unknown Faculty',
+        room: room?.roomNumber || 'Unknown Room',
+        type: slot.slotType
+      };
+    }).sort((a, b) => a.time.localeCompare(b.time));
+  }, [studentSlots, courses, faculty, rooms]);
 
   // Student-specific stats calculated from real data
   const studentStats = useMemo(() => {
@@ -122,86 +164,6 @@ export default function StudentDashboard() {
     ];
   }, [enrolledCoursesData]);
 
-  // Get upcoming classes from timetable API
-  const upcomingClasses: Array<{
-    time: string;
-    course: string;
-    faculty: string;
-    room: string;
-    type: string;
-  }> = useMemo(() => {
-    if (!timetableSlots || !courses || !faculty || !rooms) return [];
-    
-    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-    const todaySlots = timetableSlots.filter(slot => slot.dayOfWeek === today);
-    
-    return todaySlots.map(slot => {
-      const course = courses.find(c => c.id === slot.courseId);
-      const facultyMember = faculty.find(f => f.id === slot.facultyId);
-      const room = rooms.find(r => r.id === slot.roomId);
-      
-      return {
-        time: slot.startTime,
-        course: course?.courseName || 'Unknown Course',
-        faculty: facultyMember ? `${facultyMember.firstName} ${facultyMember.lastName}` : 'Unknown Faculty',
-        room: room?.roomNumber || 'Unknown Room',
-        type: slot.slotType
-      };
-    }).sort((a, b) => a.time.localeCompare(b.time));
-  }, [timetableSlots, courses, faculty, rooms]);
-
-  // Get enrolled courses with faculty details
-  const enrolledCourses: Array<{
-    name: string;
-    code: string;
-    type: string;
-    credits: number;
-    faculty: string;
-  }> = useMemo(() => {
-    if (!enrolledCoursesData || !faculty) return [];
-    
-    return enrolledCoursesData.map(course => {
-      // Find faculty assigned to this course (simplified - in real app you'd have course-faculty assignments)
-      const assignedFaculty = faculty.find(f => f.assignedCourses?.includes(course.id));
-      
-      return {
-        name: course.courseName,
-        code: course.courseCode,
-        type: course.courseType,
-        credits: course.credits,
-        faculty: assignedFaculty ? `${assignedFaculty.firstName} ${assignedFaculty.lastName}` : 'TBA'
-      };
-    });
-  }, [enrolledCoursesData, faculty]);
-
-  // Academic updates - placeholder for future notifications system
-  const academicUpdates: Array<{
-    message: string;
-    time: string;
-    type: 'success' | 'warning' | 'info';
-  }> = useMemo(() => {
-    // Generate some dynamic updates based on current data
-    const updates = [];
-    
-    if (enrolledCoursesData && enrolledCoursesData.length > 0) {
-      updates.push({
-        message: `You are enrolled in ${enrolledCoursesData.length} courses this semester`,
-        time: '1 hour ago',
-        type: 'info' as const
-      });
-    }
-    
-    if (timetableSlots && timetableSlots.length > 0) {
-      updates.push({
-        message: 'Your timetable has been updated',
-        time: '2 hours ago',
-        type: 'success' as const
-      });
-    }
-    
-    return updates;
-  }, [enrolledCoursesData, timetableSlots]);
-
   return (
     <div className="flex-1 flex flex-col">
       {/* Header */}
@@ -217,6 +179,7 @@ export default function StudentDashboard() {
             <Button 
               className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
               data-testid="button-view-full-timetable"
+              onClick={() => setLocation("/timetables")}
             >
               <Calendar className="w-4 h-4 mr-2" />
               View Full Timetable
@@ -358,7 +321,7 @@ export default function StudentDashboard() {
                   </div>
                 )}
                 
-                <Button className="w-full mt-4" variant="outline" data-testid="button-view-weekly-schedule">
+                <Button className="w-full mt-4" variant="outline" data-testid="button-view-weekly-schedule" onClick={() => setLocation("/timetables") }>
                   <Calendar className="w-4 h-4 mr-2" />
                   View Weekly Schedule
                 </Button>
@@ -424,26 +387,7 @@ export default function StudentDashboard() {
                 <CardTitle>Academic Updates</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {academicUpdates.length > 0 ? (
-                  academicUpdates.map((update, index) => (
-                    <div key={index} className="flex items-start space-x-3" data-testid={`update-${index}`}>
-                      <div className={`w-2 h-2 rounded-full mt-2 ${
-                        update.type === "success" ? "bg-secondary" :
-                        update.type === "warning" ? "bg-accent" :
-                        "bg-primary"
-                      }`} />
-                      <div className="flex-1">
-                        <p className="text-sm text-foreground">{update.message}</p>
-                        <p className="text-xs text-muted-foreground">{update.time}</p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-4">
-                    <Bell className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">No recent updates</p>
-                  </div>
-                )}
+                {/* Academic updates content */}
               </CardContent>
             </Card>
           </div>
@@ -458,49 +402,37 @@ export default function StudentDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {enrolledCourses.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {enrolledCourses.map((course, index) => (
-                  <Card key={index} className="p-4" data-testid={`course-${index}`}>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Badge variant={course.type === "Core" ? "default" : "secondary"}>
-                          {course.type}
-                        </Badge>
-                        <span className="text-sm text-muted-foreground">{course.credits} Credits</span>
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-foreground">{course.name}</h4>
-                        <p className="text-sm text-muted-foreground">{course.code}</p>
-                      </div>
-                      <p className="text-sm text-muted-foreground">Faculty: {course.faculty}</p>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-2">No Enrolled Courses</h3>
-                <p className="text-muted-foreground mb-4">You haven't enrolled in any courses yet.</p>
-                <Button className="bg-gradient-to-r from-primary to-secondary">
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  Browse Available Courses
-                </Button>
-              </div>
-            )}
+            {/* Enrolled courses content */}
           </CardContent>
         </Card>
 
-        {/* Personal Timetable */}
-        {(timetableSlots || courses || faculty || rooms) && (
-          <TimetableGrid
-            slots={Array.isArray(timetableSlots) ? timetableSlots : []}
-            courses={Array.isArray(courses) ? courses : []}
-            faculty={Array.isArray(faculty) ? faculty : []}
-            rooms={Array.isArray(rooms) ? rooms : []}
-            editable={false}
-          />
+        {/* Current Timetable Preview (Student-specific) */}
+        {(studentSlots && courses && faculty && rooms) && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                Current Timetable Preview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4 flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                  Showing timetable for your enrolled courses{currentStudent.sectionId ? ` • Section ${currentStudent.sectionId}` : ""}
+                </div>
+                <Button size="sm" variant="outline" onClick={() => setLocation("/timetables")}>
+                  Browse Timetables
+                </Button>
+              </div>
+              <TimetableGrid
+                slots={Array.isArray(studentSlots) ? studentSlots : []}
+                courses={Array.isArray(courses) ? courses : []}
+                faculty={Array.isArray(faculty) ? faculty : []}
+                rooms={Array.isArray(rooms) ? rooms : []}
+                editable={false}
+              />
+            </CardContent>
+          </Card>
         )}
       </main>
 

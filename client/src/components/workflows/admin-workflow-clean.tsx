@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,17 +19,12 @@ import {
   Timer,
   MapPin,
   Download,
-  Upload,
-  Sparkles,
-  FileText,
-  GraduationCap
+  Upload
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 
-export interface BaseSetupData {
+interface BaseSetupData {
   workingDays: string[];
   startTime: string;
   endTime: string;
@@ -40,40 +35,6 @@ export interface BaseSetupData {
     endTime: string;
   };
 }
-
-export interface CourseData {
-  id: string;
-  courseCode: string;
-  courseName: string;
-  credits: number;
-  type: "theory" | "lab" | "both";
-  category: "core" | "elective" | "skill" | "project";
-  expectedStrength: number;
-}
-
-export interface FacultyData {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  department: string;
-  specialization: string[];
-  maxWorkload: number;
-  availability: {
-    [day: string]: string[];
-  };
-}
-
-export interface RoomData {
-  id: string;
-  roomNumber: string;
-  roomName: string;
-  roomType: string;
-  capacity: number;
-  equipment: string[];
-  location?: string;
-}
-
 
 export default function AdminWorkflow() {
   const { toast } = useToast();
@@ -94,30 +55,18 @@ export default function AdminWorkflow() {
     }
   });
 
-  // State for courses, faculty, and rooms
-  const [courses, setCourses] = useState<CourseData[]>([]);
-
-  // Fetch data from API with proper types
-  const { data: existingCourses } = useQuery<CourseData[]>({
+  const { data: existingCourses } = useQuery({
     queryKey: ["/api/courses"],
   });
 
-  const { data: faculty } = useQuery<FacultyData[]>({
+  const { data: faculty } = useQuery({
     queryKey: ["/api/faculty"],
   });
 
-  const { data: rooms } = useQuery<RoomData[]>({
+  const { data: rooms } = useQuery({
     queryKey: ["/api/rooms"],
   });
 
-  // Update courses when existingCourses changes
-  useEffect(() => {
-    if (existingCourses) {
-      setCourses(existingCourses);
-    }
-  }, [existingCourses]);
-
-  // Mutations
   const generateSlotMappingMutation = useMutation({
     mutationFn: async (data: any) => {
       const response = await apiRequest("POST", "/api/admin/generate-slot-mappings", data);
@@ -145,40 +94,11 @@ export default function AdminWorkflow() {
     },
   });
 
-  const allocateClassroomsMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await apiRequest("POST", "/api/admin/allocate-classrooms", data);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      return response.json();
-    },
-    onSuccess: (data) => {
-      setProgress(100);
-      setIsGenerating(false);
-      toast({
-        title: "Classrooms Allocated Successfully",
-        description: `Generated ${data.classIds?.length || 0} unique Class IDs`,
-      });
-    },
-    onError: (error) => {
-      setProgress(0);
-      setIsGenerating(false);
-      toast({
-        title: "Allocation Failed",
-        description: `Failed to allocate classrooms: ${error.message || 'Unknown error'}`,
-        variant: "destructive",
-      });
-    },
-  });
-
-
-  // Handlers
   const handleSlotMappingGeneration = async () => {
-    if (!courses.length || !faculty?.length || !rooms?.length) {
+    if (!existingCourses?.length || !faculty?.length || !rooms?.length) {
       toast({
         title: "Incomplete Setup",
-        description: "Please ensure you have added courses, faculty, and rooms before generating.",
+        description: "Please ensure you have courses, faculty, and rooms configured before generating.",
         variant: "destructive",
       });
       return;
@@ -187,6 +107,7 @@ export default function AdminWorkflow() {
     setIsGenerating(true);
     setProgress(0);
 
+    // Progress tracking
     const progressInterval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 90) return prev;
@@ -195,7 +116,7 @@ export default function AdminWorkflow() {
     }, 500);
 
     const requestData = {
-      program: "Computer Science", // Use the actual program name from database
+      program: "Computer Science",
       semester: 1,
       batch: "2024",
       academicYear: "2024-25",
@@ -214,52 +135,13 @@ export default function AdminWorkflow() {
       await generateSlotMappingMutation.mutateAsync(requestData);
     } catch (error) {
       clearInterval(progressInterval);
+      // Error handled in mutation
     }
   };
-
-  const handleClassroomAllocation = async () => {
-    if (!courses.length || !rooms?.length) {
-      toast({
-        title: "Incomplete Setup",
-        description: "Please ensure you have courses and rooms configured before allocation.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsGenerating(true);
-    setProgress(0);
-
-    const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 90) return prev;
-        return prev + Math.random() * 10;
-      });
-    }, 500);
-
-    const requestData = {
-      courses: courses,
-      rooms: rooms,
-      preferences: {
-        prioritizeGroundFloor: true,
-        maintainBufferCapacity: true,
-        preferEquippedRooms: true
-      }
-    };
-
-    try {
-      clearInterval(progressInterval);
-      setProgress(90);
-      await allocateClassroomsMutation.mutateAsync(requestData);
-    } catch (error) {
-      clearInterval(progressInterval);
-    }
-  };
-
 
   const stepTitles = [
     "Base Configuration",
-    "Generate Slot-Time Mappings", 
+    "Generate Slot-Time Mappings",
     "Classroom Allocation"
   ];
 
@@ -319,7 +201,7 @@ export default function AdminWorkflow() {
                 Base Configuration Setup
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Configure basic timetable settings including working days, timings, and constraints.
+                Configure departments, courses, faculty, student data, and basic timetable settings
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -507,6 +389,40 @@ export default function AdminWorkflow() {
                 </div>
               </div>
 
+              {/* Generation Options */}
+              <div className="space-y-4">
+                <Label className="text-base font-medium">Generation Settings</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="program">Program</Label>
+                    <Select defaultValue="Computer Science">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Computer Science">Computer Science</SelectItem>
+                        <SelectItem value="Information Technology">Information Technology</SelectItem>
+                        <SelectItem value="Electronics">Electronics</SelectItem>
+                        <SelectItem value="Mechanical">Mechanical</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="semester">Semester</Label>
+                    <Select defaultValue="1">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1,2,3,4,5,6,7,8].map(sem => (
+                          <SelectItem key={sem} value={sem.toString()}>Semester {sem}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
               {/* Generate Button */}
               <Button 
                 onClick={handleSlotMappingGeneration}
@@ -573,6 +489,21 @@ export default function AdminWorkflow() {
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Timetable Selection */}
+              <div className="space-y-4">
+                <Label className="text-base font-medium">Select Timetable for Room Allocation</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a generated timetable" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="timetable-1">Computer Science Sem 1 - Auto Generated</SelectItem>
+                    <SelectItem value="timetable-2">Information Technology Sem 2 - AI Generated</SelectItem>
+                    <SelectItem value="timetable-3">Electronics Sem 3 - Manual</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Room Inventory Summary */}
               <div className="space-y-4">
                 <Label className="text-base font-medium">Available Room Inventory</Label>
@@ -621,50 +552,6 @@ export default function AdminWorkflow() {
                 </div>
               </div>
 
-              {/* Allocation Rules */}
-              <div className="space-y-4">
-                <Label className="text-base font-medium">Allocation Rules & Preferences</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox defaultChecked />
-                          <Label className="text-sm">Prioritize ground floor for large classes</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox defaultChecked />
-                          <Label className="text-sm">Keep lab sessions in dedicated lab rooms</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox defaultChecked />
-                          <Label className="text-sm">Maintain 10% buffer capacity</Label>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox defaultChecked />
-                          <Label className="text-sm">Ensure AC rooms for summer sessions</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox />
-                          <Label className="text-sm">Prefer projector-equipped rooms</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox />
-                          <Label className="text-sm">Allow room sharing for small classes</Label>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-
               {/* Class ID Generation Info */}
               <Card className="bg-muted/50">
                 <CardHeader>
@@ -703,7 +590,6 @@ export default function AdminWorkflow() {
 
               {/* Allocate Button */}
               <Button 
-                onClick={handleClassroomAllocation}
                 className="w-full py-6 bg-gradient-to-r from-green-500 to-green-600 text-white"
                 disabled={isGenerating}
               >

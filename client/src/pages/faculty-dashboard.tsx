@@ -1,12 +1,17 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Moon, Calendar, User as UserIcon, BookOpen, Clock, Users, Settings, CheckCircle, Loader2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Bell, Moon, Calendar, User as UserIcon, BookOpen, Clock, Users, Settings, CheckCircle, Loader2, AlertTriangle, Plus } from "lucide-react";
 import { TimetableGrid } from "@/components/timetable-grid";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import type { Faculty, Course, TimetableSlot, Room } from "@shared/schema";
 
 // Extended type for faculty with additional properties
@@ -60,7 +65,9 @@ interface WeeklySchedule {
 
 export default function FacultyDashboard() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [selectedFaculty, setSelectedFaculty] = useState<string>("");
+  const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
 
   // Get current faculty data from auth context
   const currentFaculty = user as unknown as ExtendedFaculty;
@@ -131,6 +138,60 @@ export default function FacultyDashboard() {
     enabled: !!currentFaculty?.id,
     initialData: []
   });
+
+  // Fetch pre-assigned courses with constraints
+  const { data: preAssignedData, isLoading: preAssignedLoading, refetch: refetchPreAssigned } = useQuery({
+    queryKey: [`/api/faculty/${currentFaculty?.id}/pre-assigned-courses`],
+    enabled: !!currentFaculty?.id,
+  });
+
+  // Course selection mutation
+  const selectCoursesMutation = useMutation({
+    mutationFn: async (courseIds: string[]) => {
+      const response = await apiRequest("POST", `/api/faculty/${currentFaculty?.id}/select-courses`, {
+        courseIds
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Courses Selected Successfully",
+        description: `Selected ${data.selectedCourses.length} courses. New workload: ${data.newWorkload} credits.`,
+      });
+      setSelectedCourses([]);
+      refetchPreAssigned();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Selection Failed",
+        description: error.message || 'Failed to select courses',
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCourseSelection = (courseId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedCourses(prev => [...prev, courseId]);
+    } else {
+      setSelectedCourses(prev => prev.filter(id => id !== courseId));
+    }
+  };
+
+  const handleSubmitSelection = () => {
+    if (selectedCourses.length === 0) {
+      toast({
+        title: "No Courses Selected",
+        description: "Please select at least one course to proceed.",
+        variant: "destructive",
+      });
+      return;
+    }
+    selectCoursesMutation.mutate(selectedCourses);
+  };
 
   // Default stat structure for display
   const defaultStats = [
@@ -398,55 +459,205 @@ export default function FacultyDashboard() {
           </div>
         </div>
 
-        {/* Assigned Courses */}
+        {/* Course Management */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BookOpen className="w-5 h-5" />
-              Assigned Courses - Current Semester
+              Course Management
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {coursesLoading ? (
-              <div className="flex items-center justify-center p-8">
-                <Loader2 className="w-6 h-6 animate-spin mr-2" />
-                <span className="text-muted-foreground">Loading assigned courses...</span>
-              </div>
-            ) : assignedCourses.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {assignedCourses.map((course, index) => (
-                  <Card key={index} className="p-4" data-testid={`course-${index}`}>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Badge variant="default">
-                          {course.code}
-                        </Badge>
-                        <span className="text-sm text-muted-foreground">{course.hours} hrs/week</span>
+            <Tabs defaultValue="assigned" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="assigned">Assigned Courses</TabsTrigger>
+                <TabsTrigger value="available">Available Courses</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="assigned" className="space-y-4">
+                {coursesLoading ? (
+                  <div className="flex items-center justify-center p-8">
+                    <Loader2 className="w-6 h-6 animate-spin mr-2" />
+                    <span className="text-muted-foreground">Loading assigned courses...</span>
+                  </div>
+                ) : assignedCourses.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {assignedCourses.map((course, index) => (
+                      <Card key={index} className="p-4" data-testid={`course-${index}`}>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Badge variant="default">
+                              {course.code}
+                            </Badge>
+                            <span className="text-sm text-muted-foreground">{course.hours} hrs/week</span>
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-foreground">{course.name}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              Sections: {Array.isArray(course.sections) ? course.sections.join(", ") : course.sections}
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">
+                              {course.students} students
+                            </span>
+                            <Button size="sm" variant="outline">
+                              Manage
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center p-8 text-muted-foreground">
+                    <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>No courses assigned for this semester</p>
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="available" className="space-y-4">
+                {preAssignedLoading ? (
+                  <div className="flex items-center justify-center p-8">
+                    <Loader2 className="w-6 h-6 animate-spin mr-2" />
+                    <span className="text-muted-foreground">Loading available courses...</span>
+                  </div>
+                ) : preAssignedData ? (
+                  <div className="space-y-6">
+                    {/* Workload Information */}
+                    <Card className="bg-muted/50">
+                      <CardContent className="p-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-primary">
+                              {preAssignedData.workloadInfo?.currentWorkload || 0}
+                            </div>
+                            <div className="text-sm text-muted-foreground">Current Credits</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-secondary">
+                              {preAssignedData.workloadInfo?.maxWorkload || 20}
+                            </div>
+                            <div className="text-sm text-muted-foreground">Max Credits</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-accent">
+                              {preAssignedData.workloadInfo?.availableWorkload || 0}
+                            </div>
+                            <div className="text-sm text-muted-foreground">Available</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-green-600">
+                              {preAssignedData.workloadInfo?.utilizationPercentage || 0}%
+                            </div>
+                            <div className="text-sm text-muted-foreground">Utilization</div>
+                          </div>
+                        </div>
+                        <div className="mt-4">
+                          <Progress 
+                            value={preAssignedData.workloadInfo?.utilizationPercentage || 0} 
+                            className="h-2"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Available Courses */}
+                    {preAssignedData.preAssignedCourses?.length > 0 ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-medium">Pre-assigned Courses</h3>
+                          <Badge variant="outline">
+                            {preAssignedData.preAssignedCourses.length} available
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid gap-4">
+                          {preAssignedData.preAssignedCourses.map((course: any) => (
+                            <Card key={course.id} className={`p-4 ${!course.canAssign ? 'opacity-60' : ''}`}>
+                              <div className="flex items-start space-x-3">
+                                <Checkbox
+                                  checked={selectedCourses.includes(course.id)}
+                                  onCheckedChange={(checked) => handleCourseSelection(course.id, checked as boolean)}
+                                  disabled={!course.canAssign || selectCoursesMutation.isPending}
+                                />
+                                <div className="flex-1 space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <Badge variant="default" className="mr-2">
+                                        {course.courseCode}
+                                      </Badge>
+                                      <span className="font-medium">{course.courseName}</span>
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="text-sm font-medium">{course.credits} credits</div>
+                                      <div className="text-xs text-muted-foreground">
+                                        Impact: +{course.workloadImpact}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                                    <span>{course.program} • Semester {course.semester}</span>
+                                    {!course.canAssign && course.conflictReason && (
+                                      <div className="flex items-center text-red-600">
+                                        <AlertTriangle className="w-4 h-4 mr-1" />
+                                        {course.conflictReason}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+
+                        {selectedCourses.length > 0 && (
+                          <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg">
+                            <div>
+                              <span className="font-medium">{selectedCourses.length} courses selected</span>
+                              <div className="text-sm text-muted-foreground">
+                                Total impact: +{preAssignedData.preAssignedCourses
+                                  .filter((c: any) => selectedCourses.includes(c.id))
+                                  .reduce((sum: number, c: any) => sum + c.workloadImpact, 0)} credits
+                              </div>
+                            </div>
+                            <Button 
+                              onClick={handleSubmitSelection}
+                              disabled={selectCoursesMutation.isPending}
+                            >
+                              {selectCoursesMutation.isPending ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  Selecting...
+                                </>
+                              ) : (
+                                <>
+                                  <Plus className="w-4 h-4 mr-2" />
+                                  Select Courses
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        )}
                       </div>
-                      <div>
-                        <h4 className="font-medium text-foreground">{course.name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Sections: {Array.isArray(course.sections) ? course.sections.join(", ") : course.sections}
-                        </p>
+                    ) : (
+                      <div className="text-center p-8 text-muted-foreground">
+                        <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>No pre-assigned courses available</p>
+                        <p className="text-sm">Courses are assigned based on your expertise and department</p>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">
-                          {course.students} students
-                        </span>
-                        <Button size="sm" variant="outline">
-                          Manage
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center p-8 text-muted-foreground">
-                <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No courses assigned for this semester</p>
-              </div>
-            )}
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center p-8 text-muted-foreground">
+                    <AlertTriangle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>Unable to load course information</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
 

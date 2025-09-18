@@ -2017,6 +2017,542 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Panel - Auto-generate slot-time mappings
+  app.post("/api/admin/generate-slot-mappings", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const { program, semester, batch, academicYear, baseConfig } = req.body;
+      
+      // Fetch required data
+      const courses = await storage.getCourses();
+      const faculty = await storage.getFaculty();
+      const rooms = await storage.getRooms();
+      
+      // Filter courses for the specific program and semester
+      const filteredCourses = courses.filter(course => 
+        course.program === program && course.semester === semester && course.isActive
+      );
+
+      console.log(`Filtering courses for program: ${program}, semester: ${semester}`);
+      console.log(`Total courses: ${courses.length}, Filtered courses: ${filteredCourses.length}`);
+      console.log('Available programs:', Array.from(new Set(courses.map(c => c.program))));
+
+      if (filteredCourses.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: `No courses found for program "${program}" and semester ${semester}. Available programs: ${Array.from(new Set(courses.map(c => c.program))).join(', ')}`
+        });
+      }
+
+      // Generate time slots based on base configuration
+      const timeSlots = [];
+      const workingDays = baseConfig.workingDays || ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+      const startTime = baseConfig.startTime || "09:00";
+      const endTime = baseConfig.endTime || "17:00";
+      const slotDuration = baseConfig.slotDuration || 50;
+      const lunchBreak = baseConfig.lunchBreak || { startTime: "12:50", endTime: "13:50" };
+
+      // Generate slots for each working day
+      for (const day of workingDays) {
+        let currentTime = startTime;
+        let slotIndex = 1;
+        
+        while (currentTime < endTime) {
+          const [hours, minutes] = currentTime.split(':').map(Number);
+          const endHours = Math.floor((hours * 60 + minutes + slotDuration) / 60);
+          const endMinutes = (hours * 60 + minutes + slotDuration) % 60;
+          const slotEndTime = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+          
+          // Skip lunch break
+          if (!(currentTime >= lunchBreak.startTime && currentTime < lunchBreak.endTime)) {
+            timeSlots.push({
+              id: `${day.toLowerCase().substr(0, 3)}-${slotIndex}`,
+              dayOfWeek: day,
+              startTime: currentTime,
+              endTime: slotEndTime,
+              duration: slotDuration,
+              type: slotIndex > 6 ? "lab" : "theory" // Later slots for labs
+            });
+          }
+          
+          // Move to next slot
+          currentTime = slotEndTime;
+          slotIndex++;
+          
+          // Break for lunch
+          if (currentTime === lunchBreak.startTime) {
+            currentTime = lunchBreak.endTime;
+          }
+        }
+      }
+
+      // Auto-assign courses to slots with basic distribution
+      const slotMappings = [];
+      let courseIndex = 0;
+      
+      for (const slot of timeSlots) {
+        if (filteredCourses.length > 0) {
+          const course = filteredCourses[courseIndex % filteredCourses.length];
+          
+          // Find suitable faculty (basic matching by expertise)
+          const suitableFaculty = faculty.find(f => 
+            f.isActive && 
+            Array.isArray(f.expertise) && f.expertise.some(exp => 
+              course.courseName.toLowerCase().includes(exp.toLowerCase()) ||
+              course.courseCode.toLowerCase().includes(exp.toLowerCase())
+            )
+          ) || faculty.find(f => f.isActive);
+
+          // Find suitable room
+          const suitableRoom = rooms.find(r => 
+            r.isAvailable !== false && 
+            r.capacity >= 30 &&
+            (slot.type === 'lab' ? 
+              r.roomType.toLowerCase().includes('lab') : 
+              !r.roomType.toLowerCase().includes('lab'))
+          ) || rooms.find(r => r.isAvailable !== false);
+
+          slotMappings.push({
+            slotId: slot.id,
+            dayOfWeek: slot.dayOfWeek,
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+            courseId: course.id,
+            courseCode: course.courseCode,
+            courseName: course.courseName,
+            facultyId: suitableFaculty?.id || null,
+            facultyName: suitableFaculty ? `${suitableFaculty.firstName} ${suitableFaculty.lastName}` : null,
+            roomId: suitableRoom?.id || null,
+            roomNumber: suitableRoom?.roomNumber || null,
+            slotType: slot.type
+          });
+          
+          courseIndex++;
+        }
+      }
+
+      // Create timetable record
+      console.log(`Creating timetable with ${slotMappings.length} slot mappings`);
+      const timetable = await storage.createTimetable({
+        name: `Auto-Generated Timetable - ${program} Sem ${semester}`,
+        program,
+        semester,
+        batch,
+        academicYear,
+        schedule: { timeSlots, slotMappings },
+        conflicts: [],
+        optimizationScore: 75, // Basic score for auto-generated
+        status: 'draft',
+        generatedBy: 'Auto-Generator',
+      });
+      console.log(`Timetable created successfully with ID: ${timetable.id}`);
+
+      // Create individual TimetableSlot records for proper display
+      console.log(`Creating ${slotMappings.length} individual timetable slot records`);
+      const createdSlots = [];
+      for (const mapping of slotMappings) {
+        if (mapping.courseId && mapping.facultyId && mapping.roomId) {
+          const slotRecord = await storage.createTimetableSlot({
+            timetableId: timetable.id,
+            courseId: mapping.courseId,
+            facultyId: mapping.facultyId,
+            roomId: mapping.roomId,
+            sectionIds: [], // Empty array for now
+            dayOfWeek: mapping.dayOfWeek,
+            startTime: mapping.startTime,
+            endTime: mapping.endTime,
+            slotType: mapping.slotType || 'theory',
+            isLabBlock: mapping.slotType === 'lab',
+            specialInstructions: `Course Code: ${mapping.courseCode}`
+          });
+          createdSlots.push(slotRecord);
+        }
+      }
+      console.log(`Created ${createdSlots.length} timetable slot records`);
+
+      res.json({
+        success: true,
+        message: "Slot-time mappings generated successfully",
+        timetable,
+        slotMappings,
+        createdSlots: createdSlots.length,
+        totalSlots: timeSlots.length,
+        mappedSlots: slotMappings.length
+      });
+
+    } catch (error) {
+      console.error("Slot mapping generation error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to generate slot-time mappings",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Faculty Panel - Get pre-assigned course list with constraints
+  app.get("/api/faculty/:id/pre-assigned-courses", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const user = (req as any).user;
+      
+      // Authorization check
+      if (user.role === 'faculty' && user.userId !== id) {
+        return res.status(403).json({ message: "You can only view your own pre-assigned courses" });
+      } else if (user.role !== 'admin' && user.role !== 'faculty') {
+        return res.status(403).json({ message: "Insufficient permissions" });
+      }
+      
+      // Get faculty member
+      const facultyMember = await storage.getFacultyMember(id);
+      if (!facultyMember) {
+        return res.status(404).json({ message: "Faculty member not found" });
+      }
+
+      // Get all courses
+      const allCourses = await storage.getCourses();
+      
+      // Filter courses based on faculty expertise and department
+      const preAssignedCourses = allCourses.filter(course => {
+        // Check if course matches faculty expertise
+        const expertiseMatch = facultyMember.expertise.some(exp =>
+          course.courseName.toLowerCase().includes(exp.toLowerCase()) ||
+          course.courseCode.toLowerCase().includes(exp.toLowerCase()) ||
+          course.program.toLowerCase().includes(exp.toLowerCase())
+        );
+        
+        // Check if course is active and not already assigned
+        const isAvailable = course.isActive && !facultyMember.assignedCourses.includes(course.id);
+        
+        return expertiseMatch && isAvailable;
+      });
+
+      // Calculate workload constraints
+      const currentWorkload = facultyMember.assignedCourses.length * 3; // Assuming 3 credits average
+      const maxWorkload = facultyMember.maxWorkload || 20;
+      const availableWorkload = maxWorkload - currentWorkload;
+
+      // Add constraint information to each course
+      const coursesWithConstraints = preAssignedCourses.map(course => ({
+        ...course,
+        canAssign: course.credits <= availableWorkload,
+        workloadImpact: course.credits,
+        conflictReason: course.credits > availableWorkload ? 'Exceeds maximum workload' : null
+      }));
+
+      res.json({
+        preAssignedCourses: coursesWithConstraints,
+        workloadInfo: {
+          currentWorkload,
+          maxWorkload,
+          availableWorkload,
+          utilizationPercentage: Math.round((currentWorkload / maxWorkload) * 100)
+        },
+        constraints: {
+          maxCoursesPerSemester: Math.floor(maxWorkload / 3),
+          preferredWorkloadRange: [15, maxWorkload],
+          expertiseAreas: facultyMember.expertise
+        }
+      });
+
+    } catch (error) {
+      console.error("Pre-assigned courses error:", error);
+      res.status(500).json({
+        message: "Failed to fetch pre-assigned courses",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Faculty Panel - Select courses with constraint validation
+  app.post("/api/faculty/:id/select-courses", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { courseIds } = req.body;
+      const user = (req as any).user;
+      
+      // Authorization check
+      if (user.role === 'faculty' && user.userId !== id) {
+        return res.status(403).json({ message: "You can only select courses for yourself" });
+      } else if (user.role !== 'admin' && user.role !== 'faculty') {
+        return res.status(403).json({ message: "Insufficient permissions" });
+      }
+
+      // Get faculty member
+      const facultyMember = await storage.getFacultyMember(id);
+      if (!facultyMember) {
+        return res.status(404).json({ message: "Faculty member not found" });
+      }
+
+      // Get courses to be assigned
+      const courses = await Promise.all(courseIds.map((courseId: string) => storage.getCourse(courseId)));
+      const validCourses = courses.filter(course => course !== null);
+
+      // Validate constraints
+      const totalCredits = validCourses.reduce((sum, course) => sum + course.credits, 0);
+      const currentWorkload = facultyMember.assignedCourses.length * 3;
+      const newWorkload = currentWorkload + totalCredits;
+
+      if (newWorkload > (facultyMember.maxWorkload || 20)) {
+        return res.status(400).json({
+          success: false,
+          message: "Course selection exceeds maximum workload",
+          currentWorkload,
+          requestedCredits: totalCredits,
+          maxWorkload: facultyMember.maxWorkload || 20
+        });
+      }
+
+      // Check for time conflicts (basic check)
+      const conflicts: string[] = [];
+      // This would need more sophisticated conflict detection based on actual time slots
+
+      // Update faculty assigned courses
+      const updatedAssignedCourses = [...facultyMember.assignedCourses, ...courseIds];
+      const updatedFaculty = await storage.updateFaculty(id, {
+        assignedCourses: updatedAssignedCourses
+      });
+
+      res.json({
+        success: true,
+        message: "Courses selected successfully",
+        faculty: updatedFaculty,
+        selectedCourses: validCourses,
+        newWorkload,
+        conflicts
+      });
+
+    } catch (error) {
+      console.error("Course selection error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to select courses",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Classroom Allocation - Allocate rooms with unique Class ID generation
+  app.post("/api/admin/allocate-classrooms", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const { timetableId, allocationRules } = req.body;
+      
+      // Get timetable and its slots
+      const timetable = await storage.getTimetable(timetableId);
+      if (!timetable) {
+        return res.status(404).json({ message: "Timetable not found" });
+      }
+
+      const slots = await storage.getTimetableSlots(timetableId);
+      const rooms = await storage.getRooms();
+      const courses = await storage.getCourses();
+      const faculty = await storage.getFaculty();
+      const students = await storage.getStudents();
+
+      // Generate unique Class IDs and allocate rooms
+      const classAllocations = [];
+      const roomUtilization = new Map();
+
+      for (const slot of slots) {
+        // Generate unique Class ID
+        const course = courses.find(c => c.id === slot.courseId);
+        const facultyMember = faculty.find(f => f.id === slot.facultyId);
+        const timestamp = Date.now().toString(36);
+        const random = Math.random().toString(36).substring(2, 5);
+        
+        const classId = `CLS-${course?.courseCode || 'UNK'}-${slot.dayOfWeek.substring(0, 3).toUpperCase()}-${slot.startTime.replace(':', '')}-${timestamp}-${random}`;
+
+        // Find suitable room based on allocation rules
+        let allocatedRoom = null;
+        const enrolledStudents = students.filter(s => 
+          s.enrolledCourses.includes(slot.courseId) && s.isActive
+        );
+
+        // Room selection criteria
+        const requiredCapacity = enrolledStudents.length + Math.ceil(enrolledStudents.length * 0.1); // 10% buffer
+        const suitableRooms = rooms.filter(room => {
+          const isAvailable = room.isAvailable;
+          const hasCapacity = room.capacity >= requiredCapacity;
+          const typeMatch = slot.slotType === 'lab' ? 
+            room.roomType.toLowerCase().includes('lab') : 
+            !room.roomType.toLowerCase().includes('lab');
+          
+          // Check room utilization for this time slot
+          const roomKey = `${room.id}-${slot.dayOfWeek}-${slot.startTime}`;
+          const isTimeSlotFree = !roomUtilization.has(roomKey);
+          
+          return isAvailable && hasCapacity && typeMatch && isTimeSlotFree;
+        });
+
+        // Prioritize rooms based on allocation rules
+        if (suitableRooms.length > 0) {
+          // Sort by preference: capacity match, equipment, location
+          suitableRooms.sort((a, b) => {
+            const aCapacityScore = Math.abs(a.capacity - requiredCapacity);
+            const bCapacityScore = Math.abs(b.capacity - requiredCapacity);
+            return aCapacityScore - bCapacityScore;
+          });
+          
+          allocatedRoom = suitableRooms[0];
+          const roomKey = `${allocatedRoom.id}-${slot.dayOfWeek}-${slot.startTime}`;
+          roomUtilization.set(roomKey, true);
+        }
+
+        // Create class allocation record
+        const classAllocation = {
+          classId,
+          timetableSlotId: slot.id,
+          courseId: slot.courseId,
+          courseCode: course?.courseCode || 'Unknown',
+          courseName: course?.courseName || 'Unknown Course',
+          facultyId: slot.facultyId,
+          facultyName: facultyMember ? `${facultyMember.firstName} ${facultyMember.lastName}` : 'Unknown Faculty',
+          roomId: allocatedRoom?.id || null,
+          roomNumber: allocatedRoom?.roomNumber || 'TBA',
+          roomType: allocatedRoom?.roomType || 'TBA',
+          dayOfWeek: slot.dayOfWeek,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          slotType: slot.slotType,
+          enrolledStudents: enrolledStudents.map(s => ({
+            studentId: s.studentId,
+            name: `${s.firstName} ${s.lastName}`,
+            program: s.program,
+            semester: s.semester
+          })),
+          capacity: allocatedRoom?.capacity || 0,
+          utilization: allocatedRoom ? Math.round((enrolledStudents.length / allocatedRoom.capacity) * 100) : 0,
+          equipment: allocatedRoom?.equipment || [],
+          location: allocatedRoom?.location || 'TBA'
+        };
+
+        classAllocations.push(classAllocation);
+
+        // Update the timetable slot with room allocation
+        if (allocatedRoom) {
+          await storage.updateTimetableSlot(slot.id, {
+            roomId: allocatedRoom.id,
+            specialInstructions: `Class ID: ${classId}`
+          });
+        }
+      }
+
+      // Generate allocation summary
+      const allocationSummary = {
+        totalClasses: classAllocations.length,
+        allocatedClasses: classAllocations.filter(c => c.roomId).length,
+        unallocatedClasses: classAllocations.filter(c => !c.roomId).length,
+        roomUtilizationRate: Math.round((roomUtilization.size / (rooms.length * slots.length)) * 100),
+        averageCapacityUtilization: Math.round(
+          classAllocations.reduce((sum, c) => sum + c.utilization, 0) / classAllocations.length
+        )
+      };
+
+      res.json({
+        success: true,
+        message: "Classroom allocation completed",
+        classAllocations,
+        allocationSummary,
+        unallocatedClasses: classAllocations.filter(c => !c.roomId)
+      });
+
+    } catch (error) {
+      console.error("Classroom allocation error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to allocate classrooms",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Get class details by Class ID
+  app.get("/api/classes/:classId", async (req, res) => {
+    try {
+      const { classId } = req.params;
+      
+      // This would typically query a dedicated classes table
+      // For now, we'll search through timetable slots with the class ID in special instructions
+      const timetables = await storage.getTimetables();
+      let foundClass = null;
+
+      for (const timetable of timetables) {
+        const slots = await storage.getTimetableSlots(timetable.id);
+        const slot = slots.find(s => 
+          s.specialInstructions && s.specialInstructions.includes(classId)
+        );
+        
+        if (slot) {
+          const course = await storage.getCourse(slot.courseId);
+          const faculty = await storage.getFacultyMember(slot.facultyId);
+          const room = await storage.getRoom(slot.roomId);
+          const students = await storage.getStudents();
+          const enrolledStudents = students.filter(s => 
+            s.enrolledCourses.includes(slot.courseId) && s.isActive
+          );
+
+          foundClass = {
+            classId,
+            course: course ? {
+              id: course.id,
+              code: course.courseCode,
+              name: course.courseName,
+              credits: course.credits,
+              type: course.courseType
+            } : null,
+            faculty: faculty ? {
+              id: faculty.id,
+              name: `${faculty.firstName} ${faculty.lastName}`,
+              email: faculty.email,
+              department: faculty.department
+            } : null,
+            room: room ? {
+              id: room.id,
+              number: room.roomNumber,
+              name: room.roomName,
+              type: room.roomType,
+              capacity: room.capacity,
+              location: room.location,
+              equipment: room.equipment
+            } : null,
+            schedule: {
+              dayOfWeek: slot.dayOfWeek,
+              startTime: slot.startTime,
+              endTime: slot.endTime,
+              slotType: slot.slotType
+            },
+            enrolledStudents: enrolledStudents.map(s => ({
+              studentId: s.studentId,
+              name: `${s.firstName} ${s.lastName}`,
+              email: s.email,
+              program: s.program,
+              semester: s.semester,
+              batch: s.batch
+            })),
+            statistics: {
+              totalEnrolled: enrolledStudents.length,
+              capacityUtilization: room ? Math.round((enrolledStudents.length / room.capacity) * 100) : 0,
+              attendanceRate: 0 // Would be calculated from attendance records
+            }
+          };
+          break;
+        }
+      }
+
+      if (!foundClass) {
+        return res.status(404).json({ message: "Class not found" });
+      }
+
+      res.json(foundClass);
+
+    } catch (error) {
+      console.error("Get class details error:", error);
+      res.status(500).json({
+        message: "Failed to fetch class details",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

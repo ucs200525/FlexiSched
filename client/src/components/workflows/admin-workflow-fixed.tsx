@@ -21,14 +21,14 @@ import {
   Download,
   Upload,
   Sparkles,
-  FileText,
-  GraduationCap
+  FileText
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
+// Type Definitions
 export interface BaseSetupData {
   workingDays: string[];
   startTime: string;
@@ -74,12 +74,94 @@ export interface RoomData {
   location?: string;
 }
 
+interface ImportDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  description: string;
+  sampleFormat: string;
+  sampleData: string;
+  onImport: (data: any[]) => void;
+  isLoading: boolean;
+}
+
+const ImportDialog = ({
+  open,
+  onOpenChange,
+  title,
+  description,
+  sampleFormat,
+  sampleData,
+  onImport,
+  isLoading
+}: ImportDialogProps) => {
+  const [data, setData] = useState("");
+  const [error, setError] = useState("");
+
+  const handleImport = () => {
+    try {
+      const parsedData = JSON.parse(data);
+      onImport(Array.isArray(parsedData) ? parsedData : [parsedData]);
+      onOpenChange(false);
+      setData("");
+    } catch (err) {
+      setError("Invalid JSON format");
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">{description}</p>
+          
+          <div>
+            <Label htmlFor="import-data">Paste your data (JSON format)</Label>
+            <Textarea
+              id="import-data"
+              value={data}
+              onChange={(e) => setData(e.target.value)}
+              placeholder={sampleFormat}
+              className="min-h-[200px] font-mono text-sm"
+            />
+            {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
+          </div>
+
+          <div>
+            <Label>Sample Format:</Label>
+            <pre className="bg-muted p-2 rounded-md text-sm overflow-x-auto">
+              {sampleData}
+            </pre>
+          </div>
+        </div>
+        
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleImport} disabled={isLoading || !data.trim()}>
+            {isLoading ? "Importing..." : "Import"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 export default function AdminWorkflow() {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [strengthError, setStrengthError] = useState('');
+  const [newCourse, setNewCourse] = useState<Partial<CourseData>>({ 
+    type: 'theory',
+    category: 'core',
+    expectedStrength: 0
+  });
 
   // Base Setup State
   const [baseSetup, setBaseSetup] = useState<BaseSetupData>({
@@ -96,6 +178,9 @@ export default function AdminWorkflow() {
 
   // State for courses, faculty, and rooms
   const [courses, setCourses] = useState<CourseData[]>([]);
+  const [showRoomImport, setShowRoomImport] = useState(false);
+  const [showFacultyImport, setShowFacultyImport] = useState(false);
+  const [showCourseImport, setShowCourseImport] = useState(false);
 
   // Fetch data from API with proper types
   const { data: existingCourses } = useQuery<CourseData[]>({
@@ -117,7 +202,138 @@ export default function AdminWorkflow() {
     }
   }, [existingCourses]);
 
-  // Mutations
+  // Mutation for generating timetable
+  const generateTimetableMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("POST", "/api/ai/optimize-timetable", data);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setProgress(100);
+      setIsGenerating(false);
+      toast({
+        title: "Timetable Generated Successfully",
+        description: `AI has created an optimized timetable with score: ${data.optimization_result?.optimization_score || 'N/A'}`,
+      });
+    },
+    onError: (error: Error) => {
+      setProgress(0);
+      setIsGenerating(false);
+      toast({
+        title: "Generation Failed",
+        description: `Failed to generate timetable: ${error.message || 'Unknown error'}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutation for importing courses
+  const importCoursesMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("POST", "/api/courses/import", data);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Courses imported successfully",
+        description: "The courses have been imported successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Import failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutation for importing faculty
+  const importFacultyMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("POST", "/api/faculty/import", data);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Faculty imported successfully",
+        description: "The faculty members have been imported successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Import failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutation for importing rooms
+  const importRoomsMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("POST", "/api/rooms/import", data);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Rooms imported successfully",
+        description: "The rooms have been imported successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Import failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Handle export functionality
+  const handleExport = (format: 'pdf' | 'excel') => {
+    toast({
+      title: `Exporting as ${format.toUpperCase()}`,
+      description: `Your data will be exported in ${format.toUpperCase()} format.`,
+    });
+    // Add export logic here
+  };
+
+  // Add a new course
+  const addCourse = () => {
+    if (!newCourse.courseCode || !newCourse.courseName || !newCourse.expectedStrength) {
+      setStrengthError('Please fill in all required fields');
+      return;
+    }
+    
+    const course: CourseData = {
+      id: `course-${Date.now()}`,
+      courseCode: newCourse.courseCode || '',
+      courseName: newCourse.courseName || '',
+      credits: newCourse.credits || 3,
+      type: newCourse.type || 'theory',
+      category: newCourse.category || 'core',
+      expectedStrength: newCourse.expectedStrength || 0,
+    };
+
+    setCourses([...courses, course]);
+    setNewCourse({ type: 'theory', category: 'core', expectedStrength: 0 });
+    setStrengthError('');
+  };
+
+  // Generate slot mappings
   const generateSlotMappingMutation = useMutation({
     mutationFn: async (data: any) => {
       const response = await apiRequest("POST", "/api/admin/generate-slot-mappings", data);
@@ -134,7 +350,7 @@ export default function AdminWorkflow() {
         description: `Generated ${data.mappedSlots} slot mappings out of ${data.totalSlots} time slots`,
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       setProgress(0);
       setIsGenerating(false);
       toast({
@@ -145,35 +361,7 @@ export default function AdminWorkflow() {
     },
   });
 
-  const allocateClassroomsMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await apiRequest("POST", "/api/admin/allocate-classrooms", data);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      return response.json();
-    },
-    onSuccess: (data) => {
-      setProgress(100);
-      setIsGenerating(false);
-      toast({
-        title: "Classrooms Allocated Successfully",
-        description: `Generated ${data.classIds?.length || 0} unique Class IDs`,
-      });
-    },
-    onError: (error) => {
-      setProgress(0);
-      setIsGenerating(false);
-      toast({
-        title: "Allocation Failed",
-        description: `Failed to allocate classrooms: ${error.message || 'Unknown error'}`,
-        variant: "destructive",
-      });
-    },
-  });
-
-
-  // Handlers
+  // Handle slot mapping generation
   const handleSlotMappingGeneration = async () => {
     if (!courses.length || !faculty?.length || !rooms?.length) {
       toast({
@@ -187,6 +375,7 @@ export default function AdminWorkflow() {
     setIsGenerating(true);
     setProgress(0);
 
+    // Progress tracking
     const progressInterval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 90) return prev;
@@ -195,7 +384,7 @@ export default function AdminWorkflow() {
     }, 500);
 
     const requestData = {
-      program: "Computer Science", // Use the actual program name from database
+      program: "Computer Science",
       semester: 1,
       batch: "2024",
       academicYear: "2024-25",
@@ -214,14 +403,16 @@ export default function AdminWorkflow() {
       await generateSlotMappingMutation.mutateAsync(requestData);
     } catch (error) {
       clearInterval(progressInterval);
+      // Error handled in mutation
     }
   };
 
-  const handleClassroomAllocation = async () => {
-    if (!courses.length || !rooms?.length) {
+  // Handle final timetable generation
+  const handleFinalGeneration = async () => {
+    if (!courses.length || !faculty?.length || !rooms?.length) {
       toast({
         title: "Incomplete Setup",
-        description: "Please ensure you have courses and rooms configured before allocation.",
+        description: "Please ensure you have added courses, faculty, and rooms before generating.",
         variant: "destructive",
       });
       return;
@@ -230,36 +421,39 @@ export default function AdminWorkflow() {
     setIsGenerating(true);
     setProgress(0);
 
+    // Progress tracking
     const progressInterval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 90) return prev;
-        return prev + Math.random() * 10;
+        return prev + Math.random() * 5;
       });
     }, 500);
 
     const requestData = {
-      courses: courses,
-      rooms: rooms,
-      preferences: {
-        prioritizeGroundFloor: true,
-        maintainBufferCapacity: true,
-        preferEquippedRooms: true
-      }
+      courses,
+      faculty,
+      rooms,
+      config: baseSetup,
+      constraints: {
+        maxHoursPerDay: 8,
+        minGapBetweenClasses: 1,
+        preferMorningSlots: true,
+      },
     };
 
     try {
       clearInterval(progressInterval);
       setProgress(90);
-      await allocateClassroomsMutation.mutateAsync(requestData);
+      await generateTimetableMutation.mutateAsync(requestData);
     } catch (error) {
       clearInterval(progressInterval);
+      // Error handled in mutation
     }
   };
 
-
   const stepTitles = [
     "Base Configuration",
-    "Generate Slot-Time Mappings", 
+    "Generate Slot-Time Mappings",
     "Classroom Allocation"
   ];
 
@@ -319,7 +513,7 @@ export default function AdminWorkflow() {
                 Base Configuration Setup
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Configure basic timetable settings including working days, timings, and constraints.
+                Configure basic timetable settings. System has existing courses, faculty, and rooms ready for timetable generation.
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -507,6 +701,40 @@ export default function AdminWorkflow() {
                 </div>
               </div>
 
+              {/* Generation Options */}
+              <div className="space-y-4">
+                <Label className="text-base font-medium">Generation Settings</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="program">Program</Label>
+                    <Select defaultValue="Computer Science">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Computer Science">Computer Science</SelectItem>
+                        <SelectItem value="Information Technology">Information Technology</SelectItem>
+                        <SelectItem value="Electronics">Electronics</SelectItem>
+                        <SelectItem value="Mechanical">Mechanical</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="semester">Semester</Label>
+                    <Select defaultValue="1">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1,2,3,4,5,6,7,8].map(sem => (
+                          <SelectItem key={sem} value={sem.toString()}>Semester {sem}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
               {/* Generate Button */}
               <Button 
                 onClick={handleSlotMappingGeneration}
@@ -537,7 +765,7 @@ export default function AdminWorkflow() {
                       </div>
                       <Progress value={progress} className="h-2" />
                       <div className="text-xs text-muted-foreground">
-                        Creating time slots → Assigning courses → Matching faculty → Allocating rooms
+                        Analyzing constraints → Generating slots → Optimizing schedule → Finalizing timetable
                       </div>
                     </div>
                   </CardContent>
@@ -551,6 +779,7 @@ export default function AdminWorkflow() {
                 <Button 
                   onClick={() => setCurrentStep(3)} 
                   className="flex-1"
+                  disabled={isGenerating}
                 >
                   Next: Classroom Allocation
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -573,6 +802,21 @@ export default function AdminWorkflow() {
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Timetable Selection */}
+              <div className="space-y-4">
+                <Label className="text-base font-medium">Select Timetable for Room Allocation</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a generated timetable" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="timetable-1">Computer Science Sem 1 - Auto Generated</SelectItem>
+                    <SelectItem value="timetable-2">Information Technology Sem 2 - AI Generated</SelectItem>
+                    <SelectItem value="timetable-3">Electronics Sem 3 - Manual</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Room Inventory Summary */}
               <div className="space-y-4">
                 <Label className="text-base font-medium">Available Room Inventory</Label>
@@ -580,7 +824,7 @@ export default function AdminWorkflow() {
                   <Card className="border-l-4 border-l-blue-500">
                     <CardContent className="p-4 text-center">
                       <div className="text-2xl font-bold text-blue-600">
-                        {rooms?.filter((room: any) => 
+                        {rooms?.filter((room) => 
                           room.roomType?.toLowerCase().includes('lecture') || 
                           room.roomType?.toLowerCase().includes('classroom') || 
                           room.roomType?.toLowerCase().includes('seminar')
@@ -592,7 +836,7 @@ export default function AdminWorkflow() {
                   <Card className="border-l-4 border-l-green-500">
                     <CardContent className="p-4 text-center">
                       <div className="text-2xl font-bold text-green-600">
-                        {rooms?.filter((room: any) => 
+                        {rooms?.filter((room) => 
                           room.roomType?.toLowerCase().includes('lab') || 
                           room.roomType?.toLowerCase().includes('laboratory')
                         ).length || 0}
@@ -603,9 +847,9 @@ export default function AdminWorkflow() {
                   <Card className="border-l-4 border-l-purple-500">
                     <CardContent className="p-4 text-center">
                       <div className="text-2xl font-bold text-purple-600">
-                        {rooms?.filter((room: any) => 
+                        {rooms?.filter((room => 
                           room.roomType?.toLowerCase().includes('auditorium')
-                        ).length || 0}
+                        )).length || 0}
                       </div>
                       <div className="text-sm text-muted-foreground">Auditoriums</div>
                     </CardContent>
@@ -613,7 +857,7 @@ export default function AdminWorkflow() {
                   <Card className="border-l-4 border-l-orange-500">
                     <CardContent className="p-4 text-center">
                       <div className="text-2xl font-bold text-orange-600">
-                        {rooms?.reduce((sum: number, room: any) => sum + (room.capacity || 0), 0) || 0}
+                        {rooms?.reduce((sum, room) => sum + (room.capacity || 0), 0) || 0}
                       </div>
                       <div className="text-sm text-muted-foreground">Total Capacity</div>
                     </CardContent>
@@ -703,9 +947,9 @@ export default function AdminWorkflow() {
 
               {/* Allocate Button */}
               <Button 
-                onClick={handleClassroomAllocation}
                 className="w-full py-6 bg-gradient-to-r from-green-500 to-green-600 text-white"
                 disabled={isGenerating}
+                onClick={handleFinalGeneration}
               >
                 {isGenerating ? (
                   <>
@@ -742,21 +986,49 @@ export default function AdminWorkflow() {
                 <Button variant="outline" onClick={() => setCurrentStep(2)} className="flex-1">
                   Previous
                 </Button>
-                <div className="flex gap-2 flex-1">
-                  <Button variant="outline" className="flex-1">
-                    <Download className="w-4 h-4 mr-2" />
-                    Export PDF
-                  </Button>
-                  <Button variant="outline" className="flex-1">
-                    <Upload className="w-4 h-4 mr-2" />
-                    Export Excel
-                  </Button>
-                </div>
+                <Button onClick={() => setCurrentStep(4)} className="flex-1">
+                  Next: Review & Generate
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Import Dialogs */}
+      <ImportDialog
+        open={showCourseImport}
+        onOpenChange={setShowCourseImport}
+        title="Import Courses"
+        description="Import courses from a JSON file or paste the content below."
+        sampleFormat="[{"courseCode": "CS101", "courseName": "Introduction to Computer Science", ...}]"
+        sampleData="[{"courseCode": "CS101", "courseName": "Introduction to Computer Science", "credits": 3, "type": "theory", "category": "core", "expectedStrength": 60}]"
+        onImport={(data) => importCoursesMutation.mutate(data)}
+        isLoading={importCoursesMutation.isPending}
+      />
+
+      <ImportDialog
+        open={showRoomImport}
+        onOpenChange={setShowRoomImport}
+        title="Import Rooms"
+        description="Import rooms from a JSON file or paste the content below."
+        sampleFormat="[{"roomNumber": "A101", "roomName": "Lecture Hall A101", ...}]"
+        sampleData="[{"roomNumber": "A101", "roomName": "Lecture Hall A101", "roomType": "lecture", "capacity": 100, "equipment": ["projector", "whiteboard"], "location": "Block A"}]"
+        onImport={(data) => importRoomsMutation.mutate(data)}
+        isLoading={importRoomsMutation.isPending}
+      />
+
+      <ImportDialog
+        open={showFacultyImport}
+        onOpenChange={setShowFacultyImport}
+        title="Import Faculty"
+        description="Import faculty members from a JSON file or paste the content below."
+        sampleFormat="[{"firstName": "John", "lastName": "Doe", ...}]"
+        sampleData="[{"firstName": "John", "lastName": "Doe", "email": "john.doe@example.com", "department": "Computer Science", "specialization": ["Algorithms", "Data Structures"], "maxWorkload": 18, "availability": {"Monday": ["09:00-11:00", "14:00-16:00"]}}]"
+        onImport={(data) => importFacultyMutation.mutate(data)}
+        isLoading={importFacultyMutation.isPending}
+      />
     </div>
   );
 }
