@@ -162,9 +162,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Load all slots for this timetable (must be materialized beforehand)
-      const slots = await storage.getTimetableSlots(id);
-      if (!slots || slots.length === 0) {
-        return res.status(400).json({ success: false, message: "No slots found. Materialize slots before auto-allocating." });
+      let slots = await storage.getTimetableSlots(id);
+      if (!Array.isArray(slots) || slots.length === 0) {
+        // Attempt to auto-materialize slots from timetable.schedule.slotMappings
+        let schedule: any = timetable.schedule as any;
+        if (schedule && typeof schedule === 'string') {
+          try { schedule = JSON.parse(schedule); } catch {}
+        }
+        const mappings = Array.isArray(schedule?.slotMappings) ? schedule.slotMappings : [];
+
+        if (mappings.length > 0) {
+          let created = 0;
+          for (const m of mappings) {
+            let courseId = m.courseId as string | undefined;
+            if (!courseId && m.courseCode) {
+              const byCode = await storage.getCourseByCode(m.courseCode).catch(() => undefined);
+              if (byCode) courseId = byCode.id;
+            }
+            if (!courseId) continue;
+
+            await storage.createTimetableSlot({
+              timetableId: timetable.id,
+              courseId,
+              facultyId: m.facultyId || undefined,
+              roomId: m.roomId || undefined,
+              dayOfWeek: m.dayOfWeek,
+              startTime: m.startTime,
+              endTime: m.endTime,
+              slotType: m.slotType || 'theory',
+              sectionIds: [],
+              isLabBlock: m.slotType === 'lab',
+              specialInstructions: `Course Code: ${m.courseCode || ''}`,
+            });
+            created += 1;
+          }
+
+          // Refetch slots after materialization
+          slots = await storage.getTimetableSlots(id);
+        } else {
+          return res.status(400).json({ success: false, message: "No slots found. Materialize slots before auto-allocating." });
+        }
       }
 
       const rooms = await storage.getRooms();
@@ -2865,16 +2902,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Timetable not found" });
       }
 
-      const slots = await storage.getTimetableSlots(timetableId);
+      let slots = await storage.getTimetableSlots(timetableId);
+      
+      // Auto-materialize slots from timetable.schedule.slotMappings if no slots exist
       if (!Array.isArray(slots) || slots.length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: "No TimetableSlot records found for this timetable. Create class slots before running classroom allocation.",
-          tips: [
-            "Assign courses/faculty to time slots and save as TimetableSlot records",
-            "Or materialize slots from timetable.schedule.slotMappings if available"
-          ]
-        });
+        let schedule: any = timetable.schedule as any;
+        if (schedule && typeof schedule === 'string') {
+          try { schedule = JSON.parse(schedule); } catch {}
+        }
+        const mappings = Array.isArray(schedule?.slotMappings) ? schedule.slotMappings : [];
+        
+        if (mappings.length > 0) {
+          console.log(`Auto-materializing ${mappings.length} slot mappings for timetable ${timetableId}`);
+          
+          // Materialize slots from mappings
+          let created = 0;
+          for (const m of mappings) {
+            let courseId = m.courseId as string | undefined;
+            if (!courseId && m.courseCode) {
+              const byCode = await storage.getCourseByCode(m.courseCode).catch(() => undefined);
+              if (byCode) courseId = byCode.id;
+            }
+            if (!courseId) continue;
+            
+            await storage.createTimetableSlot({
+              timetableId: timetable.id,
+              courseId,
+              facultyId: m.facultyId || undefined,
+              roomId: m.roomId || undefined,
+              dayOfWeek: m.dayOfWeek,
+              startTime: m.startTime,
+              endTime: m.endTime,
+              slotType: m.slotType || 'theory',
+              sectionIds: [],
+              isLabBlock: m.slotType === 'lab',
+              specialInstructions: `Course Code: ${m.courseCode || ''}`,
+            });
+            created += 1;
+          }
+          
+          // Refetch slots after materialization
+          slots = await storage.getTimetableSlots(timetableId);
+          console.log(`Materialized ${created} slots, now have ${slots.length} total slots`);
+        } else {
+          return res.status(400).json({
+            success: false,
+            message: "No TimetableSlot records found for this timetable. Create class slots before running classroom allocation.",
+            tips: [
+              "Assign courses/faculty to time slots and save as TimetableSlot records",
+              "Or materialize slots from timetable.schedule.slotMappings if available"
+            ]
+          });
+        }
       }
 
       const rooms = await storage.getRooms();
