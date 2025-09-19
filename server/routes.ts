@@ -152,6 +152,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
           timestamp: Date.now()
         });
 
+  // Admin - Assign faculty courses to time slots and create TimetableSlot records
+  app.post("/api/timetables/:id/assign-faculty-to-slots", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Get the timetable
+      const timetable = await storage.getTimetable(id);
+      if (!timetable) {
+        return res.status(404).json({ message: "Timetable not found" });
+      }
+
+      // Get all faculty members with assigned courses
+      const allFaculty = await storage.getFaculty();
+      const facultyWithCourses = allFaculty.filter(f => f.assignedCourses && f.assignedCourses.length > 0);
+
+      if (facultyWithCourses.length === 0) {
+        return res.status(400).json({ 
+          message: "No faculty members found with assigned courses",
+          tip: "Please assign courses to faculty members first"
+        });
+      }
+
+      // Get all courses and rooms for reference
+      const allCourses = await storage.getCourses();
+      const courseMap = new Map(allCourses.map(c => [c.id, c]));
+      
+      const allRooms = await storage.getRooms();
+      const defaultRoom = allRooms.find(r => r.isAvailable) || null;
+
+      // Define time slots (8 AM to 8 PM with breaks)
+      const timeSlots = [
+        { startTime: "08:00", endTime: "08:50" },
+        { startTime: "09:00", endTime: "09:50" },
+        { startTime: "10:00", endTime: "10:50" },
+        { startTime: "11:00", endTime: "11:50" },
+        { startTime: "12:00", endTime: "12:50" },
+        // Lunch break 12:50-13:50
+        { startTime: "14:00", endTime: "14:50" },
+        { startTime: "15:00", endTime: "15:50" },
+        { startTime: "16:00", endTime: "16:50" },
+        { startTime: "17:00", endTime: "17:50" },
+        { startTime: "18:00", endTime: "18:50" },
+        { startTime: "19:00", endTime: "19:50" }
+      ];
+
+      const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      
+      let slotsCreated = 0;
+      const createdSlots = [];
+
+      // For each faculty member with assigned courses
+      for (const faculty of facultyWithCourses) {
+        const assignedCourses = faculty.assignedCourses || [];
+        
+        for (let i = 0; i < assignedCourses.length; i++) {
+          const courseId = assignedCourses[i];
+          const course = courseMap.get(courseId);
+          
+          if (!course) continue;
+
+          // Distribute courses across weekdays and time slots
+          const dayIndex = i % weekdays.length;
+          const timeIndex = i % timeSlots.length;
+          const dayOfWeek = weekdays[dayIndex];
+          const timeSlot = timeSlots[timeIndex];
+
+          // Create TimetableSlot record
+          const slotData = {
+            timetableId: id,
+            courseId: courseId,
+            facultyId: faculty.id,
+            roomId: defaultRoom?.id || "TBA", // Use default room or placeholder
+            sectionIds: [], // Empty array for now
+            dayOfWeek: dayOfWeek,
+            startTime: timeSlot.startTime,
+            endTime: timeSlot.endTime,
+            slotType: course.courseType === 'lab' ? 'lab' : 'theory',
+            isLabBlock: course.courseType === 'lab',
+            specialInstructions: `Auto-assigned: ${faculty.firstName} ${faculty.lastName} - ${course.courseCode}${!defaultRoom ? ' (Room TBA)' : ''}`
+          };
+
+          const createdSlot = await storage.createTimetableSlot(slotData);
+          createdSlots.push(createdSlot);
+          slotsCreated++;
+        }
+      }
+
+      res.json({
+        success: true,
+        message: `Successfully assigned ${slotsCreated} faculty-course combinations to time slots`,
+        slotsCreated,
+        facultyProcessed: facultyWithCourses.length,
+        slots: createdSlots
+      });
+
+    } catch (error) {
+      console.error("Assign faculty to slots error:", error);
+      res.status(500).json({ 
+        message: "Failed to assign faculty to time slots",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Admin - Auto allocate rooms and faculty for a timetable's existing slots
   app.post("/api/timetables/:id/auto-allocate", requireAuth, requireRole(['admin']), async (req, res) => {
     try {

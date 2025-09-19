@@ -27,6 +27,7 @@ export default function Timetables() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isBaseGenerateDialogOpen, setIsBaseGenerateDialogOpen] = useState(false);
   const [isManualCreateDialogOpen, setIsManualCreateDialogOpen] = useState(false);
+  const [isAssignFacultyDialogOpen, setIsAssignFacultyDialogOpen] = useState(false);
   const [baseGenerateForm, setBaseGenerateForm] = useState({
     program: "",
     semester: "",
@@ -207,6 +208,35 @@ export default function Timetables() {
     },
   });
 
+  const assignFacultyToSlotsMutation = useMutation({
+    mutationFn: async (timetableId: string) => {
+      const response = await apiRequest("POST", `/api/timetables/${timetableId}/assign-faculty-to-slots`);
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err?.message || "Failed to assign faculty to time slots");
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: `Successfully assigned faculty to ${data.slotsCreated || 0} time slots!`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/timetables"] });
+      if (selectedTimetable?.id) {
+        queryClient.invalidateQueries({ queryKey: [`/api/timetables/${selectedTimetable.id}/slots`] });
+      }
+      setIsAssignFacultyDialogOpen(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to assign faculty to time slots",
+        variant: "destructive",
+      });
+    },
+  });
+
   const filteredTimetables = timetables?.filter(timetable => {
     const matchesSearch = 
       timetable.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -356,6 +386,14 @@ export default function Timetables() {
             </p>
           </div>
           <div className="flex gap-2">
+            <Button 
+              onClick={() => setIsAssignFacultyDialogOpen(true)}
+              variant="secondary"
+              data-testid="button-assign-faculty-slots"
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Assign Faculty to Time Slots
+            </Button>
             <Button 
               onClick={() => {
                 const testData = {
@@ -1238,6 +1276,81 @@ export default function Timetables() {
                 )}
               </Tabs>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Assign Faculty to Time Slots Dialog */}
+        <Dialog open={isAssignFacultyDialogOpen} onOpenChange={setIsAssignFacultyDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Assign Faculty to Time Slots</DialogTitle>
+              <DialogDescription>
+                This will automatically assign faculty members to available time slots based on their assigned courses and create TimetableSlot records.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <h4 className="font-medium mb-2">How it works:</h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• Finds faculty members with assigned courses</li>
+                  <li>• Creates time slots for each faculty-course combination</li>
+                  <li>• Automatically distributes slots across weekdays</li>
+                  <li>• Saves assignments as TimetableSlot records in the database</li>
+                </ul>
+              </div>
+              
+              {/* Show faculty with assigned courses */}
+              <div className="border rounded-lg p-4">
+                <h4 className="font-medium mb-3">Faculty with Assigned Courses:</h4>
+                {faculty && faculty.length > 0 ? (
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {faculty
+                      .filter(f => f.assignedCourses && f.assignedCourses.length > 0)
+                      .map(f => (
+                        <div key={f.id} className="flex items-center justify-between p-2 bg-background rounded border">
+                          <div>
+                            <span className="font-medium">{f.firstName} {f.lastName}</span>
+                            <span className="text-sm text-muted-foreground ml-2">({f.facultyId})</span>
+                          </div>
+                          <Badge variant="outline">
+                            {f.assignedCourses?.length || 0} courses
+                          </Badge>
+                        </div>
+                      ))
+                    }
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Loading faculty data...</p>
+                )}
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsAssignFacultyDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={() => {
+                    // For now, we'll use the first available timetable or create a default one
+                    const targetTimetable = timetables?.[0];
+                    if (targetTimetable) {
+                      assignFacultyToSlotsMutation.mutate(targetTimetable.id);
+                    } else {
+                      toast({
+                        title: "Error",
+                        description: "No timetable found. Please create a timetable first.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  disabled={assignFacultyToSlotsMutation.isPending || !faculty?.some(f => f.assignedCourses && f.assignedCourses.length > 0)}
+                >
+                  {assignFacultyToSlotsMutation.isPending ? "Assigning..." : "Assign Faculty to Slots"}
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
 
