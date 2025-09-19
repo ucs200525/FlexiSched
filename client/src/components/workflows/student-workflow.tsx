@@ -22,6 +22,7 @@ import {
   RefreshCw,
   Target,
   Users,
+  User,
   MapPin,
   Star,
   Zap
@@ -99,12 +100,13 @@ export default function StudentWorkflow() {
   const studentId = user?.id;
 
   // Fetch available courses from backend and map to UI shape
-  const { data: availableCourses } = useQuery<Course[]>({
-    queryKey: [studentId ? `/api/students/${studentId}/available-courses` : ""],
+  const { data: courseData } = useQuery<{programCourses?: Course[], otherSemesterCourses?: Course[], allCourses?: Course[]}>({
+    queryKey: [studentId ? `/api/students/${studentId}/available-courses?grouped=true` : ""],
     enabled: !!studentId && isAuthenticated && !authLoading,
     queryFn: async () => {
-      const res = await apiRequest("GET", `/api/students/${studentId}/available-courses`);
+      const res = await apiRequest("GET", `/api/students/${studentId}/available-courses?grouped=true`);
       const raw = await res.json();
+      
       const mapType = (t?: string): Course["type"] => {
         const tt = (t || "").toLowerCase();
         if (tt === "core") return "core";
@@ -113,7 +115,8 @@ export default function StudentWorkflow() {
         if (tt === "lab") return "skill"; // map lab to skill for UI badge
         return "elective";
       };
-      return (raw as any[]).map((c: any) => ({
+      
+      const mapCourse = (c: any): Course => ({
         id: c.id,
         courseCode: c.courseCode,
         courseName: c.courseName,
@@ -132,9 +135,91 @@ export default function StudentWorkflow() {
             availableSeats: 60,
           },
         ],
-      })) as Course[];
+      });
+
+      // Handle grouped response
+      if (raw.programCourses && raw.otherSemesterCourses) {
+        return {
+          programCourses: raw.programCourses.map(mapCourse),
+          otherSemesterCourses: raw.otherSemesterCourses.map(mapCourse),
+          allCourses: [...raw.programCourses, ...raw.otherSemesterCourses].map(mapCourse)
+        };
+      }
+      
+      // Fallback for non-grouped response
+      return {
+        allCourses: (raw as any[]).map(mapCourse)
+      };
     },
   });
+
+  // Fetch timetable slots to get faculty and time slot details
+  const { data: timetableSlots, isLoading: loadingSlots } = useQuery({
+    queryKey: ["timetable-slots"],
+    enabled: !!studentId && isAuthenticated && !authLoading,
+    queryFn: async () => {
+      try {
+        // Get all timetables first
+        const timetablesRes = await apiRequest("GET", "/api/timetables");
+        const timetables = await timetablesRes.json();
+        
+        // Get slots for all timetables and combine them
+        const allSlots = [];
+        for (const timetable of timetables) {
+          try {
+            const slotsRes = await apiRequest("GET", `/api/timetables/${timetable.id}/slots`);
+            const slots = await slotsRes.json();
+            allSlots.push(...slots);
+          } catch (error) {
+            console.warn(`Failed to fetch slots for timetable ${timetable.id}:`, error);
+          }
+        }
+        return allSlots;
+      } catch (error) {
+        console.error("Failed to fetch timetable slots:", error);
+        return [];
+      }
+    },
+  });
+
+  // Create a map of courseId to faculty and time slots
+  const courseSlotMap = new Map();
+  if (timetableSlots) {
+    timetableSlots.forEach((slot: any) => {
+      if (!courseSlotMap.has(slot.courseId)) {
+        courseSlotMap.set(slot.courseId, {
+          faculty: slot.facultyName || slot.facultyId || "TBD",
+          timeSlots: []
+        });
+      }
+      courseSlotMap.get(slot.courseId).timeSlots.push({
+        day: slot.dayOfWeek,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        room: slot.roomName || slot.roomId || "TBD"
+      });
+    });
+  }
+
+  // Extract all available courses for display with enriched data
+  const enrichCourseWithSlots = (course: Course): Course => {
+    const slotInfo = courseSlotMap.get(course.id);
+    return {
+      ...course,
+      faculty: slotInfo?.faculty || "TBD",
+      availableSections: [
+        {
+          sectionId: "A1",
+          timeSlots: slotInfo?.timeSlots || [],
+          availableSeats: 60,
+        },
+      ],
+    };
+  };
+
+  const availableCourses = (courseData?.allCourses || []).map(enrichCourseWithSlots);
+  const programCourses = (courseData?.programCourses || []).map(enrichCourseWithSlots);
+  const otherSemesterCourses = (courseData?.otherSemesterCourses || []).map(enrichCourseWithSlots);
 
   const { data: personalTimetable, refetch: refetchTimetable } = useQuery<PersonalTimetable>({
     queryKey: [studentId ? `/api/students/${studentId}/timetable` : ""],
@@ -499,75 +584,188 @@ export default function StudentWorkflow() {
                     Available Courses
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  {availableCourses?.map((course) => (
-                    <Card key={course.id} className="border-l-4 border-l-blue-500">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-2 flex-1">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold">
-                                {course.courseCode} - {course.courseName}
-                              </h3>
-                              <Badge variant="outline">{course.credits} Credits</Badge>
-                              <Badge variant="secondary">{course.type}</Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              {course.description}
-                            </p>
-                            <div className="flex items-center gap-4 text-sm">
-                              <span className="flex items-center gap-1">
-                                <Users className="w-4 h-4" />
-                                {course.enrolledStudents}/{course.maxStudents}
-                              </span>
-                              <span>Faculty: {course.faculty}</span>
-                            </div>
-                            {course.prerequisites && (
-                              <div className="text-sm text-muted-foreground">
-                                Prerequisites: {course.prerequisites.join(", ")}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="mt-4 space-y-2">
-                          <Label className="text-sm font-medium">Available Sections:</Label>
-                          {course.availableSections.map((section) => (
-                            <div key={section.sectionId} className="p-3 bg-muted rounded-lg">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="font-medium">Section {section.sectionId}</span>
+                <CardContent className="space-y-6">
+                  {/* Program Courses Section */}
+                  {programCourses.length > 0 && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-primary">Your Program Courses</h3>
+                        <Badge variant="default">{programCourses.length} courses</Badge>
+                      </div>
+                      {programCourses.map((course) => (
+                        <Card key={course.id} className="border-l-4 border-l-primary">
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="space-y-2 flex-1">
                                 <div className="flex items-center gap-2">
-                                  <span className={`text-sm ${getAvailabilityColor(section.availableSeats, course.maxStudents)}`}>
-                                    {section.availableSeats} seats available
-                                  </span>
-                                  <Button 
-                                    size="sm"
-                                    onClick={() => addCourseSelection(course.id, section.sectionId)}
-                                    disabled={
-                                      selectedCourses.some(s => s.courseId === course.id) ||
-                                      section.availableSeats === 0 ||
-                                      getCurrentCredits() + course.credits > 24
-                                    }
-                                  >
-                                    {selectedCourses.some(s => s.courseId === course.id) ? "Selected" : "Select"}
-                                  </Button>
+                                  <h4 className="font-semibold">
+                                    {course.courseCode} - {course.courseName}
+                                  </h4>
+                                  <Badge variant="outline">{course.credits} Credits</Badge>
+                                  <Badge variant="secondary">{course.type}</Badge>
+                                  <Badge variant="default" className="text-xs">Your Program</Badge>
                                 </div>
-                              </div>
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
-                                {section.timeSlots.map((slot, index) => (
-                                  <div key={index} className="text-xs p-2 bg-background rounded text-center">
-                                    <div className="font-medium">{slot.day}</div>
-                                    <div>{slot.startTime} - {slot.endTime}</div>
-                                    <div className="text-muted-foreground">{slot.room}</div>
+                                <p className="text-sm text-muted-foreground">
+                                  {course.description}
+                                </p>
+                                <div className="flex items-center gap-4 text-sm">
+                                  <span className="flex items-center gap-1">
+                                    <Users className="w-4 h-4" />
+                                    {course.enrolledStudents}/{course.maxStudents}
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <User className="w-4 h-4" />
+                                    Faculty: {loadingSlots ? (
+                                      <span className="text-muted-foreground">Loading...</span>
+                                    ) : (
+                                      <span className="font-medium">{course.faculty}</span>
+                                    )}
+                                  </span>
+                                </div>
+                                {course.prerequisites && course.prerequisites.length > 0 && (
+                                  <div className="text-sm text-muted-foreground">
+                                    Prerequisites: {course.prerequisites.join(", ")}
                                   </div>
-                                ))}
+                                )}
                               </div>
                             </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                            
+                            <div className="mt-4 space-y-2">
+                              <Label className="text-sm font-medium">Available Sections:</Label>
+                              {course.availableSections.map((section) => (
+                                <div key={section.sectionId} className="p-3 bg-muted rounded-lg">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="font-medium">Section {section.sectionId}</span>
+                                    <div className="flex items-center gap-2">
+                                      <span className={`text-sm ${getAvailabilityColor(section.availableSeats, course.maxStudents)}`}>
+                                        {section.availableSeats} seats available
+                                      </span>
+                                      <Button 
+                                        size="sm"
+                                        onClick={() => addCourseSelection(course.id, section.sectionId)}
+                                        disabled={
+                                          selectedCourses.some(s => s.courseId === course.id) ||
+                                          section.availableSeats === 0 ||
+                                          getCurrentCredits() + course.credits > 24
+                                        }
+                                      >
+                                        {selectedCourses.some(s => s.courseId === course.id) ? "Selected" : "Select"}
+                                      </Button>
+                                    </div>
+                                  </div>
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
+                                    {section.timeSlots.map((slot, index) => (
+                                      <div key={index} className="text-xs p-2 bg-background rounded text-center">
+                                        <div className="font-medium">{slot.day}</div>
+                                        <div>{slot.startTime} - {slot.endTime}</div>
+                                        <div className="text-muted-foreground">{slot.room}</div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Other Semester Courses Section */}
+                  {otherSemesterCourses.length > 0 && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-secondary">Other Programs (Same Semester)</h3>
+                        <Badge variant="secondary">{otherSemesterCourses.length} courses</Badge>
+                      </div>
+                      <Alert>
+                        <Star className="w-4 h-4" />
+                        <AlertDescription>
+                          These courses are from other programs in your semester. You can select them as electives or for skill enhancement.
+                        </AlertDescription>
+                      </Alert>
+                      {otherSemesterCourses.map((course) => (
+                        <Card key={course.id} className="border-l-4 border-l-secondary">
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="space-y-2 flex-1">
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-semibold">
+                                    {course.courseCode} - {course.courseName}
+                                  </h4>
+                                  <Badge variant="outline">{course.credits} Credits</Badge>
+                                  <Badge variant="secondary">{course.type}</Badge>
+                                  <Badge variant="outline" className="text-xs">Cross-Program</Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {course.description}
+                                </p>
+                                <div className="flex items-center gap-4 text-sm">
+                                  <span className="flex items-center gap-1">
+                                    <Users className="w-4 h-4" />
+                                    {course.enrolledStudents}/{course.maxStudents}
+                                  </span>
+                                  <span>Faculty: {course.faculty}</span>
+                                </div>
+                                {course.prerequisites && course.prerequisites.length > 0 && (
+                                  <div className="text-sm text-muted-foreground">
+                                    Prerequisites: {course.prerequisites.join(", ")}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="mt-4 space-y-2">
+                              <Label className="text-sm font-medium">Available Sections:</Label>
+                              {course.availableSections.map((section) => (
+                                <div key={section.sectionId} className="p-3 bg-muted rounded-lg">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="font-medium">Section {section.sectionId}</span>
+                                    <div className="flex items-center gap-2">
+                                      <span className={`text-sm ${getAvailabilityColor(section.availableSeats, course.maxStudents)}`}>
+                                        {section.availableSeats} seats available
+                                      </span>
+                                      <Button 
+                                        size="sm"
+                                        onClick={() => addCourseSelection(course.id, section.sectionId)}
+                                        disabled={
+                                          selectedCourses.some(s => s.courseId === course.id) ||
+                                          section.availableSeats === 0 ||
+                                          getCurrentCredits() + course.credits > 24
+                                        }
+                                      >
+                                        {selectedCourses.some(s => s.courseId === course.id) ? "Selected" : "Select"}
+                                      </Button>
+                                    </div>
+                                  </div>
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-1">
+                                    {section.timeSlots.map((slot, index) => (
+                                      <div key={index} className="text-xs p-2 bg-background rounded text-center">
+                                        <div className="font-medium">{slot.day}</div>
+                                        <div>{slot.startTime} - {slot.endTime}</div>
+                                        <div className="text-muted-foreground">{slot.room}</div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* No courses available message */}
+                  {availableCourses.length === 0 && (
+                    <div className="text-center py-8">
+                      <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">No Available Courses</h3>
+                      <p className="text-muted-foreground">
+                        All courses for your semester appear to be enrolled or unavailable.
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
