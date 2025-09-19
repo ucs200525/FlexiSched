@@ -2435,11 +2435,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Seed some sample courses
       const courses = [
-        { code: "CS101", name: "Programming Fundamentals", type: "Theory", credits: 4, theoryHours: 3, practicalHours: 2 },
-        { code: "CS102", name: "Data Structures", type: "Theory", credits: 4, theoryHours: 3, practicalHours: 2 },
-        { code: "CS201", name: "Database Management", type: "Theory", credits: 3, theoryHours: 3, practicalHours: 1 },
-        { code: "CS202", name: "Web Development", type: "Practical", credits: 3, theoryHours: 1, practicalHours: 4 },
-        { code: "CS301", name: "Machine Learning", type: "Theory", credits: 4, theoryHours: 3, practicalHours: 2 }
+        { code: "CS101", name: "Programming Fundamentals", type: "Core", credits: 4, theoryHours: 3, practicalHours: 2 },
+        { code: "CS102", name: "Data Structures", type: "Core", credits: 4, theoryHours: 3, practicalHours: 2 },
+        { code: "CS201", name: "Database Management", type: "Core", credits: 3, theoryHours: 3, practicalHours: 1 },
+        { code: "CS202", name: "Web Development", type: "Lab", credits: 3, theoryHours: 1, practicalHours: 4 },
+        { code: "CS301", name: "Machine Learning", type: "Elective", credits: 4, theoryHours: 3, practicalHours: 2 }
       ];
 
       for (let i = 0; i < courses.length; i++) {
@@ -2607,11 +2607,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Seed some sample courses
       const courses = [
-        { code: "CS101", name: "Programming Fundamentals", type: "Theory", credits: 4, theoryHours: 3, practicalHours: 2 },
-        { code: "CS102", name: "Data Structures", type: "Theory", credits: 4, theoryHours: 3, practicalHours: 2 },
-        { code: "CS201", name: "Database Management", type: "Theory", credits: 3, theoryHours: 3, practicalHours: 1 },
-        { code: "CS202", name: "Web Development", type: "Practical", credits: 3, theoryHours: 1, practicalHours: 4 },
-        { code: "CS301", name: "Machine Learning", type: "Theory", credits: 4, theoryHours: 3, practicalHours: 2 }
+        { code: "CS101", name: "Programming Fundamentals", type: "Core", credits: 4, theoryHours: 3, practicalHours: 2 },
+        { code: "CS102", name: "Data Structures", type: "Core", credits: 4, theoryHours: 3, practicalHours: 2 },
+        { code: "CS201", name: "Database Management", type: "Core", credits: 3, theoryHours: 3, practicalHours: 1 },
+        { code: "CS202", name: "Web Development", type: "Lab", credits: 3, theoryHours: 1, practicalHours: 4 },
+        { code: "CS301", name: "Machine Learning", type: "Elective", credits: 4, theoryHours: 3, practicalHours: 2 }
       ];
 
       for (let i = 0; i < courses.length; i++) {
