@@ -11,6 +11,7 @@ import FacultyWorkflow from "@/components/workflows/faculty-workflow";
 import StudentWorkflow from "@/components/workflows/student-workflow";
 import { NotificationSystem } from "@/components/notifications/notification-system";
 
+
 export default function AIGenerator() {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<"admin" | "faculty" | "student">(user?.role || "admin");
