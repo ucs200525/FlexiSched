@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Course {
   id: string;
@@ -63,6 +64,7 @@ interface PersonalTimetable {
   studentId: string;
   totalCredits: number;
   enrolledCourses: Array<{
+    courseId: string;
     courseCode: string;
     courseName: string;
     section: string;
@@ -90,117 +92,76 @@ export default function StudentWorkflow() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [creditTarget, setCreditTarget] = useState(20);
+  const [slotPickerCourseId, setSlotPickerCourseId] = useState<string | null>(null);
 
-  // Mock student ID - in real app, this would come from auth context
-  const studentId = "student-1";
+  // Use authenticated user
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const studentId = user?.id;
 
-  const { data: availableCourses } = useQuery({
-    queryKey: ["/api/courses/available"],
+  // Fetch available courses from backend and map to UI shape
+  const { data: availableCourses } = useQuery<Course[]>({
+    queryKey: [studentId ? `/api/students/${studentId}/available-courses` : ""],
+    enabled: !!studentId && isAuthenticated && !authLoading,
     queryFn: async () => {
-      // Mock data for available courses
-      return [
-        {
-          id: "1",
-          courseCode: "CS301",
-          courseName: "Machine Learning",
-          credits: 4,
-          type: "elective",
-          category: "Technical Elective",
-          description: "Introduction to machine learning algorithms and applications",
-          prerequisites: ["CS201", "MATH201"],
-          maxStudents: 60,
-          enrolledStudents: 45,
-          faculty: "Dr. Smith",
-          availableSections: [
-            {
-              sectionId: "A1",
-              timeSlots: [
-                { day: "Monday", startTime: "09:30", endTime: "10:20", room: "R-301" },
-                { day: "Wednesday", startTime: "09:30", endTime: "10:20", room: "R-301" },
-                { day: "Friday", startTime: "09:30", endTime: "10:20", room: "R-301" }
-              ],
-              availableSeats: 15
-            },
-            {
-              sectionId: "B1",
-              timeSlots: [
-                { day: "Tuesday", startTime: "14:00", endTime: "14:50", room: "R-302" },
-                { day: "Thursday", startTime: "14:00", endTime: "14:50", room: "R-302" }
-              ],
-              availableSeats: 8
-            }
-          ]
-        },
-        {
-          id: "2",
-          courseCode: "CS302",
-          courseName: "Web Development",
-          credits: 3,
-          type: "elective",
-          category: "Technical Elective",
-          description: "Full-stack web development with modern frameworks",
-          maxStudents: 40,
-          enrolledStudents: 32,
-          faculty: "Prof. Johnson",
-          availableSections: [
-            {
-              sectionId: "A1",
-              timeSlots: [
-                { day: "Monday", startTime: "11:30", endTime: "12:20", room: "Lab-1" },
-                { day: "Wednesday", startTime: "11:30", endTime: "12:20", room: "Lab-1" }
-              ],
-              availableSeats: 8
-            }
-          ]
-        },
-        {
-          id: "3",
-          courseCode: "SKILL101",
-          courseName: "Communication Skills",
-          credits: 2,
-          type: "skill",
-          category: "Skill Enhancement",
-          description: "Develop professional communication and presentation skills",
-          maxStudents: 50,
-          enrolledStudents: 28,
-          faculty: "Dr. Brown",
-          availableSections: [
-            {
-              sectionId: "A1",
-              timeSlots: [
-                { day: "Friday", startTime: "15:00", endTime: "15:50", room: "R-105" }
-              ],
-              availableSeats: 22
-            }
-          ]
-        }
-      ] as Course[];
+      const res = await apiRequest("GET", `/api/students/${studentId}/available-courses`);
+      const raw = await res.json();
+      const mapType = (t?: string): Course["type"] => {
+        const tt = (t || "").toLowerCase();
+        if (tt === "core") return "core";
+        if (tt === "project") return "project";
+        if (tt === "elective") return "elective";
+        if (tt === "lab") return "skill"; // map lab to skill for UI badge
+        return "elective";
+      };
+      return (raw as any[]).map((c: any) => ({
+        id: c.id,
+        courseCode: c.courseCode,
+        courseName: c.courseName,
+        credits: c.credits,
+        type: mapType(c.courseType),
+        category: c.courseType || "Course",
+        description: c.description || "",
+        prerequisites: Array.isArray(c.prerequisites) ? c.prerequisites : [],
+        maxStudents: 60,
+        enrolledStudents: 0,
+        faculty: "TBD",
+        availableSections: [
+          {
+            sectionId: "A1",
+            timeSlots: [],
+            availableSeats: 60,
+          },
+        ],
+      })) as Course[];
+    },
+  });
+
+  const { data: personalTimetable, refetch: refetchTimetable } = useQuery<PersonalTimetable>({
+    queryKey: [studentId ? `/api/students/${studentId}/timetable` : ""],
+    enabled: !!studentId && isAuthenticated && !authLoading,
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/students/${studentId}/timetable`);
+      return res.json();
     }
   });
 
-  const { data: personalTimetable, refetch: refetchTimetable } = useQuery({
-    queryKey: [`/api/students/${studentId}/timetable`],
+  type CourseSlot = {
+    id: string;
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
+    roomId?: string;
+    facultyId?: string;
+    slotType?: string;
+    conflictsWithCurrent?: boolean;
+  };
+
+  const { data: courseSlots, refetch: refetchCourseSlots, isFetching: loadingCourseSlots } = useQuery<CourseSlot[]>({
+    queryKey: [studentId && slotPickerCourseId ? `/api/students/${studentId}/course/${slotPickerCourseId}/slots` : ""],
+    enabled: !!studentId && !!slotPickerCourseId && isAuthenticated && !authLoading,
     queryFn: async () => {
-      // Mock personal timetable data
-      return {
-        studentId,
-        totalCredits: 18,
-        enrolledCourses: [
-          {
-            courseCode: "CS201",
-            courseName: "Database Systems",
-            section: "A1",
-            credits: 4,
-            faculty: "Dr. Wilson",
-            schedule: [
-              { day: "Monday", startTime: "08:30", endTime: "09:20", room: "R-201", slotId: "A1" },
-              { day: "Wednesday", startTime: "08:30", endTime: "09:20", room: "R-201", slotId: "A1" },
-              { day: "Friday", startTime: "08:30", endTime: "09:20", room: "R-201", slotId: "A1" }
-            ]
-          }
-        ],
-        conflicts: []
-      } as PersonalTimetable;
+      const res = await apiRequest("GET", `/api/students/${studentId}/course/${slotPickerCourseId}/slots`);
+      return res.json();
     }
   });
 
@@ -325,64 +286,58 @@ export default function StudentWorkflow() {
       setIsGenerating(true);
       setProgress(0);
 
-      // Simulate progress
-      const progressSteps = [25, 50, 75, 100];
-      progressSteps.forEach((step, index) => {
-        setTimeout(() => {
-          setProgress(step);
-        }, (index + 1) * 800);
-      });
-
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 3200));
-      
-      return {
-        success: true,
-        timetable: {
-          studentId,
-          totalCredits: selections.reduce((sum, sel) => {
-            const course = availableCourses?.find(c => c.id === sel.courseId);
-            return sum + (course?.credits || 0);
-          }, personalTimetable?.totalCredits || 0),
-          enrolledCourses: [
-            ...(personalTimetable?.enrolledCourses || []),
-            ...selections.map(sel => {
-              const course = availableCourses?.find(c => c.id === sel.courseId);
-              const section = course?.availableSections.find(s => s.sectionId === sel.sectionId);
-              return {
-                courseCode: course?.courseCode || "",
-                courseName: course?.courseName || "",
-                section: sel.sectionId,
-                credits: course?.credits || 0,
-                faculty: course?.faculty || "",
-                schedule: section?.timeSlots.map(slot => ({
-                  ...slot,
-                  slotId: sel.sectionId
-                })) || []
-              };
-            })
-          ],
-          conflicts: []
+      // Register each selected course sequentially
+      const total = selections.length;
+      let completed = 0;
+      for (const sel of selections) {
+        const res = await apiRequest("POST", `/api/students/${studentId}/register-course`, { courseId: sel.courseId });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err?.message || `Failed to register ${sel.courseId}`);
         }
-      };
+        completed += 1;
+        setProgress(Math.round((completed / total) * 100));
+      }
+      return { success: true };
     },
-    onSuccess: (data) => {
+    onSuccess: async () => {
       toast({
-        title: "🎉 Personal Timetable Generated!",
-        description: `Successfully enrolled in ${selectedCourses.length} courses. Total credits: ${data.timetable.totalCredits}`
+        title: "✅ Registered",
+        description: `Successfully registered ${selectedCourses.length} course(s).`
       });
       setIsGenerating(false);
       setSelectedCourses([]);
-      refetchTimetable();
+      await refetchTimetable();
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
-        title: "Generation Failed",
-        description: "Failed to generate personal timetable. Please try again.",
+        title: "Registration Failed",
+        description: error?.message || "One or more courses could not be registered.",
         variant: "destructive"
       });
       setIsGenerating(false);
       setProgress(0);
+    }
+  });
+
+  const selectSlotMutation = useMutation({
+    mutationFn: async ({ courseId, slotId }: { courseId: string; slotId: string }) => {
+      const res = await apiRequest("POST", `/api/students/${studentId}/select-slot`, { courseId, slotId });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.message || "Failed to select slot");
+      }
+      return res.json();
+    },
+    onSuccess: async () => {
+      toast({ title: "Slot Selected", description: "Your timetable has been updated." });
+      await refetchTimetable();
+      if (slotPickerCourseId) {
+        await refetchCourseSlots();
+      }
+    },
+    onError: (error: any) => {
+      toast({ title: "Selection Failed", description: error?.message || "", variant: "destructive" });
     }
   });
 
@@ -728,53 +683,68 @@ export default function StudentWorkflow() {
             <CardContent>
               {personalTimetable && personalTimetable.enrolledCourses.length > 0 ? (
                 <div className="space-y-6">
-                  {/* Weekly Schedule Grid */}
+                  {/* Weekly Schedule Grid (dynamic times) */}
                   <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Time</TableHead>
-                          <TableHead>Monday</TableHead>
-                          <TableHead>Tuesday</TableHead>
-                          <TableHead>Wednesday</TableHead>
-                          <TableHead>Thursday</TableHead>
-                          <TableHead>Friday</TableHead>
-                          <TableHead>Saturday</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {["08:30-09:20", "09:30-10:20", "10:30-11:20", "11:30-12:20", "14:00-14:50", "15:00-15:50", "16:00-16:50"].map(timeSlot => (
-                          <TableRow key={timeSlot}>
-                            <TableCell className="font-medium">{timeSlot}</TableCell>
-                            {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].map(day => {
-                              const [startTime] = timeSlot.split("-");
-                              const courseSchedule = personalTimetable.enrolledCourses.find(course =>
-                                course.schedule.some(slot => 
-                                  slot.day === day && slot.startTime === startTime
-                                )
-                              );
-                              const scheduleSlot = courseSchedule?.schedule.find(slot => 
-                                slot.day === day && slot.startTime === startTime
-                              );
-
+                    {(() => {
+                      const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                      // Collect unique time ranges from the student's schedule
+                      const timeSet = new Set<string>();
+                      for (const c of personalTimetable.enrolledCourses) {
+                        for (const s of c.schedule) {
+                          timeSet.add(`${s.startTime}-${s.endTime}`);
+                        }
+                      }
+                      const times = Array.from(timeSet);
+                      // Sort by start time lexicographically (works for HH:MM format)
+                      times.sort((a, b) => a.localeCompare(b));
+                      if (times.length === 0) {
+                        return (
+                          <div className="p-4 text-sm text-muted-foreground">
+                            No scheduled class times found yet. Your enrolled courses appear below; slots will appear once a timetable is published for them or after you pick a slot.
+                          </div>
+                        );
+                      }
+                      return (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Time</TableHead>
+                              {days.map(d => (<TableHead key={d}>{d}</TableHead>))}
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {times.map(range => {
+                              const [startTime, endTime] = range.split("-");
                               return (
-                                <TableCell key={day}>
-                                  {courseSchedule && scheduleSlot ? (
-                                    <div className="p-2 bg-primary/10 rounded text-center">
-                                      <div className="font-medium text-sm">{courseSchedule.courseCode}</div>
-                                      <div className="text-xs text-muted-foreground">{scheduleSlot.room}</div>
-                                      <div className="text-xs text-muted-foreground">{courseSchedule.faculty}</div>
-                                    </div>
-                                  ) : (
-                                    <div className="p-2 text-center text-muted-foreground text-xs">Free</div>
-                                  )}
-                                </TableCell>
+                                <TableRow key={range}>
+                                  <TableCell className="font-medium">{range}</TableCell>
+                                  {days.map(day => {
+                                    // Find a course occupying this day/time range
+                                    const course = personalTimetable.enrolledCourses.find(c => 
+                                      c.schedule.some(s => s.day === day && s.startTime === startTime && s.endTime === endTime)
+                                    );
+                                    const slot = course?.schedule.find(s => s.day === day && s.startTime === startTime && s.endTime === endTime);
+                                    return (
+                                      <TableCell key={day}>
+                                        {course && slot ? (
+                                          <div className="p-2 bg-primary/10 rounded text-center">
+                                            <div className="font-medium text-sm">{course.courseCode}</div>
+                                            <div className="text-xs text-muted-foreground">{slot.room}</div>
+                                            <div className="text-xs text-muted-foreground">{course.faculty}</div>
+                                          </div>
+                                        ) : (
+                                          <div className="p-2 text-center text-muted-foreground text-xs">Free</div>
+                                        )}
+                                      </TableCell>
+                                    );
+                                  })}
+                                </TableRow>
                               );
                             })}
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                          </TableBody>
+                        </Table>
+                      );
+                    })()}
                   </div>
 
                   {/* Course List */}
@@ -782,7 +752,7 @@ export default function StudentWorkflow() {
                     <h3 className="font-medium">Enrolled Courses</h3>
                     {personalTimetable.enrolledCourses.map((course, index) => (
                       <Card key={index}>
-                        <CardContent className="p-4">
+                        <CardContent className="p-4 space-y-3">
                           <div className="flex items-center justify-between">
                             <div>
                               <div className="font-medium">{course.courseCode} - {course.courseName}</div>
@@ -790,8 +760,37 @@ export default function StudentWorkflow() {
                                 Section {course.section} • {course.credits} credits • {course.faculty}
                               </div>
                             </div>
-                            <Badge variant="outline">{course.schedule.length} hours/week</Badge>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline">{course.schedule.length} hours/week</Badge>
+                              <Button size="sm" variant="outline" onClick={() => setSlotPickerCourseId(prev => prev === course.courseId ? null : course.courseId)}>
+                                {slotPickerCourseId === course.courseId ? "Hide Slots" : "Pick Slot"}
+                              </Button>
+                            </div>
                           </div>
+
+                          {slotPickerCourseId === course.courseId && (
+                            <div className="border rounded p-3">
+                              {loadingCourseSlots ? (
+                                <div className="text-sm text-muted-foreground">Loading slots...</div>
+                              ) : courseSlots && courseSlots.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                                  {courseSlots.map((s) => (
+                                    <div key={s.id} className={`p-2 rounded border ${s.conflictsWithCurrent ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+                                      <div className="text-sm font-medium">{s.dayOfWeek} {s.startTime}-{s.endTime}</div>
+                                      <div className="text-xs text-muted-foreground">Room: {s.roomId || 'TBA'}</div>
+                                      <div className="mt-2">
+                                        <Button size="sm" disabled={!!s.conflictsWithCurrent} onClick={() => selectSlotMutation.mutate({ courseId: course.courseId, slotId: s.id })}>
+                                          {s.conflictsWithCurrent ? 'Clashes' : 'Select'}
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-sm text-muted-foreground">No slots available.</div>
+                              )}
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     ))}

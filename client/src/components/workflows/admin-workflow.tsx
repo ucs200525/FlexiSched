@@ -80,6 +80,7 @@ export default function AdminWorkflow() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [generatedTimetableId, setGeneratedTimetableId] = useState<string | null>(null);
 
   // Base Setup State
   const [baseSetup, setBaseSetup] = useState<BaseSetupData>({
@@ -129,6 +130,10 @@ export default function AdminWorkflow() {
     onSuccess: (data) => {
       setProgress(100);
       setIsGenerating(false);
+      // Store the newly created timetable ID for subsequent allocation
+      setGeneratedTimetableId(data?.timetable?.id || null);
+      // Optionally move user to the next step
+      setCurrentStep(3);
       toast({
         title: "Slot Mappings Generated Successfully",
         description: `Generated ${data.mappedSlots} slot mappings out of ${data.totalSlots} time slots`,
@@ -204,6 +209,7 @@ export default function AdminWorkflow() {
         startTime: baseSetup.startTime,
         endTime: baseSetup.endTime,
         slotDuration: baseSetup.slotDuration,
+        graceTime: baseSetup.graceTime,
         lunchBreak: baseSetup.lunchBreak
       }
     };
@@ -227,6 +233,16 @@ export default function AdminWorkflow() {
       return;
     }
 
+    // Ensure we have a timetable created from the previous step
+    if (!generatedTimetableId) {
+      toast({
+        title: "No Timetable Available",
+        description: "Please generate slot-time mappings first to create a timetable, then allocate classrooms.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
     setProgress(0);
 
@@ -238,14 +254,15 @@ export default function AdminWorkflow() {
     }, 500);
 
     const requestData = {
-      courses: courses,
-      rooms: rooms,
-      preferences: {
+      timetableId: generatedTimetableId,
+      allocationRules: {
         prioritizeGroundFloor: true,
         maintainBufferCapacity: true,
-        preferEquippedRooms: true
+        preferEquippedRooms: true,
+        keepLabsInLabRooms: true,
+        bufferPercent: 10
       }
-    };
+    } as const;
 
     try {
       clearInterval(progressInterval);

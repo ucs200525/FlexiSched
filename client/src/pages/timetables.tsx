@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, Clock, Users, BookOpen, MapPin, AlertTriangle, CheckCircle, XCircle, Plus, Wand2, TestTube2, Grid3X3, Search, Bot, BarChart3, Eye, Download, Trash2 } from "lucide-react";
+import { Calendar, Clock, Users, BookOpen, MapPin, AlertTriangle, CheckCircle, XCircle, Plus, Wand2, TestTube2, Grid3X3, Search, Bot, BarChart3, Eye, Download, Trash2, Printer } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Timetable, TimetableSlot, Course, Faculty, Room } from "@shared/schema";
@@ -32,6 +32,34 @@ export default function Timetables() {
     semester: "",
     batch: "",
     academicYear: new Date().getFullYear().toString()
+  });
+
+  const autoAllocateMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiRequest("POST", `/api/timetables/${id}/auto-allocate`);
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err?.message || "Auto-allocation failed");
+      }
+      return response.json();
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Auto Allocation Complete",
+        description: `Updated ${data.updated} slot(s). Conflicts: ${Array.isArray(data.conflicts) ? data.conflicts.length : 0}`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/timetables"] });
+      if (selectedTimetable?.id) {
+        queryClient.invalidateQueries({ queryKey: [`/api/timetables/${selectedTimetable.id}/slots`] });
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Auto Allocation Failed",
+        description: error?.message || "Ensure slots are materialized before auto-allocating.",
+        variant: "destructive",
+      });
+    },
   });
   const [manualCreateForm, setManualCreateForm] = useState({
     name: "",
@@ -58,7 +86,7 @@ export default function Timetables() {
   });
 
   const { data: timetableSlots } = useQuery<TimetableSlot[]>({
-    queryKey: ["/api/timetables", selectedTimetable?.id, "slots"],
+    queryKey: [selectedTimetable?.id ? `/api/timetables/${selectedTimetable.id}/slots` : ""],
     enabled: !!selectedTimetable?.id,
   });
 
@@ -305,6 +333,17 @@ export default function Timetables() {
     return rows.join('\n');
   };
 
+  // Determine if a Base Timetable already exists (generatedBy === 'base-template')
+  const baseTimetable: Timetable | null = (timetables || []).find(t => t.generatedBy === 'base-template') || null;
+  const baseExists = !!baseTimetable;
+
+  // Auto-select base timetable for inline details rendering
+  useEffect(() => {
+    if (!selectedTimetable && baseTimetable) {
+      setSelectedTimetable(baseTimetable);
+    }
+  }, [baseTimetable, selectedTimetable]);
+
   return (
     <div className="flex-1 flex flex-col">
       {/* Header */}
@@ -329,6 +368,8 @@ export default function Timetables() {
               }}
               variant="default"
               data-testid="button-test-generate"
+              disabled={baseExists || generateBaseTimetableMutation.isPending}
+              title={baseExists ? "Base timetable already exists. Delete it to generate a new one." : undefined}
             >
               <Clock className="w-4 h-4 mr-2" />
               Test Generate
@@ -337,6 +378,8 @@ export default function Timetables() {
               onClick={() => setIsBaseGenerateDialogOpen(true)}
               variant="outline"
               data-testid="button-generate-base-timetable"
+              disabled={baseExists}
+              title={baseExists ? "Base timetable already exists. Delete it to generate a new one." : undefined}
             >
               <Clock className="w-4 h-4 mr-2" />
               Generate Base Timetable
@@ -515,6 +558,16 @@ export default function Timetables() {
                             <Button
                               variant="ghost"
                               size="sm"
+                              onClick={() => autoAllocateMutation.mutate(timetable.id)}
+                              disabled={autoAllocateMutation.isPending}
+                              title="Auto-assign rooms and faculty to existing slots"
+                              data-testid={`button-auto-allocate-${timetable.id}`}
+                            >
+                              <Wand2 className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => handleExportTimetable(timetable)}
                               data-testid={`button-export-timetable-${timetable.id}`}
                             >
@@ -654,6 +707,7 @@ export default function Timetables() {
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-muted-foreground">Optional. Leave blank to generate a college-wide base mapping.</p>
               </div>
               
               <div className="space-y-2">
@@ -673,6 +727,7 @@ export default function Timetables() {
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-muted-foreground">Optional. Leave blank for all semesters.</p>
               </div>
               
               <div className="space-y-2">
@@ -682,6 +737,7 @@ export default function Timetables() {
                   onChange={(e) => setBaseGenerateForm(prev => ({ ...prev, batch: e.target.value }))}
                   placeholder="e.g., 2024-2028"
                 />
+                <p className="text-xs text-muted-foreground">Optional. Leave blank for all batches.</p>
               </div>
               
               <div className="space-y-2">
@@ -702,7 +758,7 @@ export default function Timetables() {
                 </Button>
                 <Button 
                   onClick={() => generateBaseTimetableMutation.mutate(baseGenerateForm)}
-                  disabled={generateBaseTimetableMutation.isPending || !baseGenerateForm.program || !baseGenerateForm.semester || !baseGenerateForm.batch}
+                  disabled={generateBaseTimetableMutation.isPending || baseExists}
                 >
                   {generateBaseTimetableMutation.isPending ? "Generating..." : "Generate Base Timetable"}
                 </Button>
@@ -719,12 +775,12 @@ export default function Timetables() {
                 {selectedTimetable?.name} - Detailed View
               </DialogTitle>
             </DialogHeader>
-            {selectedTimetable && timetableSlots && courses && faculty && rooms && ( 
+            {selectedTimetable && ( 
               <Tabs defaultValue="overview" className="space-y-4">
                 <TabsList>
                   <TabsTrigger value="overview">Overview</TabsTrigger>
                   <TabsTrigger value="schedule">Schedule</TabsTrigger>
-                  <TabsTrigger value="template">Template</TabsTrigger>
+                  <TabsTrigger value="template">Classes</TabsTrigger>
                   {Array.isArray(selectedTimetable.conflicts) && selectedTimetable.conflicts.length > 0 && (
                     <TabsTrigger value="conflicts">
                       <div className="flex items-center gap-2">
@@ -854,305 +910,281 @@ export default function Timetables() {
 
                 {/* Schedule Tab */}
                 <TabsContent value="schedule" className="space-y-6">
-                  {/* Slot-Time Mapping Table */}
+                  {/* Matrix View: Weekdays as rows, Time columns */}
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Clock className="w-5 h-5 text-primary" />
-                        Slot-Time Mapping Table
+                        Weekly Schedule (Matrix)
                       </CardTitle>
                       <CardDescription>
-                        Time slot configuration based on admin settings (Slot ID → Time Range)
+                        Weekdays as rows and time ranges as columns. Lunch is highlighted; grace time is applied between slots.
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="overflow-x-auto">
-                        <table className="w-full border-collapse border border-border">
-                          <thead>
-                            <tr className="bg-muted">
-                              <th className="border border-border px-4 py-3 text-left font-semibold">Slot ID</th>
-                              <th className="border border-border px-4 py-3 text-left font-semibold">Time Range</th>
-                              <th className="border border-border px-4 py-3 text-left font-semibold">Duration</th>
-                              <th className="border border-border px-4 py-3 text-left font-semibold">Day</th>
-                              <th className="border border-border px-4 py-3 text-left font-semibold">Type</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {(() => {
-                              // Extract time slots from timetable schedule
-                              let timeSlots: any[] = [];
-                              
-                              if (selectedTimetable.schedule && typeof selectedTimetable.schedule === 'object') {
-                                const schedule = selectedTimetable.schedule as any;
-                                if (schedule.timeSlots && Array.isArray(schedule.timeSlots)) {
-                                  timeSlots = schedule.timeSlots;
-                                }
-                              }
-                              
-                              // Fallback to generate default slots if none found
-                              if (timeSlots.length === 0) {
-                                const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-                                const times = [
-                                  { start: "08:30", end: "09:20", duration: 50 },
-                                  { start: "09:30", end: "10:20", duration: 50 },
-                                  { start: "10:30", end: "11:20", duration: 50 },
-                                  { start: "11:30", end: "12:20", duration: 50 },
-                                  { start: "12:50", end: "13:40", duration: 50, isLunch: true },
-                                  { start: "13:50", end: "14:40", duration: 50 },
-                                  { start: "14:50", end: "15:40", duration: 50 },
-                                  { start: "15:50", end: "16:40", duration: 50 },
-                                  { start: "16:50", end: "17:30", duration: 40 }
-                                ];
-                                
-                                days.forEach(day => {
-                                  times.forEach((time, index) => {
-                                    timeSlots.push({
-                                      id: `${day.substring(0, 3).toUpperCase()}${index + 1}`,
-                                      dayOfWeek: day,
-                                      startTime: time.start,
-                                      endTime: time.end,
-                                      duration: time.duration,
-                                      type: index > 5 ? "lab" : "theory",
-                                      isLunch: time.isLunch || false
-                                    });
-                                  });
-                                });
-                              }
-                              
-                              return timeSlots.map((slot, index) => {
-                                const isLunchTime = slot.isLunch || 
-                                  (slot.startTime >= "12:50" && slot.startTime <= "13:50");
-                                
-                                return (
-                                  <tr key={index} className={isLunchTime ? "bg-orange-50" : index % 2 === 0 ? "bg-muted/30" : ""}>
-                                    <td className="border border-border px-4 py-3 font-medium">
-                                      <Badge variant="outline" className="font-mono">
-                                        {slot.id}
-                                      </Badge>
-                                    </td>
-                                    <td className="border border-border px-4 py-3">
-                                      <div className="flex items-center gap-2">
-                                        <Clock className="w-4 h-4 text-muted-foreground" />
-                                        <span className="font-mono">
-                                          {slot.startTime} - {slot.endTime}
-                                        </span>
-                                      </div>
-                                    </td>
-                                    <td className="border border-border px-4 py-3">
-                                      <span className="text-sm text-muted-foreground">
-                                        {slot.duration} min
-                                      </span>
-                                    </td>
-                                    <td className="border border-border px-4 py-3">
-                                      <Badge variant="secondary">
-                                        {slot.dayOfWeek}
-                                      </Badge>
-                                    </td>
-                                    <td className="border border-border px-4 py-3">
-                                      {isLunchTime ? (
-                                        <Badge variant="outline" className="text-orange-600 border-orange-200">
-                                          Lunch Break
-                                        </Badge>
-                                      ) : (
-                                        <Badge variant={slot.type === 'lab' ? 'destructive' : 'default'}>
-                                          {slot.type || 'theory'}
-                                        </Badge>
-                                      )}
-                                    </td>
-                                  </tr>
-                                );
-                              });
-                            })()}
-                          </tbody>
-                        </table>
-                      </div>
-                      
-                      {/* Summary Info */}
-                      <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <span className="font-medium">Total Slots:</span>
-                            <span className="ml-2">
-                              {(() => {
-                                const schedule = selectedTimetable.schedule as any;
-                                const timeSlots = schedule?.timeSlots || [];
-                                return timeSlots.length || 54; // 6 days × 9 slots
-                              })()}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="font-medium">Working Days:</span>
-                            <span className="ml-2">Monday - Saturday</span>
-                          </div>
-                          <div>
-                            <span className="font-medium">Slot Duration:</span>
-                            <span className="ml-2">50 minutes (configurable)</span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      {(() => {
+                        // Parse schedule defensively (it may be a JSON string)
+                        let schedule: any = selectedTimetable?.schedule as any;
+                        if (schedule && typeof schedule === 'string') {
+                          try { schedule = JSON.parse(schedule); } catch {}
+                        }
+                        const timeSlots = Array.isArray(schedule?.timeSlots) ? schedule.timeSlots : [];
+                        const slotMappings = Array.isArray(schedule?.slotMappings) ? schedule.slotMappings : [];
+                        const lunchBreak = schedule?.lunchBreak || null;
 
-                  {/* Detailed Slot Information */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Detailed Slot Information</CardTitle>
-                      <CardDescription>
-                        Complete list of all scheduled classes with full details
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {(() => {
-                          const schedule = selectedTimetable.schedule as any;
-                          const slotMappings = schedule?.slotMappings || [];
-                          
-                          if (slotMappings.length === 0) {
-                            return (
-                              <div className="text-center py-8 text-muted-foreground">
-                                No slot mappings found. This timetable may not have been generated using the AI engine.
-                              </div>
-                            );
-                          }
-                          
-                          return slotMappings.map((mapping: any, index: number) => (
-                            <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                              <div className="flex items-center space-x-4">
-                                <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
-                                  <Clock className="w-6 h-6 text-primary" />
-                                </div>
-                                <div>
-                                  <div className="font-medium">{mapping.courseCode} - {mapping.courseName}</div>
-                                  <div className="text-sm text-muted-foreground">
-                                    {mapping.dayOfWeek} • {mapping.startTime} - {mapping.endTime}
-                                  </div>
-                                  <div className="text-sm text-muted-foreground">
-                                    Faculty: {mapping.facultyName || 'TBA'} • Room: {mapping.roomNumber || 'TBA'}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Badge variant={mapping.slotType === 'lab' ? 'destructive' : 'secondary'}>
-                                  {mapping.slotType || 'theory'}
-                                </Badge>
-                                <Badge variant="outline">
-                                  {mapping.slotId}
-                                </Badge>
-                              </div>
+                        // Collect unique days and sorted unique time ranges (HH:MM-HH:MM)
+                        const days: string[] = Array.from(new Set<string>(timeSlots.map((s: any) => String(s.dayOfWeek))));
+                        const toMin = (t: string) => { const [h,m] = t.split(":").map(Number); return h*60+m; };
+                        const timeRangesSet = new Map<string, { start: string; end: string; startMin: number }>();
+                        timeSlots.forEach((s: any) => {
+                          const key = `${s.startTime}-${s.endTime}`;
+                          timeRangesSet.set(key, { start: s.startTime, end: s.endTime, startMin: toMin(s.startTime) });
+                        });
+                        // Determine where to insert Lunch column chronologically
+                        let lunchPos: number | null = null;
+                        if (lunchBreak?.startTime && lunchBreak?.endTime) {
+                          const lunchStartMin = toMin(lunchBreak.startTime);
+                          const entries = Array.from(timeRangesSet.values()).sort((a,b) => a.startMin - b.startMin);
+                          const idx = entries.findIndex(e => e.startMin >= lunchStartMin);
+                          lunchPos = idx === -1 ? entries.length : idx;
+                        }
+                        const timeRanges: { start: string; end: string; startMin: number }[] =
+                          Array.from(timeRangesSet.values()).sort((a,b) => a.startMin - b.startMin);
+
+                        // Helper to find mapping for a cell
+                        const findMapping = (day: string, start: string, end: string) => {
+                          return slotMappings.find((m: any) => m.dayOfWeek === day && m.startTime === start && m.endTime === end);
+                        };
+
+                        if (days.length === 0 || timeRanges.length === 0) {
+                          return (
+                            <div className="text-center py-8 text-muted-foreground">
+                              No schedule found. Generate slot-time mappings first.
                             </div>
-                          ));
-                        })()}
-                      </div>
+                          );
+                        }
+
+                        return (
+                          <div className="overflow-x-auto">
+                            <table className="w-full border-collapse border border-border text-sm">
+                              <thead>
+                                <tr className="bg-muted">
+                                  <th className="border border-border px-3 py-2 text-left">Day</th>
+                                  {(() => {
+                                    const cells: JSX.Element[] = [];
+                                    timeRanges.forEach((tr, idx) => {
+                                      if (lunchPos !== null && idx === lunchPos) {
+                                        cells.push(
+                                          <th key={`lunch-col`} className="border border-border px-3 py-2 text-left">Lunch</th>
+                                        );
+                                      }
+                                      cells.push(
+                                        <th key={`${tr.start}-${tr.end}-${idx}`} className="border border-border px-3 py-2 text-left font-mono">
+                                          {tr.start} - {tr.end}
+                                        </th>
+                                      );
+                                    });
+                                    if (lunchPos !== null && lunchPos === timeRanges.length) {
+                                      cells.push(
+                                        <th key={`lunch-col-end`} className="border border-border px-3 py-2 text-left">Lunch</th>
+                                      );
+                                    }
+                                    return cells;
+                                  })()}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {days.map((day: string) => (
+                                  <tr key={day}>
+                                    <td className="border border-border px-3 py-2 font-medium">{day}</td>
+                                    {timeRanges.map((tr, idx) => {
+                                      // Derive a simple slot label like A1, B2 based on day and column index
+                                      const dayLetterMap: Record<string, string> = {
+                                        Monday: 'A', Tuesday: 'B', Wednesday: 'C', Thursday: 'D', Friday: 'E', Saturday: 'F', Sunday: 'G'
+                                      };
+                                      const dayLetter = dayLetterMap[day] || (day?.[0]?.toUpperCase() || 'X');
+                                      const label = `${dayLetter}${idx + 1}`;
+                                      // Show label only if a time slot exists for this day/time
+                                      const hasSlot = timeSlots.some((s: any) => s.dayOfWeek === day && s.startTime === tr.start && s.endTime === tr.end);
+                                      return (
+                                        <>
+                                          {lunchPos !== null && idx === lunchPos && (
+                                            <td key={`${day}-lunch`} className="border border-border px-3 py-2 bg-orange-50 text-orange-700 text-sm">
+                                              Lunch Break
+                                            </td>
+                                          )}
+                                          <td key={`${day}-${tr.start}-${tr.end}-${idx}`} className="border border-border px-3 py-2 align-top">
+                                            {hasSlot ? (
+                                              <Badge variant="outline" className="font-mono">{label}</Badge>
+                                            ) : (
+                                              <span className="text-muted-foreground">—</span>
+                                            )}
+                                          </td>
+                                        </>
+                                      );
+                                    })}
+                                    {lunchPos !== null && lunchPos === timeRanges.length && (
+                                      <td key={`${day}-lunch-end`} className="border border-border px-3 py-2 bg-orange-50 text-orange-700 text-sm">
+                                        Lunch Break
+                                      </td>
+                                    )}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
                 </TabsContent>
 
-                {/* Template Tab */}
+                {/* Classes Tab (replacing Template): list all allocated classes */}
                 <TabsContent value="template">
-                  {selectedTimetable.timeSlotTemplateId ? (
-                    <div className="space-y-6">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Template Information</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          {timeSlotTemplates?.find(t => t.id === selectedTimetable.timeSlotTemplateId) ? (
-                            <div className="space-y-4">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                  <p className="text-sm font-medium">Template Name</p>
-                                  <p className="text-sm text-muted-foreground">
-                                    {timeSlotTemplates.find(t => t.id === selectedTimetable.timeSlotTemplateId)?.templateName}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium">Period Duration</p>
-                                  <p className="text-sm text-muted-foreground">
-                                    {timeSlotTemplates.find(t => t.id === selectedTimetable.timeSlotTemplateId)?.periodDuration} minutes
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium">Lab Block Duration</p>
-                                  <p className="text-sm text-muted-foreground">
-                                    {timeSlotTemplates.find(t => t.id === selectedTimetable.timeSlotTemplateId)?.labBlockDuration} minutes
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium">Working Days</p>
-                                  <p className="text-sm text-muted-foreground">
-                                    {timeSlotTemplates.find(t => t.id === selectedTimetable.timeSlotTemplateId)?.workingDays.join(', ')}
-                                  </p>
-                                </div>
-                              </div>
-                              
-                              <div>
-                                <p className="text-sm font-medium mb-2">Daily Schedule</p>
-                                <div className="border rounded-md">
-                                  <table className="w-full text-sm">
-                                    <thead>
-                                      <tr className="border-b">
-                                        <th className="text-left p-2">Period</th>
-                                        <th className="text-left p-2">Start Time</th>
-                                        <th className="text-left p-2">End Time</th>
-                                        <th className="text-left p-2">Type</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {timeSlotTemplates
-                                        .find(t => t.id === selectedTimetable.timeSlotTemplateId)
-                                        ?.dailyPeriods.map((period, index) => (
-                                          <tr key={index} className="border-b last:border-b-0">
-                                            <td className="p-2">{period.name}</td>
-                                            <td className="p-2">{period.startTime}</td>
-                                            <td className="p-2">{period.endTime}</td>
-                                            <td className="p-2">
-                                              <Badge variant={period.type === 'LECTURE' ? 'default' : 'secondary'}>
-                                                {period.type}
-                                              </Badge>
-                                            </td>
-                                          </tr>
-                                        ))}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                              
-                              {timeSlotTemplates.find(t => t.id === selectedTimetable.timeSlotTemplateId)?.breaks?.length > 0 && (
-                                <div>
-                                  <p className="text-sm font-medium mb-2">Breaks</p>
-                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {timeSlotTemplates
-                                      .find(t => t.id === selectedTimetable.timeSlotTemplateId)
-                                      ?.breaks.map((breakItem, index) => (
-                                        <div key={index} className="border p-3 rounded-md">
-                                          <p className="font-medium">{breakItem.name}</p>
-                                          <p className="text-sm text-muted-foreground">
-                                            {breakItem.startTime} - {breakItem.endTime}
-                                          </p>
-                                          {breakItem.description && (
-                                            <p className="text-sm text-muted-foreground mt-1">
-                                              {breakItem.description}
-                                            </p>
-                                          )}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Allocated Classes</CardTitle>
+                      <CardDescription>
+                        Course, day/time, faculty, room, and type for this timetable
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {(() => {
+                        // Ensure schedule is an object (it might be a JSON string)
+                        let schedule: any = selectedTimetable?.schedule as any;
+                        if (schedule && typeof schedule === 'string') {
+                          try {
+                            schedule = JSON.parse(schedule);
+                          } catch (e) {
+                            console.warn('Failed to parse timetable.schedule JSON string', e);
+                          }
+                        }
+                        const mappings: any[] = Array.isArray(schedule?.slotMappings) ? schedule.slotMappings : [];
+                        const useSlots = Array.isArray(timetableSlots) && timetableSlots.length > 0;
+
+                        if (!useSlots && mappings.length === 0) {
+                          return (
+                            <div className="text-center py-8 text-muted-foreground">
+                              No classes found for this timetable. Please run classroom allocation.
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="overflow-x-auto">
+                            <table className="w-full border-collapse border border-border text-sm">
+                              <thead>
+                                <tr className="bg-muted">
+                                  <th className="border border-border px-4 py-2 text-left">Class ID</th>
+                                  <th className="border border-border px-4 py-2 text-left">Day</th>
+                                  <th className="border border-border px-4 py-2 text-left">Time</th>
+                                  <th className="border border-border px-4 py-2 text-left">Course</th>
+                                  <th className="border border-border px-4 py-2 text-left">Faculty</th>
+                                  <th className="border border-border px-4 py-2 text-left">Faculty ID</th>
+                                  <th className="border border-border px-4 py-2 text-left">Room</th>
+                                  <th className="border border-border px-4 py-2 text-left">Strength</th>
+                                  <th className="border border-border px-4 py-2 text-left">Type</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {useSlots ? (
+                                  timetableSlots.map((slot) => {
+                                  // Prefer enriched fields from backend
+                                  const enrichedCourseCode = (slot as any).courseCode as string | undefined;
+                                  const enrichedCourseName = (slot as any).courseName as string | undefined;
+                                  const enrichedFacultyName = (slot as any).facultyName as string | undefined;
+                                  const enrichedRoomNumber = (slot as any).roomNumber as string | undefined;
+                                  const classStrength = (slot as any).classStrength as number | undefined;
+                                  // Primary lookup by IDs from master datasets
+                                  let course = courses?.find(c => c.id === slot.courseId);
+                                  let fac = faculty?.find(f => f.id === slot.facultyId);
+                                  let room = rooms?.find(r => r.id === slot.roomId);
+
+                                // Fallback: try to resolve from AI-generated schedule.slotMappings by matching courseId first, else by day/time
+                                if ((!course || !fac || !room) && selectedTimetable?.schedule && typeof selectedTimetable.schedule === 'object') {
+                                  const schedule: any = selectedTimetable.schedule;
+                                  const mapping = Array.isArray(schedule.slotMappings)
+                                    ? (schedule.slotMappings.find((m: any) => m.courseId === slot.courseId) ||
+                                       schedule.slotMappings.find((m: any) =>
+                                          m.dayOfWeek === slot.dayOfWeek &&
+                                          m.startTime === slot.startTime &&
+                                          m.endTime === slot.endTime))
+                                    : null;
+                                  if (mapping) {
+                                    // Synthesize minimal objects for display if masters are unavailable
+                                    if (!course && (mapping.courseCode || mapping.courseName)) {
+                                      course = {
+                                        id: slot.courseId,
+                                        courseCode: mapping.courseCode ?? '—',
+                                        courseName: mapping.courseName ?? 'Unknown Course',
+                                      } as any;
+                                    }
+                                    if (!fac && mapping.facultyName) {
+                                      const parts = String(mapping.facultyName).split(' ');
+                                      const firstName = parts.slice(0, -1).join(' ') || mapping.facultyName;
+                                      const lastName = parts.slice(-1).join(' ') || '';
+                                      fac = { id: slot.facultyId, firstName, lastName } as any;
+                                    }
+                                    if (!room && mapping.roomNumber) {
+                                      room = { id: slot.roomId, roomNumber: mapping.roomNumber } as any;
+                                    }
+                                  }
+                                }
+
+                                return (
+                                  <tr key={slot.id} className="odd:bg-muted/30">
+                                    <td className="border border-border px-4 py-2 font-mono">{slot.id}</td>
+                                    <td className="border border-border px-4 py-2">{slot.dayOfWeek}</td>
+                                    <td className="border border-border px-4 py-2">{slot.startTime} - {slot.endTime}</td>
+                                    <td className="border border-border px-4 py-2">
+                                      <div className="flex items-center gap-2">
+                                        <Badge variant="outline">{enrichedCourseCode || course?.courseCode || '—'}</Badge>
+                                        <span className="font-medium">{enrichedCourseName || course?.courseName || 'Unknown Course'}</span>
+                                      </div>
+                                    </td>
+                                    <td className="border border-border px-4 py-2">{enrichedFacultyName || (fac ? `${fac.firstName} ${fac.lastName}` : 'TBA')}</td>
+                                    <td className="border border-border px-4 py-2">{fac?.facultyId || '—'}</td>
+                                    <td className="border border-border px-4 py-2">{enrichedRoomNumber || (room?.roomNumber || 'TBA')}</td>
+                                    <td className="border border-border px-4 py-2">{typeof classStrength === 'number' ? classStrength : '—'}</td>
+                                    <td className="border border-border px-4 py-2">
+                                      <Badge variant={slot.slotType === 'lab' ? 'destructive' : 'secondary'}>
+                                        {slot.slotType || 'theory'}
+                                      </Badge>
+                                    </td>
+                                  </tr>
+                                );
+                              })
+                                ) : (
+                                  mappings.map((m: any, index: number) => (
+                                    <tr key={`${m.dayOfWeek}-${m.startTime}-${m.courseId || m.courseCode}-${index}`} className="odd:bg-muted/30">
+                                      <td className="border border-border px-4 py-2">—</td>
+                                      <td className="border border-border px-4 py-2">{m.dayOfWeek}</td>
+                                      <td className="border border-border px-4 py-2">{m.startTime} - {m.endTime}</td>
+                                      <td className="border border-border px-4 py-2">
+                                        <div className="flex items-center gap-2">
+                                          <Badge variant="outline">{m.courseCode || '—'}</Badge>
+                                          <span className="font-medium">{m.courseName || 'Unknown Course'}</span>
                                         </div>
-                                      ))}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="text-center py-8">
-                              <p className="text-muted-foreground">Loading template information...</p>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <p className="text-muted-foreground">No template is associated with this timetable.</p>
-                    </div>
-                  )}
+                                      </td>
+                                      <td className="border border-border px-4 py-2">{m.facultyName || 'TBA'}</td>
+                                      <td className="border border-border px-4 py-2">—</td>
+                                      <td className="border border-border px-4 py-2">{m.roomNumber || 'TBA'}</td>
+                                      <td className="border border-border px-4 py-2">—</td>
+                                      <td className="border border-border px-4 py-2">
+                                        <Badge variant={m.slotType === 'lab' ? 'destructive' : 'secondary'}>
+                                          {m.slotType || 'theory'}
+                                        </Badge>
+                                      </td>
+                                    </tr>
+                                  ))
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        );
+                      })()}
+                    </CardContent>
+                  </Card>
                 </TabsContent>
 
                 {/* Conflicts Tab */}
@@ -1208,6 +1240,140 @@ export default function Timetables() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Inline Base Timetable Details (always visible when a base exists) */}
+        {baseTimetable && (
+          <Card className="mt-6" data-testid="inline-base-details">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Base Timetable Details (Fixed until deleted)
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => window.print()}>
+                    <Printer className="w-4 h-4 mr-2" /> Print
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div>
+                  <p className="text-sm text-muted-foreground">Name</p>
+                  <p className="font-medium">{baseTimetable.name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Academic Year</p>
+                  <p className="font-medium">{baseTimetable.academicYear}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  <Badge className="mt-1" variant="outline">{baseTimetable.status}</Badge>
+                </div>
+              </div>
+
+              {/* Classes table inline for base timetable */}
+              {(() => {
+                if (!selectedTimetable || selectedTimetable.id !== baseTimetable.id) {
+                  return <div className="text-sm text-muted-foreground">Loading base timetable classes...</div>;
+                }
+                const useSlots = Array.isArray(timetableSlots) && timetableSlots.length > 0;
+                // Ensure schedule is object for fallback mapping
+                let schedule: any = selectedTimetable?.schedule as any;
+                if (schedule && typeof schedule === 'string') {
+                  try { schedule = JSON.parse(schedule); } catch {}
+                }
+                const mappings: any[] = Array.isArray(schedule?.slotMappings) ? schedule.slotMappings : [];
+
+                if (!useSlots && mappings.length === 0) {
+                  return (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No classes found for this base timetable.
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse border border-border text-sm">
+                      <thead>
+                        <tr className="bg-muted">
+                          <th className="border border-border px-4 py-2 text-left">Class ID</th>
+                          <th className="border border-border px-4 py-2 text-left">Day</th>
+                          <th className="border border-border px-4 py-2 text-left">Time</th>
+                          <th className="border border-border px-4 py-2 text-left">Course</th>
+                          <th className="border border-border px-4 py-2 text-left">Faculty</th>
+                          <th className="border border-border px-4 py-2 text-left">Faculty ID</th>
+                          <th className="border border-border px-4 py-2 text-left">Room</th>
+                          <th className="border border-border px-4 py-2 text-left">Strength</th>
+                          <th className="border border-border px-4 py-2 text-left">Type</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {useSlots ? (
+                          timetableSlots.map((slot) => {
+                            const enrichedFacultyName = (slot as any).facultyName as string | undefined;
+                            const enrichedRoomNumber = (slot as any).roomNumber as string | undefined;
+                            const enrichedCourseCode = (slot as any).courseCode as string | undefined;
+                            const enrichedCourseName = (slot as any).courseName as string | undefined;
+                            const classStrength = (slot as any).classStrength as number | undefined;
+                            const fac = faculty?.find(f => f.id === slot.facultyId);
+                            return (
+                              <tr key={slot.id} className="odd:bg-muted/30">
+                                <td className="border border-border px-4 py-2 font-mono">{slot.id}</td>
+                                <td className="border border-border px-4 py-2">{slot.dayOfWeek}</td>
+                                <td className="border border-border px-4 py-2">{slot.startTime} - {slot.endTime}</td>
+                                <td className="border border-border px-4 py-2">
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant="outline">{enrichedCourseCode || '—'}</Badge>
+                                    <span className="font-medium">{enrichedCourseName || 'Unknown Course'}</span>
+                                  </div>
+                                </td>
+                                <td className="border border-border px-4 py-2">{enrichedFacultyName || (fac ? `${fac.firstName} ${fac.lastName}` : 'TBA')}</td>
+                                <td className="border border-border px-4 py-2">{fac?.facultyId || '—'}</td>
+                                <td className="border border-border px-4 py-2">{enrichedRoomNumber || 'TBA'}</td>
+                                <td className="border border-border px-4 py-2">{typeof classStrength === 'number' ? classStrength : '—'}</td>
+                                <td className="border border-border px-4 py-2">
+                                  <Badge variant={slot.slotType === 'lab' ? 'destructive' : 'secondary'}>
+                                    {slot.slotType || 'theory'}
+                                  </Badge>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        ) : (
+                          mappings.map((m: any, index: number) => (
+                            <tr key={`${m.dayOfWeek}-${m.startTime}-${index}`} className="odd:bg-muted/30">
+                              <td className="border border-border px-4 py-2">—</td>
+                              <td className="border border-border px-4 py-2">{m.dayOfWeek}</td>
+                              <td className="border border-border px-4 py-2">{m.startTime} - {m.endTime}</td>
+                              <td className="border border-border px-4 py-2">
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline">{m.courseCode || '—'}</Badge>
+                                  <span className="font-medium">{m.courseName || 'Unknown Course'}</span>
+                                </div>
+                              </td>
+                              <td className="border border-border px-4 py-2">{m.facultyName || 'TBA'}</td>
+                              <td className="border border-border px-4 py-2">—</td>
+                              <td className="border border-border px-4 py-2">{m.roomNumber || 'TBA'}</td>
+                              <td className="border border-border px-4 py-2">—</td>
+                              <td className="border border-border px-4 py-2">
+                                <Badge variant={m.slotType === 'lab' ? 'destructive' : 'secondary'}>
+                                  {m.slotType || 'theory'}
+                                </Badge>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()}
+            </CardContent>
+          </Card>
+        )}
       </main>
     </div>
   );

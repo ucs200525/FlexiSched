@@ -190,7 +190,7 @@ const TimetableSlotSchema = new mongoose.Schema({
   dayOfWeek: { type: String, required: true },
   startTime: { type: String, required: true },
   endTime: { type: String, required: true },
-  slotType: { type: String, enum: ['Theory', 'Lab', 'Tutorial'], required: true },
+  slotType: { type: String, enum: ['theory', 'lab', 'tutorial', 'practical', 'fieldwork', 'teaching_practice'], required: true },
   sectionIds: [{ type: String }],
   isLabBlock: { type: Boolean, default: false },
   specialInstructions: { type: String, default: null },
@@ -541,6 +541,44 @@ export class MongoDBStorage implements IStorage {
     };
   }
 
+  private convertToTimetable(doc: any): Timetable {
+    return {
+      id: doc._id,
+      name: doc.name,
+      program: doc.program,
+      semester: doc.semester,
+      batch: doc.batch,
+      academicYear: doc.academicYear,
+      sectionId: doc.sectionId,
+      status: doc.status,
+      generatedBy: doc.generatedBy,
+      timeSlotTemplateId: doc.timeSlotTemplateId,
+      schedule: doc.schedule,
+      conflicts: doc.conflicts,
+      optimizationScore: doc.optimizationScore,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt
+    };
+  }
+
+  private convertToTimetableSlot(doc: any): TimetableSlot {
+    return {
+      id: doc._id,
+      timetableId: doc.timetableId,
+      courseId: doc.courseId,
+      facultyId: doc.facultyId,
+      roomId: doc.roomId,
+      sectionIds: doc.sectionIds,
+      dayOfWeek: doc.dayOfWeek,
+      startTime: doc.startTime,
+      endTime: doc.endTime,
+      slotType: doc.slotType,
+      isLabBlock: doc.isLabBlock,
+      specialInstructions: doc.specialInstructions,
+      createdAt: doc.createdAt
+    };
+  }
+
   // Students
   async getStudents(): Promise<Student[]> {
     const docs = await StudentModel.find({});
@@ -727,23 +765,32 @@ export class MongoDBStorage implements IStorage {
     return !!result;
   }
 
-  // Placeholder implementations for other methods (implement as needed)
+  // Timetable implementations using MongoDB
   async getTimetables(): Promise<Timetable[]> { 
-    return Array.from(this.timetables.values());
+    const docs = await TimetableModel.find({});
+    return docs.map(doc => this.convertToTimetable(doc));
   }
-  async getTimetable(id: string): Promise<Timetable | undefined> { return undefined; }
-  async getTimetablesByProgram(program: string, semester?: number): Promise<Timetable[]> { return []; }
+  
+  async getTimetable(id: string): Promise<Timetable | undefined> { 
+    const doc = await TimetableModel.findById(id);
+    return doc ? this.convertToTimetable(doc) : undefined;
+  }
+  
+  async getTimetablesByProgram(program: string, semester?: number): Promise<Timetable[]> { 
+    const query: any = { program };
+    if (semester !== undefined) query.semester = semester;
+    
+    const docs = await TimetableModel.find(query);
+    return docs.map(doc => this.convertToTimetable(doc));
+  }
+  
   async createTimetable(timetable: InsertTimetable): Promise<Timetable> { 
-    const id = `timetable-${Date.now()}`;
-    const newTimetable: Timetable = {
-      id,
-      name: timetable.name,
-      program: timetable.program,
-      semester: timetable.semester,
-      batch: timetable.batch,
-      academicYear: timetable.academicYear,
+    const id = new mongoose.Types.ObjectId().toString();
+    const timetableData = {
+      _id: id,
+      ...timetable,
       sectionId: timetable.sectionId || null,
-      status: timetable.status || "draft",
+      status: timetable.status || 'draft',
       generatedBy: timetable.generatedBy || null,
       timeSlotTemplateId: timetable.timeSlotTemplateId || null,
       schedule: timetable.schedule || {},
@@ -752,43 +799,53 @@ export class MongoDBStorage implements IStorage {
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    this.timetables.set(id, newTimetable);
-    return newTimetable;
+    
+    const doc = await TimetableModel.create(timetableData);
+    return this.convertToTimetable(doc);
   }
-  async updateTimetable(id: string, timetable: Partial<Timetable>): Promise<Timetable | undefined> { return undefined; }
-  async deleteTimetable(id: string): Promise<boolean> { return false; }
+  async updateTimetable(id: string, timetable: Partial<Timetable>): Promise<Timetable | undefined> { 
+    const doc = await TimetableModel.findByIdAndUpdate(id, { ...timetable, updatedAt: new Date() }, { new: true });
+    return doc ? this.convertToTimetable(doc) : undefined;
+  }
+  
+  async deleteTimetable(id: string): Promise<boolean> { 
+    const result = await TimetableModel.findByIdAndDelete(id);
+    return !!result;
+  }
 
   async getTimetableSlots(timetableId: string): Promise<TimetableSlot[]> { 
-    if (!this.timetableSlots) return [];
-    return Array.from(this.timetableSlots.values()).filter(slot => slot.timetableId === timetableId);
+    const docs = await TimetableSlotModel.find({ timetableId });
+    return docs.map(doc => this.convertToTimetableSlot(doc));
   }
+  
   async createTimetableSlot(slot: InsertTimetableSlot): Promise<TimetableSlot> { 
-    const id = `slot-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const newSlot: TimetableSlot = {
-      id,
-      timetableId: slot.timetableId,
-      courseId: slot.courseId,
-      facultyId: slot.facultyId,
-      roomId: slot.roomId,
+    const id = new mongoose.Types.ObjectId().toString();
+    const slotData = {
+      _id: id,
+      ...slot,
       sectionIds: slot.sectionIds || [],
-      dayOfWeek: slot.dayOfWeek,
-      startTime: slot.startTime,
-      endTime: slot.endTime,
-      slotType: slot.slotType,
       isLabBlock: slot.isLabBlock || false,
       specialInstructions: slot.specialInstructions || null,
       createdAt: new Date()
     };
     
-    if (!this.timetableSlots) {
-      this.timetableSlots = new Map();
-    }
-    this.timetableSlots.set(id, newSlot);
-    return newSlot;
+    const doc = await TimetableSlotModel.create(slotData);
+    return this.convertToTimetableSlot(doc);
   }
-  async updateTimetableSlot(id: string, slot: Partial<TimetableSlot>): Promise<TimetableSlot | undefined> { return undefined; }
-  async deleteTimetableSlot(id: string): Promise<boolean> { return false; }
-  async deleteTimetableSlots(timetableId: string): Promise<boolean> { return false; }
+  async updateTimetableSlot(id: string, slot: Partial<TimetableSlot>): Promise<TimetableSlot | undefined> { 
+    const doc = await TimetableSlotModel.findByIdAndUpdate(id, slot, { new: true });
+    return doc ? this.convertToTimetableSlot(doc) : undefined;
+  }
+  
+  async deleteTimetableSlot(id: string): Promise<boolean> { 
+    const result = await TimetableSlotModel.findByIdAndDelete(id);
+    return !!result;
+  }
+  
+  async deleteTimetableSlots(timetableId: string): Promise<boolean> { 
+    const result = await TimetableSlotModel.deleteMany({ timetableId });
+    return result.deletedCount > 0;
+  }
 
   async getSections(): Promise<Section[]> { return []; }
   async getSection(id: string): Promise<Section | undefined> { return undefined; }

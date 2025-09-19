@@ -96,7 +96,7 @@ export interface TimetableSlot {
   dayOfWeek: string; // Monday, Tuesday, etc.
   startTime: string; // HH:MM format
   endTime: string;
-  slotType: string; // theory, practical, lab, fieldwork, teaching_practice
+  slotType: string; // theory, lab, tutorial, practical, fieldwork, teaching_practice
   isLabBlock: boolean;
   specialInstructions: string | null;
   createdAt: Date;
@@ -363,3 +363,11 @@ export const courseRegistrationSchema = z.object({
 });
 
 export type CourseRegistrationRequest = z.infer<typeof courseRegistrationSchema>;
+
+// Course Slot Selection schema
+export const courseSlotSelectionSchema = z.object({
+  courseId: z.string().min(1, "Course ID is required"),
+  slotId: z.string().min(1, "Slot ID is required"),
+});
+
+export type CourseSlotSelectionRequest = z.infer<typeof courseSlotSelectionSchema>;

@@ -6,26 +6,62 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, BookOpen, Plus, Trash2, Clock, GraduationCap, AlertCircle } from "lucide-react";
+import { Search, BookOpen, Plus, Trash2, Clock, GraduationCap, AlertCircle, Calendar, AlertTriangle } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Course } from "@shared/schema";
 
+type GroupedAvailableCourses = {
+  programCourses: Course[];
+  otherSemesterCourses: Course[];
+};
+
 export default function CourseRegistration() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
-  
-  // Fetch available courses for the student
-  const { data: availableCourses, isLoading: loadingAvailable, error: availableCoursesError } = useQuery<Course[]>({
-    queryKey: [`/api/students/${user?.id}/available-courses`],
+
+  // Fetch available courses for the student (grouped view)
+  const { data: availableCourses, isLoading: loadingAvailable, error: availableCoursesError } = useQuery<GroupedAvailableCourses>({
+    queryKey: [`/api/students/${user?.id}/available-courses?grouped=true`],
     enabled: !!user?.id && isAuthenticated && !authLoading,
   });
 
   // Fetch registered courses for the student  
   const { data: registeredCourses, isLoading: loadingRegistered, error: registeredCoursesError } = useQuery<Course[]>({
     queryKey: [`/api/students/${user?.id}/registered-courses`],
+    enabled: !!user?.id && isAuthenticated && !authLoading,
+  });
+
+  // Personal timetable types and query
+  interface PersonalTimetable {
+    studentId: string;
+    totalCredits: number;
+    enrolledCourses: Array<{
+      courseCode: string;
+      courseName: string;
+      section: string;
+      credits: number;
+      faculty: string;
+      schedule: Array<{
+        day: string;
+        startTime: string;
+        endTime: string;
+        room: string;
+        slotId: string;
+      }>;
+    }>;
+    conflicts: Array<{
+      type: string;
+      description: string;
+      severity?: string;
+      suggestions: string[];
+    }>;
+  }
+
+  const { data: personalTimetable, isLoading: loadingTimetable, error: timetableError } = useQuery<PersonalTimetable>({
+    queryKey: [`/api/students/${user?.id}/timetable`],
     enabled: !!user?.id && isAuthenticated && !authLoading,
   });
 
@@ -43,8 +79,9 @@ export default function CourseRegistration() {
         description: "Successfully registered for course!",
       });
       // Invalidate both available and registered courses
-      queryClient.invalidateQueries({ queryKey: [`/api/students/${user?.id}/available-courses`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/students/${user?.id}/available-courses?grouped=true`] });
       queryClient.invalidateQueries({ queryKey: [`/api/students/${user?.id}/registered-courses`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/students/${user?.id}/timetable`] });
     },
     onError: (error: any) => {
       let title = "Registration Failed";
@@ -77,8 +114,9 @@ export default function CourseRegistration() {
         description: "Successfully unregistered from course!",
       });
       // Invalidate both available and registered courses
-      queryClient.invalidateQueries({ queryKey: [`/api/students/${user?.id}/available-courses`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/students/${user?.id}/available-courses?grouped=true`] });
       queryClient.invalidateQueries({ queryKey: [`/api/students/${user?.id}/registered-courses`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/students/${user?.id}/timetable`] });
     },
     onError: (error: any) => {
       let title = "Unregistration Failed";
@@ -99,11 +137,21 @@ export default function CourseRegistration() {
     },
   });
 
-  // Filter courses based on search term
-  const filteredAvailableCourses = availableCourses?.filter(course =>
+  // Filter courses based on search term (for both baskets)
+  const programCourses = availableCourses?.programCourses || [];
+  const otherSemesterCourses = availableCourses?.otherSemesterCourses || [];
+
+  const filteredProgramCourses = programCourses.filter(course =>
     course.courseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     course.courseCode.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  );
+
+  const filteredOtherSemesterCourses = otherSemesterCourses.filter(course =>
+    course.courseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    course.courseCode.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalFilteredAvailable = filteredProgramCourses.length + filteredOtherSemesterCourses.length;
 
   const filteredRegisteredCourses = registeredCourses?.filter(course =>
     course.courseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -227,7 +275,7 @@ export default function CourseRegistration() {
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-muted-foreground">Available Courses</p>
                   <p className="text-2xl font-bold text-foreground" data-testid="stat-available-courses">
-                    {availableCourses?.length || 0}
+                    {(programCourses.length + otherSemesterCourses.length) || 0}
                   </p>
                   <p className="text-xs text-muted-foreground">Eligible to register</p>
                 </div>
@@ -258,12 +306,15 @@ export default function CourseRegistration() {
 
         {/* Course Tabs */}
         <Tabs defaultValue="available" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="available" data-testid="tab-available-courses">
-              Available Courses ({filteredAvailableCourses.length})
+              Available Courses ({totalFilteredAvailable})
             </TabsTrigger>
             <TabsTrigger value="registered" data-testid="tab-registered-courses">
               Registered Courses ({filteredRegisteredCourses.length})
+            </TabsTrigger>
+            <TabsTrigger value="timetable" data-testid="tab-personal-timetable">
+              My Timetable
             </TabsTrigger>
           </TabsList>
 
@@ -292,62 +343,129 @@ export default function CourseRegistration() {
                         : "Please try refreshing the page"}
                     </p>
                   </div>
-                ) : filteredAvailableCourses.length === 0 ? (
+                ) : totalFilteredAvailable === 0 ? (
                   <div className="text-center py-8">
                     <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">No available courses found</p>
                   </div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Course Code</TableHead>
-                        <TableHead>Course Name</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Credits</TableHead>
-                        <TableHead>Hours</TableHead>
-                        <TableHead>Action</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredAvailableCourses.map((course) => (
-                        <TableRow key={course.id} data-testid={`available-course-${course.id}`}>
-                          <TableCell className="font-medium">{course.courseCode}</TableCell>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">{course.courseName}</p>
-                              {course.description && (
-                                <p className="text-sm text-muted-foreground line-clamp-2">
-                                  {course.description}
-                                </p>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{course.courseType}</Badge>
-                          </TableCell>
-                          <TableCell>{course.credits}</TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              <div>Theory: {course.theoryHours}h</div>
-                              <div>Practical: {course.practicalHours}h</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              size="sm"
-                              onClick={() => handleRegisterCourse(course.id)}
-                              disabled={registerCourseMutation.isPending}
-                              data-testid={`button-register-${course.id}`}
-                            >
-                              <Plus className="w-4 h-4 mr-1" />
-                              Register
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <div className="space-y-8">
+                    {/* Basket 1: Program Courses */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3">Program Courses</h3>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Course Code</TableHead>
+                            <TableHead>Course Name</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead>Credits</TableHead>
+                            <TableHead>Hours</TableHead>
+                            <TableHead>Action</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredProgramCourses.map((course) => (
+                            <TableRow key={`program-${course.id}`} data-testid={`available-course-${course.id}`}>
+                              <TableCell className="font-medium">{course.courseCode}</TableCell>
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium">{course.courseName}</p>
+                                  {course.description && (
+                                    <p className="text-sm text-muted-foreground line-clamp-2">
+                                      {course.description}
+                                    </p>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline">{course.courseType}</Badge>
+                              </TableCell>
+                              <TableCell>{course.credits}</TableCell>
+                              <TableCell>
+                                <div className="text-sm">
+                                  <div>Theory: {course.theoryHours}h</div>
+                                  <div>Practical: {course.practicalHours}h</div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleRegisterCourse(course.id)}
+                                  disabled={registerCourseMutation.isPending}
+                                  data-testid={`button-register-${course.id}`}
+                                >
+                                  <Plus className="w-4 h-4 mr-1" />
+                                  Register
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                      {filteredProgramCourses.length === 0 && (
+                        <p className="text-sm text-muted-foreground mt-2">No program courses match the search.</p>
+                      )}
+                    </div>
+
+                    {/* Basket 2: Other Courses in Same Semester */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3">Other Courses in Semester</h3>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Course Code</TableHead>
+                            <TableHead>Course Name</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead>Credits</TableHead>
+                            <TableHead>Hours</TableHead>
+                            <TableHead>Action</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredOtherSemesterCourses.map((course) => (
+                            <TableRow key={`other-${course.id}`} data-testid={`available-course-${course.id}`}>
+                              <TableCell className="font-medium">{course.courseCode}</TableCell>
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium">{course.courseName}</p>
+                                  {course.description && (
+                                    <p className="text-sm text-muted-foreground line-clamp-2">
+                                      {course.description}
+                                    </p>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline">{course.courseType}</Badge>
+                              </TableCell>
+                              <TableCell>{course.credits}</TableCell>
+                              <TableCell>
+                                <div className="text-sm">
+                                  <div>Theory: {course.theoryHours}h</div>
+                                  <div>Practical: {course.practicalHours}h</div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleRegisterCourse(course.id)}
+                                  disabled={registerCourseMutation.isPending}
+                                  data-testid={`button-register-${course.id}`}
+                                >
+                                  <Plus className="w-4 h-4 mr-1" />
+                                  Register
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                      {filteredOtherSemesterCourses.length === 0 && (
+                        <p className="text-sm text-muted-foreground mt-2">No other-semester courses match the search.</p>
+                      )}
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -435,6 +553,99 @@ export default function CourseRegistration() {
                       ))}
                     </TableBody>
                   </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Personal Timetable Tab */}
+          <TabsContent value="timetable">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  My Timetable
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loadingTimetable ? (
+                  <div className="text-center py-8">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <p className="mt-2 text-sm text-muted-foreground">Loading timetable...</p>
+                  </div>
+                ) : timetableError ? (
+                  <div className="text-center py-8">
+                    <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
+                    <p className="text-destructive font-medium mb-2">Failed to Load Timetable</p>
+                    <p className="text-sm text-muted-foreground">Please try refreshing the page</p>
+                  </div>
+                ) : personalTimetable && personalTimetable.enrolledCourses.length > 0 ? (
+                  <div className="space-y-6">
+                    {Array.isArray(personalTimetable.conflicts) && personalTimetable.conflicts.length > 0 && (
+                      <div className="space-y-2">
+                        {personalTimetable.conflicts.map((c, idx) => (
+                          <div key={idx} className="p-3 border rounded flex items-start gap-2 bg-amber-50">
+                            <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5" />
+                            <div>
+                              <div className="text-sm font-medium">{c.type}</div>
+                              <div className="text-sm text-muted-foreground">{c.description}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Day</TableHead>
+                            <TableHead>Time</TableHead>
+                            <TableHead>Course</TableHead>
+                            <TableHead>Room</TableHead>
+                            <TableHead>Faculty</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {personalTimetable.enrolledCourses
+                            .flatMap((course) => (
+                              course.schedule.map((slot) => ({
+                                day: slot.day,
+                                time: `${slot.startTime}-${slot.endTime}`,
+                                courseCode: course.courseCode,
+                                courseName: course.courseName,
+                                room: slot.room,
+                                faculty: course.faculty,
+                                sortKey: `${slot.day}-${slot.startTime}-${course.courseCode}`
+                              }))
+                            ))
+                            .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
+                            .map((row, idx) => (
+                              <TableRow key={idx}>
+                                <TableCell className="font-medium">{row.day}</TableCell>
+                                <TableCell>{row.time}</TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium">{row.courseCode}</span>
+                                    <span className="text-sm text-muted-foreground">{row.courseName}</span>
+                                  </div>
+                                </TableCell>
+                                <TableCell>{row.room || "TBA"}</TableCell>
+                                <TableCell>{row.faculty || "TBA"}</TableCell>
+                              </TableRow>
+                            ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium mb-2">No Timetable Yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Register for courses to build your personal timetable automatically.
+                    </p>
+                  </div>
                 )}
               </CardContent>
             </Card>
