@@ -2800,11 +2800,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  
   // Faculty Panel - Select courses with constraint validation
   app.post("/api/faculty/:id/select-courses", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
-      const { courseIds } = req.body;
+      const { courseIds = [] } = req.body || {};
       const user = (req as any).user;
       
       // Authorization check
@@ -2821,12 +2822,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get courses to be assigned
-      const courses = await Promise.all(courseIds.map((courseId: string) => storage.getCourse(courseId)));
-      const validCourses = courses.filter(course => course !== null);
+      const courses = await Promise.all((courseIds as string[]).map((courseId: string) => storage.getCourse(courseId)));
+      const validCourses = courses.filter(Boolean) as any[];
 
       // Validate constraints
-      const totalCredits = validCourses.reduce((sum, course) => sum + course.credits, 0);
-      const currentWorkload = facultyMember.assignedCourses.length * 3;
+      const totalCredits = validCourses.reduce((sum, course: any) => sum + (course.credits || 0), 0);
+      const currentWorkload = (facultyMember.assignedCourses?.length || 0) * 3;
       const newWorkload = currentWorkload + totalCredits;
 
       if (newWorkload > (facultyMember.maxWorkload || 20)) {
@@ -2839,14 +2840,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Check for time conflicts (basic check)
+      // Placeholder for time conflicts (basic check)
       const conflicts: string[] = [];
-      // This would need more sophisticated conflict detection based on actual time slots
 
-      // Update faculty assigned courses
-      const updatedAssignedCourses = [...facultyMember.assignedCourses, ...courseIds];
+      // Update faculty assigned courses (dedupe)
+      const updatedAssignedCourses = Array.from(new Set([...(facultyMember.assignedCourses || []), ...courseIds]));
+      const updated = await storage.updateFaculty(id, { assignedCourses: updatedAssignedCourses as any });
+
+      return res.json({ success: true, faculty: updated, conflicts });
+    } catch (error) {
+      console.error("Select courses error:", error);
+      return res.status(500).json({ message: "Failed to select courses", error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // Admin - Allocate classrooms for a timetable's slots
+  app.post("/api/admin/allocate-classrooms", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
-      const { timetableId, allocationRules } = req.body;
+      const { timetableId } = req.body || {};
       
       // Get timetable and its slots
       const timetable = await storage.getTimetable(timetableId);
@@ -2865,6 +2876,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ]
         });
       }
+
       const rooms = await storage.getRooms();
       const courses = await storage.getCourses();
       const faculty = await storage.getFaculty();
@@ -2885,7 +2897,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allocationConflicts: Array<{ type: string; description: string; slotId: string; time: string; program: string; semester: number; }> = [];
 
       // Generate unique Class IDs and allocate rooms
-      const classAllocations = [];
+      const classAllocations: any[] = [];
       const roomUtilization = new Map();
 
       for (const slot of slots) {
@@ -2901,14 +2913,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const facultyMember = faculty.find(f => f.id === slot.facultyId);
         const timestamp = Date.now().toString(36);
         const random = Math.random().toString(36).substring(2, 5);
-        
         const classId = `CLS-${course?.courseCode || 'UNK'}-${slot.dayOfWeek.substring(0, 3).toUpperCase()}-${slot.startTime.replace(':', '')}-${timestamp}-${random}`;
 
         // Find suitable room based on allocation rules (skip allocation if program/semester clash)
         let allocatedRoom = null as any;
-        const enrolledStudents = students.filter(s => 
-          s.enrolledCourses.includes(slot.courseId) && s.isActive
-        );
+        const enrolledStudents = students.filter(s => s.enrolledCourses.includes(slot.courseId) && s.isActive);
 
         // Room selection criteria
         const requiredCapacity = enrolledStudents.length + Math.ceil(enrolledStudents.length * 0.1); // 10% buffer
@@ -2916,25 +2925,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const suitableRooms = rooms.filter(room => {
             const isAvailable = room.isAvailable;
             const hasCapacity = room.capacity >= requiredCapacity;
-            const typeMatch = slot.slotType === 'lab' ? 
-              room.roomType.toLowerCase().includes('lab') : 
-              !room.roomType.toLowerCase().includes('lab');
-            
-            // Check room utilization for this time slot
+            const typeMatch = slot.slotType === 'lab' ? room.roomType.toLowerCase().includes('lab') : !room.roomType.toLowerCase().includes('lab');
             const roomKey = `${room.id}-${slot.dayOfWeek}-${slot.startTime}`;
             const isTimeSlotFree = !roomUtilization.has(roomKey);
-            
             return isAvailable && hasCapacity && typeMatch && isTimeSlotFree;
           });
 
-          // Prioritize rooms based on allocation rules
           if (suitableRooms.length > 0) {
             suitableRooms.sort((a, b) => {
               const aCapacityScore = Math.abs(a.capacity - requiredCapacity);
               const bCapacityScore = Math.abs(b.capacity - requiredCapacity);
               return aCapacityScore - bCapacityScore;
             });
-            
             allocatedRoom = suitableRooms[0];
             const roomKey = `${allocatedRoom.id}-${slot.dayOfWeek}-${slot.startTime}`;
             roomUtilization.set(roomKey, true);
@@ -2996,9 +2998,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         allocatedClasses: classAllocations.filter(c => c.roomId).length,
         unallocatedClasses: classAllocations.filter(c => !c.roomId).length,
         roomUtilizationRate: Math.round((roomUtilization.size / (rooms.length * slots.length)) * 100),
-        averageCapacityUtilization: Math.round(
-          classAllocations.reduce((sum, c) => sum + c.utilization, 0) / classAllocations.length
-        )
+        averageCapacityUtilization: classAllocations.length > 0 ? Math.round(
+          classAllocations.reduce((sum, c) => sum + (c.utilization || 0), 0) / classAllocations.length
+        ) : 0
       };
 
       res.json({
@@ -3009,7 +3011,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         unallocatedClasses: classAllocations.filter(c => !c.roomId),
         conflicts: allocationConflicts
       });
-
     } catch (error) {
       console.error("Classroom allocation error:", error);
       res.status(500).json({
@@ -3017,6 +3018,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Failed to allocate classrooms",
         error: error instanceof Error ? error.message : 'Unknown error'
       });
+    }
+  });
+
+  // Admin - Get classroom allocation summary for a timetable
+  app.get("/api/admin/classroom-allocations/:timetableId", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const { timetableId } = req.params as any;
+      const timetable = await storage.getTimetable(timetableId);
+      if (!timetable) {
+        return res.status(404).json({ message: "Timetable not found" });
+      }
+
+      const [slots, rooms, courses, faculty, students] = await Promise.all([
+        storage.getTimetableSlots(timetableId),
+        storage.getRooms(),
+        storage.getCourses(),
+        storage.getFaculty(),
+        storage.getStudents(),
+      ]);
+      const courseMap = new Map(courses.map(c => [c.id, c]));
+      const facultyMap = new Map(faculty.map(f => [f.id, f]));
+      const roomMap = new Map(rooms.map(r => [r.id, r]));
+
+      const classAllocations = slots.map(slot => {
+        const course: any = courseMap.get(slot.courseId);
+        const facultyMember: any = facultyMap.get(slot.facultyId as any);
+        const room: any = slot.roomId ? roomMap.get(slot.roomId as any) : undefined;
+        const enrolledStudents = students.filter(s => s.enrolledCourses.includes(slot.courseId) && s.isActive);
+        const classId = (slot.specialInstructions && slot.specialInstructions.startsWith('Class ID: '))
+          ? slot.specialInstructions.replace('Class ID: ', '')
+          : `CLS-${course?.courseCode || 'UNK'}-${slot.dayOfWeek.substring(0, 3).toUpperCase()}-${slot.startTime.replace(':', '')}`;
+        const utilization = room ? Math.round((enrolledStudents.length / room.capacity) * 100) : 0;
+        return {
+          classId,
+          timetableSlotId: slot.id,
+          courseId: slot.courseId,
+          courseCode: course?.courseCode || 'UNK',
+          courseName: course?.courseName || 'Unknown Course',
+          facultyId: slot.facultyId,
+          facultyName: facultyMember ? `${facultyMember.firstName} ${facultyMember.lastName}` : 'Unknown Faculty',
+          roomId: slot.roomId || null,
+          roomNumber: room?.roomNumber || 'TBA',
+          roomType: room?.roomType || 'TBA',
+          dayOfWeek: slot.dayOfWeek,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          slotType: slot.slotType,
+          enrolledStudents: enrolledStudents.map(s => ({
+            studentId: s.studentId,
+            name: `${s.firstName} ${s.lastName}`,
+            program: s.program,
+            semester: s.semester,
+            batch: s.batch
+          })),
+          capacity: room?.capacity || 0,
+          utilization,
+          equipment: room?.equipment || [],
+          location: room?.location || 'TBA'
+        };
+      });
+
+      const allocationSummary = {
+        totalClasses: classAllocations.length,
+        allocatedClasses: classAllocations.filter(c => c.roomId).length,
+        unallocatedClasses: classAllocations.filter(c => !c.roomId).length,
+        roomUtilizationRate: rooms.length > 0 && slots.length > 0 ? Math.round((classAllocations.filter(c => c.roomId).length / classAllocations.length) * 100) : 0,
+        averageCapacityUtilization: classAllocations.length > 0 ? Math.round(
+          classAllocations.reduce((sum, c: any) => sum + (c.utilization || 0), 0) / classAllocations.length
+        ) : 0,
+      };
+
+      return res.json({ classAllocations, allocationSummary, unallocatedClasses: classAllocations.filter(c => !c.roomId) });
+    } catch (error) {
+      console.error("Get classroom allocations error:", error);
+      return res.status(500).json({ message: "Failed to fetch classroom allocations", error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
