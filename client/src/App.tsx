@@ -54,9 +54,12 @@ function AuthenticatedApp() {
   // This must be called before any conditional returns to follow Rules of Hooks
   useEffect(() => {
     if (isAuthenticated && user?.role) {
+      console.log("App.tsx - useEffect - user role:", user.role, "current location:", location);
       const allowedRoutes = getAllowedRoutes(user.role);
+      console.log("App.tsx - useEffect - allowed routes:", allowedRoutes);
       if (!allowedRoutes.includes(location)) {
         const defaultRoute = getDefaultRoute(user.role);
+        console.log("App.tsx - useEffect - redirecting from", location, "to", defaultRoute);
         setLocation(defaultRoute);
       }
     }
@@ -64,12 +67,16 @@ function AuthenticatedApp() {
 
   if (!isAuthenticated) {
     return <Login onLoginSuccess={(userData: any) => {
-      login({
+      console.log("App.tsx - onLoginSuccess received userData:", userData);
+      const userToLogin = {
         ...userData,
         id: userData.id || `${userData.role}-${Date.now()}`
-      });
+      };
+      console.log("App.tsx - logging in user:", userToLogin);
+      login(userToLogin);
       // Redirect to appropriate dashboard after login
       const defaultRoute = getDefaultRoute(userData.role);
+      console.log("App.tsx - redirecting to:", defaultRoute, "for role:", userData.role);
       setLocation(defaultRoute);
     }} />;
   }

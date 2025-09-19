@@ -35,11 +35,19 @@ export default function Login({ onLoginSuccess }: LoginProps) {
       return response.json();
     },
     onSuccess: (data) => {
+      console.log("Login response data:", data);
+      // Extract user data from the response
+      const userData = data.user || data;
+      console.log("Extracted user data:", userData);
       toast({
         title: "Login Successful",
-        description: `Welcome, ${data.name}!`,
+        description: `Welcome, ${userData.name}!`,
       });
-      onLoginSuccess(data);
+      // Pass the user data along with the token
+      onLoginSuccess({
+        ...userData,
+        token: data.token
+      });
     },
     onError: (error) => {
       toast({

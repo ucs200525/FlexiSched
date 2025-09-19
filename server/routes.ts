@@ -152,6 +152,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
           timestamp: Date.now()
         });
 
+        return res.json({
+          success: true,
+          token,
+          user: {
+            id: authenticatedUser.id,
+            username: authenticatedUser.username,
+            name: authenticatedUser.name,
+            role: authenticatedUser.role,
+            email: authenticatedUser.email
+          }
+        });
+      } else {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   // Admin - Assign faculty courses to time slots and create TimetableSlot records
   app.post("/api/timetables/:id/assign-faculty-to-slots", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
@@ -858,8 +878,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.createTimetableSlot({
           timetableId: timetable.id,
           courseId: s.courseId,
-          facultyId: s.facultyId || undefined,
-          roomId: s.roomId || undefined,
+          facultyId: s.facultyId || 'TBA',
+          roomId: s.roomId || 'TBA',
           dayOfWeek: s.dayOfWeek,
           startTime: s.startTime,
           endTime: s.endTime,
@@ -877,23 +897,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ success: false, message: "Failed to materialize slots" });
     }
   });
-        
-        res.json({ ...authenticatedUser, token });
-      } else {
-        res.status(401).json({ error: "Invalid credentials" });
-      }
-    } catch (error) {
-      if (error instanceof Error && error.name === 'ZodError') {
-        res.status(400).json({ error: "Invalid request format", details: error.message });
-      } else {
-        console.error("Error during login:", error);
-        res.status(500).json({ error: "Login failed" });
-      }
-    }
-  });
 
   // Debug endpoint to check specific student's enrolled courses
-  app.get("/api/debug/student/:studentId/enrolled-count", async (req, res) => {
+  app.get("/api/debug/student/:studentId/enrolled-count", async (req: Request, res: Response) => {
     try {
       const { studentId } = req.params;
       console.log(`🔍 Debug: Checking enrolled courses for studentId: ${studentId}`);
@@ -927,7 +933,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Students routes
-  app.get("/api/students", async (req, res) => {
+  app.get("/api/students", async (req: Request, res: Response) => {
     try {
       const students = await storage.getStudents();
       res.json(students);
@@ -936,7 +942,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/students/:id", async (req, res) => {
+  app.get("/api/students/:id", async (req: Request, res: Response) => {
     try {
       const student = await storage.getStudent(req.params.id);
       if (!student) {
@@ -948,7 +954,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/students", async (req, res) => {
+  app.post("/api/students", async (req: Request, res: Response) => {
     try {
       const validatedData = insertStudentSchema.parse(req.body);
       const student = await storage.createStudent(validatedData);
@@ -958,7 +964,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/students/:id", async (req, res) => {
+  app.put("/api/students/:id", async (req: Request, res: Response) => {
     try {
       const student = await storage.updateStudent(req.params.id, req.body);
       if (!student) {
@@ -970,7 +976,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/students/:id", async (req, res) => {
+  app.delete("/api/students/:id", async (req: Request, res: Response) => {
     try {
       const success = await storage.deleteStudent(req.params.id);
       if (!success) {
@@ -983,7 +989,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Course Registration routes
-  app.post("/api/students/:id/register-course", requireAuth, async (req, res) => {
+  app.post("/api/students/:id/register-course", requireAuth, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const user = (req as any).user;
@@ -1154,7 +1160,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/students/:id/register-course/:courseId", requireAuth, async (req, res) => {
+  app.delete("/api/students/:id/register-course/:courseId", requireAuth, async (req: Request, res: Response) => {
     try {
       const { id, courseId } = req.params;
       const user = (req as any).user;
@@ -1195,7 +1201,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/students/:id/available-courses", requireAuth, async (req, res) => {
+  app.get("/api/students/:id/available-courses", requireAuth, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const user = (req as any).user;
@@ -1259,7 +1265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/students/:id/registered-courses", requireAuth, async (req, res) => {
+  app.get("/api/students/:id/registered-courses", requireAuth, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const user = (req as any).user;
@@ -1306,7 +1312,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Faculty routes
-  app.get("/api/faculty", async (req, res) => {
+  app.get("/api/faculty", async (req: Request, res: Response) => {
     try {
       const faculty = await storage.getFaculty();
       res.json(faculty);
@@ -1316,7 +1322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Bulk import faculty from CSV/Excel
-  app.post("/api/faculty/import", requireAuth, requireRole(['admin']), async (req, res) => {
+  app.post("/api/faculty/import", requireAuth, requireRole(['admin']), async (req: Request, res: Response) => {
     try {
       const { faculty } = req.body;
       const results = [];
@@ -1363,7 +1369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/faculty/:id", async (req, res) => {
+  app.get("/api/faculty/:id", async (req: Request, res: Response) => {
     try {
       const facultyMember = await storage.getFacultyMember(req.params.id);
       if (!facultyMember) {
@@ -1375,7 +1381,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/faculty", async (req, res) => {
+  app.post("/api/faculty", async (req: Request, res: Response) => {
     try {
       const validatedData = insertFacultySchema.parse(req.body);
       const facultyMember = await storage.createFaculty(validatedData);
@@ -1385,7 +1391,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/faculty/:id", async (req, res) => {
+  app.put("/api/faculty/:id", async (req: Request, res: Response) => {
     try {
       const facultyMember = await storage.updateFaculty(req.params.id, req.body);
       if (!facultyMember) {
@@ -1397,7 +1403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/faculty/:id", async (req, res) => {
+  app.delete("/api/faculty/:id", async (req: Request, res: Response) => {
     try {
       const success = await storage.deleteFaculty(req.params.id);
       if (!success) {
@@ -1410,7 +1416,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Faculty Course Assignment routes
-  app.post("/api/faculty/:id/assign-course", requireAuth, async (req, res) => {
+  app.post("/api/faculty/:id/assign-course", requireAuth, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const user = (req as any).user;
@@ -1474,7 +1480,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/faculty/:id/assign-course/:courseId", requireAuth, async (req, res) => {
+  app.delete("/api/faculty/:id/assign-course/:courseId", requireAuth, async (req: Request, res: Response) => {
     try {
       const { id, courseId } = req.params;
       const user = (req as any).user;
@@ -1516,7 +1522,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/faculty/:id/available-courses", requireAuth, async (req, res) => {
+  app.get("/api/faculty/:id/available-courses", requireAuth, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const user = (req as any).user;
@@ -1566,7 +1572,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/faculty/:id/assigned-courses", requireAuth, async (req, res) => {
+  app.get("/api/faculty/:id/assigned-courses", requireAuth, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const user = (req as any).user;
@@ -1605,7 +1611,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Courses routes
-  app.get("/api/courses", async (req, res) => {
+  app.get("/api/courses", async (req: Request, res: Response) => {
     try {
       const courses = await storage.getCourses();
       res.json(courses);
@@ -1615,7 +1621,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Bulk import courses from CSV/Excel
-  app.post("/api/courses/import", requireAuth, requireRole(['admin']), async (req, res) => {
+  app.post("/api/courses/import", requireAuth, requireRole(['admin']), async (req: Request, res: Response) => {
     try {
       const { courses } = req.body;
       const results = [];
@@ -1653,7 +1659,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/courses/:id", async (req, res) => {
+  app.get("/api/courses/:id", async (req: Request, res: Response) => {
     try {
       const course = await storage.getCourse(req.params.id);
       if (!course) {
@@ -1665,7 +1671,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/courses", async (req, res) => {
+  app.post("/api/courses", async (req: Request, res: Response) => {
     try {
       const validatedData = insertCourseSchema.parse(req.body);
       const course = await storage.createCourse(validatedData);
@@ -1675,7 +1681,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/courses/:id", async (req, res) => {
+  app.put("/api/courses/:id", async (req: Request, res: Response) => {
     try {
       const course = await storage.updateCourse(req.params.id, req.body);
       if (!course) {
@@ -1687,7 +1693,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/courses/:id", async (req, res) => {
+  app.delete("/api/courses/:id", async (req: Request, res: Response) => {
     try {
       const success = await storage.deleteCourse(req.params.id);
       if (!success) {
@@ -1700,7 +1706,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Rooms routes
-  app.get("/api/rooms", async (req, res) => {
+  app.get("/api/rooms", async (req: Request, res: Response) => {
     try {
       const rooms = await storage.getRooms();
       res.json(rooms);
@@ -1710,7 +1716,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Bulk import rooms from CSV/Excel
-  app.post("/api/rooms/import", requireAuth, requireRole(['admin']), async (req, res) => {
+  app.post("/api/rooms/import", requireAuth, requireRole(['admin']), async (req: Request, res: Response) => {
     try {
       const { rooms } = req.body;
       const results = [];
@@ -1746,7 +1752,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/rooms/:id", async (req, res) => {
+  app.get("/api/rooms/:id", async (req: Request, res: Response) => {
     try {
       const room = await storage.getRoom(req.params.id);
       if (!room) {
@@ -1758,7 +1764,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/rooms", async (req, res) => {
+  app.post("/api/rooms", async (req: Request, res: Response) => {
     try {
       const validatedData = insertRoomSchema.parse(req.body);
       const room = await storage.createRoom(validatedData);
@@ -1768,7 +1774,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/rooms/:id", async (req, res) => {
+  app.put("/api/rooms/:id", async (req: Request, res: Response) => {
     try {
       const room = await storage.updateRoom(req.params.id, req.body);
       if (!room) {
@@ -1780,7 +1786,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/rooms/:id", async (req, res) => {
+  app.delete("/api/rooms/:id", async (req: Request, res: Response) => {
     try {
       const success = await storage.deleteRoom(req.params.id);
       if (!success) {
@@ -1793,7 +1799,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Timetables routes
-  app.get("/api/timetables", async (req, res) => {
+  app.get("/api/timetables", async (req: Request, res: Response) => {
     try {
       const timetables = await storage.getTimetables();
       res.json(timetables);
@@ -1802,7 +1808,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/timetables/:id", async (req, res) => {
+  app.get("/api/timetables/:id", async (req: Request, res: Response) => {
     try {
       const timetable = await storage.getTimetable(req.params.id);
       if (!timetable) {
@@ -1814,7 +1820,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/timetables/:id/slots", async (req, res) => {
+  app.get("/api/timetables/:id/slots", async (req: Request, res: Response) => {
     try {
       const timetableId = req.params.id;
       const slots = await storage.getTimetableSlots(timetableId);
@@ -1863,7 +1869,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/timetables", async (req, res) => {
+  app.post("/api/timetables", async (req: Request, res: Response) => {
     try {
       const validatedData = insertTimetableSchema.parse(req.body);
       const timetable = await storage.createTimetable(validatedData);
@@ -1874,7 +1880,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get TimeSlotTemplates endpoint
-  app.get("/api/timeslot-templates", async (req, res) => {
+  app.get("/api/timeslot-templates", async (req: Request, res: Response) => {
     try {
       const templates = await storage.getTimeSlotTemplates();
       res.json(templates);
@@ -1884,7 +1890,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Base timetable generation endpoint
-  app.post("/api/timetables/generate-base", async (req, res) => {
+  app.post("/api/timetables/generate-base", async (req: Request, res: Response) => {
     try {
       const { program: inputProgram, semester: inputSemester, batch: inputBatch, academicYear } = req.body || {};
 
@@ -2042,7 +2048,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI-powered timetable generation
-  app.post("/api/timetables/generate", async (req, res) => {
+  app.post("/api/timetables/generate", async (req: Request, res: Response) => {
     try {
       const { program, semester, batch, academicYear, constraints } = req.body;
       
@@ -2141,7 +2147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Engine Optimization Endpoints
   
   // Advanced AI optimization with constraint satisfaction
-  app.post("/api/ai/optimize-timetable", requireAuth, requireRole(['admin']), async (req, res) => {
+  app.post("/api/ai/optimize-timetable", requireAuth, requireRole(['admin']), async (req: Request, res: Response) => {
     try {
       const { program, semester, batch, academic_year, algorithm = "constraint_solver", constraints = {} } = req.body;
       
@@ -2207,25 +2213,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const optimizationRequest = {
         courses: courses.map(course => ({
-          id: course.id || course._id?.toString() || '',
+          id: course.id,
           course_code: course.courseCode,
           course_name: course.courseName,
           credits: course.credits,
           course_type: (course.courseType || 'theory').toLowerCase(),
-          expected_students: course.expectedStrength || 30,
+          expected_students: 30,
           requires_consecutive_slots: course.courseType === "laboratory"
         })),
         faculty: faculty.map(f => ({
-          id: f.id || f._id?.toString() || '',
+          id: f.id,
           name: `${f.firstName} ${f.lastName}`,
           email: f.email || `${f.firstName.toLowerCase()}.${f.lastName.toLowerCase()}@university.edu`,
-          expertise: f.specialization || [],
+          expertise: f.expertise || [],
           max_hours_per_week: f.maxWorkload || 40,
           preferred_days: Object.keys(f.availability || {}),
           unavailable_slots: []
         })),
         rooms: rooms.map(r => ({
-          id: r.id || r._id?.toString() || '',
+          id: r.id,
           room_number: r.roomNumber,
           room_name: r.roomName || r.roomNumber,
           capacity: r.capacity || 30,
@@ -2233,7 +2239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           equipment: r.equipment || []
         })),
         students: students.map(student => ({
-          id: student.id || student._id?.toString() || '',
+          id: student.id,
           student_id: student.studentId,
           name: `${student.firstName} ${student.lastName}`,
           program: student.program,
@@ -2316,7 +2322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Analyze existing timetable for conflicts using AI
-  app.post("/api/ai/analyze-conflicts", requireAuth, async (req, res) => {
+  app.post("/api/ai/analyze-conflicts", requireAuth, async (req: Request, res: Response) => {
     try {
       const { timetableSlots } = req.body;
       
@@ -2339,7 +2345,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Comprehensive AI System Endpoints
   
   // Save comprehensive admin configuration
-  app.post("/api/comprehensive/admin/config", requireAuth, requireRole(['admin']), async (req, res) => {
+  app.post("/api/comprehensive/admin/config", requireAuth, requireRole(['admin']), async (req: Request, res: Response) => {
     try {
       const result = await aiEngineClient.saveComprehensiveAdminConfig(req.body);
       res.json(result);
@@ -2353,7 +2359,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Generate comprehensive time slots
-  app.post("/api/comprehensive/generate-slots", requireAuth, requireRole(['admin']), async (req, res) => {
+  app.post("/api/comprehensive/generate-slots", requireAuth, requireRole(['admin']), async (req: Request, res: Response) => {
     try {
       const result = await aiEngineClient.generateComprehensiveSlots(req.body);
       res.json(result);
@@ -2367,7 +2373,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create comprehensive sections
-  app.post("/api/comprehensive/sectioning", requireAuth, requireRole(['admin']), async (req, res) => {
+  app.post("/api/comprehensive/sectioning", requireAuth, requireRole(['admin']), async (req: Request, res: Response) => {
     try {
       const result = await aiEngineClient.createComprehensiveSections(req.body);
       res.json(result);
@@ -2381,7 +2387,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Generate comprehensive timetable using OR-Tools CP-SAT
-  app.post("/api/comprehensive/generate-timetable", requireAuth, requireRole(['admin']), async (req, res) => {
+  app.post("/api/comprehensive/generate-timetable", requireAuth, requireRole(['admin']), async (req: Request, res: Response) => {
     try {
       const result = await aiEngineClient.generateComprehensiveTimetable(req.body);
       res.json(result);
@@ -2394,7 +2400,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/timetables/:id", async (req, res) => {
+  app.delete("/api/timetables/:id", async (req: Request, res: Response) => {
     try {
       // Delete associated slots first
       await storage.deleteTimetableSlots(req.params.id);
@@ -2410,7 +2416,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Clear and populate database with fresh data
-  app.post("/api/populate", async (req, res) => {
+  app.post("/api/populate", async (req: Request, res: Response) => {
     try {
       // Clear existing data
       console.log('Clearing existing data...');
@@ -2580,7 +2586,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Database seeding endpoint - Admin only
-  app.post("/api/seed", requireAuth, requireRole(['admin']), async (req, res) => {
+  app.post("/api/seed", requireAuth, requireRole(['admin']), async (req: Request, res: Response) => {
     try {
       // Check if data already exists
       const existingRooms = await storage.getRooms();
@@ -2752,7 +2758,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Dashboard stats
-  app.get("/api/dashboard/stats", async (req, res) => {
+  app.get("/api/dashboard/stats", async (req: Request, res: Response) => {
     try {
       const students = await storage.getStudents();
       const faculty = await storage.getFaculty();
@@ -2775,7 +2781,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin Panel - Generate base time slots only (no course/faculty/room mapping)
-  app.post("/api/admin/generate-slot-mappings", requireAuth, requireRole(['admin']), async (req, res) => {
+  app.post("/api/admin/generate-slot-mappings", requireAuth, requireRole(['admin']), async (req: Request, res: Response) => {
     try {
       const { program, semester, batch, academicYear, baseConfig } = req.body;
 
@@ -2868,7 +2874,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Faculty Panel - Get pre-assigned course list with constraints
-  app.get("/api/faculty/:id/pre-assigned-courses", requireAuth, async (req, res) => {
+  app.get("/api/faculty/:id/pre-assigned-courses", requireAuth, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const user = (req as any).user;
@@ -2943,7 +2949,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   
   // Faculty Panel - Select courses with constraint validation
-  app.post("/api/faculty/:id/select-courses", requireAuth, async (req, res) => {
+  app.post("/api/faculty/:id/select-courses", requireAuth, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const { courseIds = [] } = req.body || {};
