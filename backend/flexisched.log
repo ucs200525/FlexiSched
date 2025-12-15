@@ -1,0 +1,1569 @@
+2025-12-07 16:41:45,487 - server - INFO - Database indexes created successfully
+2025-12-07 16:41:57,278 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:41:57,280 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:54:55,194 - server - INFO - Database indexes created successfully
+2025-12-07 16:54:56,826 - server - INFO - Seed data created successfully
+2025-12-07 16:54:56,826 - server - INFO - Redis cache initialized
+2025-12-07 16:55:07,397 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:55:07,402 - server - INFO - API call health_check took 0.0001 seconds
+2025-12-07 16:55:08,742 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:55:08,746 - server - INFO - API call health_check took 0.0001 seconds
+2025-12-07 16:55:09,870 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:55:09,874 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:55:10,400 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:55:10,403 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:55:10,739 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:55:10,742 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:55:11,000 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:55:11,008 - server - INFO - API call health_check took 0.0001 seconds
+2025-12-07 16:55:17,742 - server - INFO - API call login took 0.4079 seconds
+2025-12-07 16:55:17,758 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:55:29,389 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:55:29,393 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:55:39,284 - server - INFO - API call login took 0.3667 seconds
+2025-12-07 16:55:39,296 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:55:43,805 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:55:43,808 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:55:52,953 - server - INFO - API call login took 0.3606 seconds
+2025-12-07 16:55:53,356 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:55:53,362 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:56:02,864 - server - INFO - API call login took 0.3767 seconds
+2025-12-07 16:56:02,983 - server - INFO - API call health_check took 0.0001 seconds
+2025-12-07 16:56:02,988 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:56:15,445 - server - INFO - API call login took 0.3389 seconds
+2025-12-07 16:56:15,458 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:56:18,926 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:56:18,930 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 16:56:30,412 - server - INFO - API call login took 0.3235 seconds
+2025-12-07 16:56:30,424 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 17:15:47,147 - server - INFO - Application shutting down
+2025-12-07 17:15:49,101 - server - INFO - Database indexes created successfully
+2025-12-07 17:15:49,104 - server - INFO - Seed data already initialized
+2025-12-07 17:15:49,105 - server - INFO - Redis cache initialized
+2025-12-07 17:48:47,177 - server - INFO - Application shutting down
+2025-12-07 17:48:51,361 - server - INFO - Database indexes created successfully
+2025-12-07 17:48:51,362 - server - INFO - Seed data already initialized
+2025-12-07 17:48:51,363 - server - INFO - Redis cache initialized
+2025-12-07 17:49:00,720 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 17:49:00,727 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 17:49:14,243 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 17:49:14,246 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 17:55:45,955 - server - INFO - Application shutting down
+2025-12-07 17:55:47,665 - server - INFO - Database indexes created successfully
+2025-12-07 17:55:47,666 - server - INFO - Seed data already initialized
+2025-12-07 17:55:47,666 - server - INFO - Redis cache initialized
+2025-12-07 17:56:25,230 - server - INFO - Application shutting down
+2025-12-07 17:56:28,293 - server - INFO - Database indexes created successfully
+2025-12-07 17:56:28,294 - server - INFO - Seed data already initialized
+2025-12-07 17:56:28,294 - server - INFO - Redis cache initialized
+2025-12-07 17:56:54,159 - server - INFO - Application shutting down
+2025-12-07 17:57:00,934 - server - INFO - Database indexes created successfully
+2025-12-07 17:57:00,935 - server - INFO - Seed data already initialized
+2025-12-07 17:57:00,935 - server - INFO - Redis cache initialized
+2025-12-07 17:57:31,008 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 17:57:31,012 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 18:00:34,432 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 18:00:34,435 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 18:00:46,209 - server - INFO - API call login took 0.3837 seconds
+2025-12-07 18:00:46,226 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 20:33:17,170 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 20:33:17,176 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 20:33:18,858 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 20:33:18,861 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 20:33:20,600 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 20:33:20,603 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 20:38:44,045 - server - INFO - Application shutting down
+2025-12-07 20:38:51,226 - server - INFO - Database indexes created successfully
+2025-12-07 20:38:51,228 - server - INFO - Seed data already initialized
+2025-12-07 20:38:51,228 - server - INFO - Redis cache initialized
+2025-12-07 20:44:58,513 - server - INFO - Application shutting down
+2025-12-07 20:45:00,251 - server - INFO - Database indexes created successfully
+2025-12-07 20:45:00,252 - server - INFO - Seed data already initialized
+2025-12-07 20:45:00,253 - server - INFO - Redis cache initialized
+2025-12-07 20:48:50,074 - server - INFO - Application shutting down
+2025-12-07 20:48:52,563 - server - INFO - Database indexes created successfully
+2025-12-07 20:48:52,565 - server - INFO - Seed data already initialized
+2025-12-07 20:48:52,565 - server - INFO - Redis cache initialized
+2025-12-07 20:53:13,187 - server - INFO - Application shutting down
+2025-12-07 22:46:21,197 - server - INFO - Database indexes created successfully
+2025-12-07 22:46:21,199 - server - INFO - Seed data already initialized
+2025-12-07 22:46:21,201 - server - INFO - Redis cache initialized
+2025-12-07 22:51:35,855 - server - INFO - Application shutting down
+2025-12-07 22:51:50,039 - server - INFO - Database indexes created successfully
+2025-12-07 22:51:50,041 - server - INFO - Seed data already initialized
+2025-12-07 22:51:50,041 - server - INFO - Redis cache initialized
+2025-12-07 22:51:56,634 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 22:51:56,641 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 22:52:41,335 - server - INFO - API call login took 0.8967 seconds
+2025-12-07 22:52:41,365 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 22:55:00,883 - server - INFO - Application shutting down
+2025-12-07 22:55:03,719 - server - INFO - Database indexes created successfully
+2025-12-07 22:55:03,721 - server - INFO - Seed data already initialized
+2025-12-07 22:55:03,721 - server - INFO - Redis cache initialized
+2025-12-07 22:55:12,765 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 22:55:12,774 - server - INFO - API call health_check took 0.0001 seconds
+2025-12-07 22:57:48,441 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 22:57:48,454 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 23:01:22,941 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 23:01:22,951 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 23:01:38,475 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 23:01:38,484 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 23:17:51,371 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 23:17:51,375 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 23:18:05,085 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 23:18:05,095 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 23:23:24,402 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 23:23:24,406 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 23:24:09,950 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-07 23:24:09,958 - server - INFO - API call health_check took 0.0001 seconds
+2025-12-08 00:38:11,181 - server - INFO - Application shutting down
+2025-12-09 10:34:36,162 - server - INFO - Database indexes created successfully
+2025-12-09 10:34:36,191 - server - INFO - Seed data already initialized
+2025-12-09 10:34:36,192 - server - INFO - Redis cache initialized
+2025-12-09 10:35:03,697 - server - INFO - API call health_check took 0.0001 seconds
+2025-12-09 10:35:03,703 - server - INFO - API call health_check took 0.0001 seconds
+2025-12-09 10:35:03,779 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:35:03,785 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:41:43,825 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:41:43,829 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:41:45,961 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:41:45,969 - server - INFO - API call health_check took 0.0001 seconds
+2025-12-09 10:41:58,102 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:41:58,111 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:42:05,393 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:42:05,402 - server - INFO - API call health_check took 0.0001 seconds
+2025-12-09 10:43:22,689 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:43:22,693 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:44:47,415 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:44:47,421 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:44:50,759 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:44:50,766 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:45:17,334 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:45:17,338 - server - INFO - API call health_check took 0.0001 seconds
+2025-12-09 10:45:20,991 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:45:21,000 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:45:22,706 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:45:22,714 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 10:47:10,081 - server - INFO - API call health_check took 0.0001 seconds
+2025-12-09 10:47:10,088 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 11:54:17,751 - server - INFO - Database indexes created successfully
+2025-12-09 11:54:17,754 - server - INFO - Seed data already initialized
+2025-12-09 11:54:17,755 - server - INFO - Redis cache initialized
+2025-12-09 11:54:41,652 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 11:54:41,657 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 11:54:41,701 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 11:54:41,715 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 11:58:17,235 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 11:58:17,243 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 11:58:37,824 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 11:58:37,832 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 11:58:44,689 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 11:58:44,694 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:00:37,042 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:00:37,046 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:02:14,782 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:02:14,786 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:06:13,055 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:06:13,064 - server - INFO - API call health_check took 0.0001 seconds
+2025-12-09 12:06:22,915 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:06:22,924 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:09:53,097 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:09:53,114 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:10:05,564 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:10:05,571 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:12:46,307 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:12:46,312 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:21:15,732 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:21:15,738 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:21:35,428 - server - INFO - API call health_check took 0.0001 seconds
+2025-12-09 12:21:35,435 - server - INFO - API call health_check took 0.0001 seconds
+2025-12-09 12:21:45,612 - server - INFO - API call login took 0.8937 seconds
+2025-12-09 12:21:45,689 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:21:48,779 - server - INFO - API call get_users took 0.0230 seconds
+2025-12-09 12:21:48,784 - server - INFO - API call get_users took 0.0234 seconds
+2025-12-09 12:21:59,538 - fastapi_cache.decorator - WARNING - Error retrieving cache key 'flexisched-cache::0fbee8bc20ae476de46768e6d88a6bea' from backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 178, in inner
+    ttl, cached = await backend.get_with_ttl(cache_key)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 16, in get_with_ttl
+    return await pipe.ttl(key).get(key).execute()  # type: ignore[union-attr,no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 1392, in execute
+    conn = await self.connection_pool.get_connection("MULTI", self.shard_hint)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 12:21:59,760 - fastapi_cache.decorator - WARNING - Error retrieving cache key 'flexisched-cache::0fbee8bc20ae476de46768e6d88a6bea' from backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 178, in inner
+    ttl, cached = await backend.get_with_ttl(cache_key)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 16, in get_with_ttl
+    return await pipe.ttl(key).get(key).execute()  # type: ignore[union-attr,no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 1392, in execute
+    conn = await self.connection_pool.get_connection("MULTI", self.shard_hint)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 12:22:03,846 - fastapi_cache.decorator - WARNING - Error setting cache key 'flexisched-cache::0fbee8bc20ae476de46768e6d88a6bea' in backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 191, in inner
+    await backend.set(cache_key, to_cache, expire)
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 22, in set
+    await self.redis.set(key, value, ex=expire)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 513, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 12:22:03,855 - server - INFO - API call get_courses took 8.4290 seconds
+2025-12-09 12:22:03,863 - fastapi_cache.decorator - WARNING - Error setting cache key 'flexisched-cache::0fbee8bc20ae476de46768e6d88a6bea' in backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 191, in inner
+    await backend.set(cache_key, to_cache, expire)
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 22, in set
+    await self.redis.set(key, value, ex=expire)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 513, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 12:22:03,872 - server - INFO - API call get_courses took 8.4227 seconds
+2025-12-09 12:25:47,508 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:25:47,513 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:25:47,863 - server - INFO - API call get_dashboard_stats took 0.0768 seconds
+2025-12-09 12:25:47,864 - server - INFO - API call get_dashboard_stats took 0.0837 seconds
+2025-12-09 12:25:59,268 - server - INFO - API call get_dashboard_stats took 0.0201 seconds
+2025-12-09 12:25:59,272 - server - INFO - API call get_dashboard_stats took 0.0207 seconds
+2025-12-09 12:26:01,754 - fastapi_cache.decorator - WARNING - Error retrieving cache key 'flexisched-cache::0fbee8bc20ae476de46768e6d88a6bea' from backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 178, in inner
+    ttl, cached = await backend.get_with_ttl(cache_key)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 16, in get_with_ttl
+    return await pipe.ttl(key).get(key).execute()  # type: ignore[union-attr,no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 1392, in execute
+    conn = await self.connection_pool.get_connection("MULTI", self.shard_hint)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 12:26:02,096 - fastapi_cache.decorator - WARNING - Error retrieving cache key 'flexisched-cache::0fbee8bc20ae476de46768e6d88a6bea' from backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 178, in inner
+    ttl, cached = await backend.get_with_ttl(cache_key)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 16, in get_with_ttl
+    return await pipe.ttl(key).get(key).execute()  # type: ignore[union-attr,no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 1392, in execute
+    conn = await self.connection_pool.get_connection("MULTI", self.shard_hint)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 12:26:05,868 - fastapi_cache.decorator - WARNING - Error setting cache key 'flexisched-cache::0fbee8bc20ae476de46768e6d88a6bea' in backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 191, in inner
+    await backend.set(cache_key, to_cache, expire)
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 22, in set
+    await self.redis.set(key, value, ex=expire)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 513, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 12:26:05,875 - server - INFO - API call get_courses took 8.1615 seconds
+2025-12-09 12:26:06,197 - fastapi_cache.decorator - WARNING - Error setting cache key 'flexisched-cache::0fbee8bc20ae476de46768e6d88a6bea' in backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 191, in inner
+    await backend.set(cache_key, to_cache, expire)
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 22, in set
+    await self.redis.set(key, value, ex=expire)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 513, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 12:26:06,204 - server - INFO - API call get_courses took 8.1853 seconds
+2025-12-09 12:28:01,298 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:28:01,305 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:28:01,386 - server - INFO - API call get_dashboard_stats took 0.0212 seconds
+2025-12-09 12:28:01,415 - server - INFO - API call get_dashboard_stats took 0.0200 seconds
+2025-12-09 12:28:07,684 - fastapi_cache.decorator - WARNING - Error retrieving cache key 'flexisched-cache::0fbee8bc20ae476de46768e6d88a6bea' from backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 178, in inner
+    ttl, cached = await backend.get_with_ttl(cache_key)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 16, in get_with_ttl
+    return await pipe.ttl(key).get(key).execute()  # type: ignore[union-attr,no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 1392, in execute
+    conn = await self.connection_pool.get_connection("MULTI", self.shard_hint)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 12:28:11,800 - fastapi_cache.decorator - WARNING - Error setting cache key 'flexisched-cache::0fbee8bc20ae476de46768e6d88a6bea' in backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 191, in inner
+    await backend.set(cache_key, to_cache, expire)
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 22, in set
+    await self.redis.set(key, value, ex=expire)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 513, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 12:28:11,807 - server - INFO - API call get_courses took 8.2061 seconds
+2025-12-09 12:37:24,948 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:37:24,953 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 12:37:29,012 - server - INFO - API call get_users took 0.0038 seconds
+2025-12-09 12:37:29,026 - server - INFO - API call get_users took 0.0042 seconds
+2025-12-09 12:37:29,094 - fastapi_cache.decorator - WARNING - Error retrieving cache key 'flexisched-cache::0fbee8bc20ae476de46768e6d88a6bea' from backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 178, in inner
+    ttl, cached = await backend.get_with_ttl(cache_key)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 16, in get_with_ttl
+    return await pipe.ttl(key).get(key).execute()  # type: ignore[union-attr,no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 1392, in execute
+    conn = await self.connection_pool.get_connection("MULTI", self.shard_hint)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 12:37:33,172 - fastapi_cache.decorator - WARNING - Error setting cache key 'flexisched-cache::0fbee8bc20ae476de46768e6d88a6bea' in backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 191, in inner
+    await backend.set(cache_key, to_cache, expire)
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 22, in set
+    await self.redis.set(key, value, ex=expire)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 513, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 12:37:33,181 - server - INFO - API call get_courses took 8.1713 seconds
+2025-12-09 12:37:58,774 - fastapi_cache.decorator - WARNING - Error retrieving cache key 'flexisched-cache::24715f9e017e7b0c73fd88213ed7e0a6' from backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 178, in inner
+    ttl, cached = await backend.get_with_ttl(cache_key)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 16, in get_with_ttl
+    return await pipe.ttl(key).get(key).execute()  # type: ignore[union-attr,no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 1392, in execute
+    conn = await self.connection_pool.get_connection("MULTI", self.shard_hint)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 12:38:02,869 - fastapi_cache.decorator - WARNING - Error setting cache key 'flexisched-cache::24715f9e017e7b0c73fd88213ed7e0a6' in backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 191, in inner
+    await backend.set(cache_key, to_cache, expire)
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 22, in set
+    await self.redis.set(key, value, ex=expire)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 513, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 12:38:02,876 - server - INFO - API call get_rooms took 8.1959 seconds
+2025-12-09 13:59:10,209 - server - INFO - Database indexes created successfully
+2025-12-09 13:59:10,212 - server - INFO - Seed data already initialized
+2025-12-09 13:59:10,213 - server - INFO - Redis cache initialized
+2025-12-09 13:59:24,532 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 13:59:24,537 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 13:59:24,599 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 13:59:24,677 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 13:59:24,699 - server - INFO - API call get_dashboard_stats took 0.0134 seconds
+2025-12-09 13:59:24,715 - server - INFO - API call get_dashboard_stats took 0.0117 seconds
+2025-12-09 13:59:31,022 - server - INFO - API call get_latest_timetable took 0.0035 seconds
+2025-12-09 13:59:31,036 - server - INFO - API call get_latest_timetable took 0.0030 seconds
+2025-12-09 13:59:32,598 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
+2025-12-09 13:59:33,061 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 401 None
+2025-12-09 13:59:33,064 - server - ERROR - OpenRouter API error: 401 - {"error":{"message":"No cookie auth credentials found","code":401}}
+2025-12-09 13:59:33,064 - server - INFO - API call generate_timetable took 0.4820 seconds
+2025-12-09 13:59:34,892 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
+2025-12-09 13:59:35,266 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 401 None
+2025-12-09 13:59:35,268 - server - ERROR - OpenRouter API error: 401 - {"error":{"message":"No cookie auth credentials found","code":401}}
+2025-12-09 13:59:35,268 - server - INFO - API call generate_timetable took 0.3800 seconds
+2025-12-09 13:59:36,098 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
+2025-12-09 13:59:36,464 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 401 None
+2025-12-09 13:59:36,465 - server - ERROR - OpenRouter API error: 401 - {"error":{"message":"No cookie auth credentials found","code":401}}
+2025-12-09 13:59:36,465 - server - INFO - API call generate_timetable took 0.3722 seconds
+2025-12-09 13:59:53,173 - fastapi_cache.decorator - WARNING - Error retrieving cache key 'flexisched-cache::24715f9e017e7b0c73fd88213ed7e0a6' from backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 178, in inner
+    ttl, cached = await backend.get_with_ttl(cache_key)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 16, in get_with_ttl
+    return await pipe.ttl(key).get(key).execute()  # type: ignore[union-attr,no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 1392, in execute
+    conn = await self.connection_pool.get_connection("MULTI", self.shard_hint)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 13:59:57,247 - fastapi_cache.decorator - WARNING - Error setting cache key 'flexisched-cache::24715f9e017e7b0c73fd88213ed7e0a6' in backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 191, in inner
+    await backend.set(cache_key, to_cache, expire)
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 22, in set
+    await self.redis.set(key, value, ex=expire)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 513, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 13:59:57,252 - server - INFO - API call get_rooms took 8.1532 seconds
+2025-12-09 14:00:15,440 - server - INFO - API call create_room took 0.0011 seconds
+2025-12-09 14:00:16,726 - server - INFO - API call create_room took 0.0010 seconds
+2025-12-09 14:00:16,900 - server - INFO - API call create_room took 0.0011 seconds
+2025-12-09 14:00:17,069 - server - INFO - API call create_room took 0.0013 seconds
+2025-12-09 14:00:17,285 - server - INFO - API call create_room took 0.0017 seconds
+2025-12-09 14:00:17,776 - server - ERROR - Create room error: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 14:00:17,777 - server - INFO - API call create_room took 4.0910 seconds
+2025-12-09 14:00:17,851 - server - INFO - API call create_room took 0.0010 seconds
+2025-12-09 14:00:18,078 - server - INFO - API call create_room took 0.0011 seconds
+2025-12-09 14:00:18,689 - server - INFO - API call create_room took 0.0011 seconds
+2025-12-09 14:00:18,843 - server - INFO - API call create_room took 0.0010 seconds
+2025-12-09 14:00:19,060 - server - INFO - API call create_room took 0.0011 seconds
+2025-12-09 14:00:20,339 - server - INFO - API call create_room took 0.0010 seconds
+2025-12-09 14:00:20,492 - server - INFO - API call create_room took 0.0012 seconds
+2025-12-09 14:00:20,645 - server - INFO - API call create_room took 0.0011 seconds
+2025-12-09 14:00:20,869 - server - INFO - API call create_room took 0.0015 seconds
+2025-12-09 14:01:36,407 - server - INFO - API call get_latest_timetable took 0.0016 seconds
+2025-12-09 14:01:36,411 - server - INFO - API call get_latest_timetable took 0.0014 seconds
+2025-12-09 14:01:43,031 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 14:01:43,034 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 14:01:43,133 - server - INFO - API call get_latest_timetable took 0.0024 seconds
+2025-12-09 14:01:43,143 - server - INFO - API call get_latest_timetable took 0.0026 seconds
+2025-12-09 14:01:59,020 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
+2025-12-09 14:01:59,509 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 401 None
+2025-12-09 14:01:59,510 - server - ERROR - OpenRouter API error: 401 - {"error":{"message":"No cookie auth credentials found","code":401}}
+2025-12-09 14:01:59,511 - server - INFO - API call generate_timetable took 0.4958 seconds
+2025-12-09 14:06:04,919 - server - INFO - Application shutting down
+2025-12-09 14:06:08,872 - server - INFO - Database indexes created successfully
+2025-12-09 14:06:08,873 - server - INFO - Seed data already initialized
+2025-12-09 14:06:08,873 - server - INFO - Redis cache initialized
+2025-12-09 14:06:14,859 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 14:06:14,861 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 14:06:14,931 - server - INFO - API call get_latest_timetable took 0.0027 seconds
+2025-12-09 14:06:14,933 - server - INFO - API call get_latest_timetable took 0.0028 seconds
+2025-12-09 14:06:21,554 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 14:06:21,559 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 14:06:21,674 - server - INFO - API call get_latest_timetable took 0.0019 seconds
+2025-12-09 14:06:21,685 - server - INFO - API call get_latest_timetable took 0.0017 seconds
+2025-12-09 14:06:27,472 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
+2025-12-09 14:06:32,191 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 200 None
+2025-12-09 14:09:56,897 - server - INFO - API call generate_timetable took 209.4310 seconds
+2025-12-09 14:09:56,898 - server - INFO - Notifying users: New timetable has been generated
+2025-12-09 14:15:42,745 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 14:15:42,747 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 14:15:42,809 - server - INFO - API call get_latest_timetable took 0.0025 seconds
+2025-12-09 14:15:42,812 - server - INFO - API call get_latest_timetable took 0.0034 seconds
+2025-12-09 14:16:22,075 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
+2025-12-09 14:16:27,245 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 200 None
+2025-12-09 16:23:58,621 - server - INFO - Database indexes created successfully
+2025-12-09 16:23:58,623 - server - INFO - Seed data already initialized
+2025-12-09 16:23:58,624 - server - INFO - Redis cache initialized
+2025-12-09 16:24:30,806 - server - INFO - API call health_check took 0.0001 seconds
+2025-12-09 16:24:30,813 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 16:24:30,929 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 16:24:30,939 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 16:24:31,017 - server - INFO - API call get_dashboard_stats took 0.0205 seconds
+2025-12-09 16:24:31,045 - server - INFO - API call get_dashboard_stats took 0.0178 seconds
+2025-12-09 16:24:35,315 - server - INFO - API call get_latest_timetable took 0.0041 seconds
+2025-12-09 16:24:35,346 - server - INFO - API call get_latest_timetable took 0.0038 seconds
+2025-12-09 16:24:45,978 - server - INFO - API call get_dashboard_stats took 0.0206 seconds
+2025-12-09 16:24:46,000 - server - INFO - API call get_dashboard_stats took 0.0163 seconds
+2025-12-09 16:24:47,540 - server - INFO - API call get_users took 0.0034 seconds
+2025-12-09 16:24:47,552 - server - INFO - API call get_users took 0.0034 seconds
+2025-12-09 16:24:54,719 - fastapi_cache.decorator - WARNING - Error retrieving cache key 'flexisched-cache::0fbee8bc20ae476de46768e6d88a6bea' from backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 178, in inner
+    ttl, cached = await backend.get_with_ttl(cache_key)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 16, in get_with_ttl
+    return await pipe.ttl(key).get(key).execute()  # type: ignore[union-attr,no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 1392, in execute
+    conn = await self.connection_pool.get_connection("MULTI", self.shard_hint)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:24:58,988 - server - INFO - API call get_users took 0.0056 seconds
+2025-12-09 16:24:58,998 - fastapi_cache.decorator - WARNING - Error setting cache key 'flexisched-cache::0fbee8bc20ae476de46768e6d88a6bea' in backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 191, in inner
+    await backend.set(cache_key, to_cache, expire)
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 22, in set
+    await self.redis.set(key, value, ex=expire)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 513, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:24:59,011 - server - INFO - API call get_courses took 8.3820 seconds
+2025-12-09 16:24:59,033 - server - INFO - API call get_users took 0.0047 seconds
+2025-12-09 16:25:01,768 - fastapi_cache.decorator - WARNING - Error retrieving cache key 'flexisched-cache::24715f9e017e7b0c73fd88213ed7e0a6' from backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 178, in inner
+    ttl, cached = await backend.get_with_ttl(cache_key)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 16, in get_with_ttl
+    return await pipe.ttl(key).get(key).execute()  # type: ignore[union-attr,no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 1392, in execute
+    conn = await self.connection_pool.get_connection("MULTI", self.shard_hint)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:25:05,851 - fastapi_cache.decorator - WARNING - Error setting cache key 'flexisched-cache::24715f9e017e7b0c73fd88213ed7e0a6' in backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 191, in inner
+    await backend.set(cache_key, to_cache, expire)
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 22, in set
+    await self.redis.set(key, value, ex=expire)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 513, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:25:05,858 - server - INFO - API call get_rooms took 8.1984 seconds
+2025-12-09 16:25:20,524 - server - ERROR - Update course error: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:25:20,525 - server - INFO - API call update_course took 4.0929 seconds
+2025-12-09 16:25:22,798 - server - ERROR - Update course error: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:25:22,799 - server - INFO - API call update_course took 4.0976 seconds
+2025-12-09 16:25:24,245 - server - ERROR - Update course error: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:25:24,246 - server - INFO - API call update_course took 4.0947 seconds
+2025-12-09 16:25:24,402 - server - ERROR - Update course error: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:25:24,403 - server - INFO - API call update_course took 4.1121 seconds
+2025-12-09 16:25:24,607 - server - ERROR - Update course error: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:25:24,608 - server - INFO - API call update_course took 4.0849 seconds
+2025-12-09 16:25:59,075 - server - ERROR - Update course error: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:25:59,076 - server - INFO - API call update_course took 4.1007 seconds
+2025-12-09 16:26:03,574 - server - ERROR - Update course error: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:26:03,575 - server - INFO - API call update_course took 4.1177 seconds
+2025-12-09 16:26:03,776 - server - ERROR - Update course error: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:26:03,776 - server - INFO - API call update_course took 4.1035 seconds
+2025-12-09 16:26:04,270 - server - ERROR - Update course error: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:26:04,271 - server - INFO - API call update_course took 4.1005 seconds
+2025-12-09 16:26:04,426 - server - ERROR - Update course error: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:26:04,427 - server - INFO - API call update_course took 4.0849 seconds
+2025-12-09 16:26:04,567 - server - ERROR - Update course error: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:26:04,567 - server - INFO - API call update_course took 4.1028 seconds
+2025-12-09 16:26:04,801 - server - ERROR - Update course error: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:26:04,802 - server - INFO - API call update_course took 4.1211 seconds
+2025-12-09 16:26:05,977 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 16:26:05,983 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 16:26:10,194 - fastapi_cache.decorator - WARNING - Error retrieving cache key 'flexisched-cache::0fbee8bc20ae476de46768e6d88a6bea' from backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 178, in inner
+    ttl, cached = await backend.get_with_ttl(cache_key)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 16, in get_with_ttl
+    return await pipe.ttl(key).get(key).execute()  # type: ignore[union-attr,no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 1392, in execute
+    conn = await self.connection_pool.get_connection("MULTI", self.shard_hint)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:26:10,203 - fastapi_cache.decorator - WARNING - Error retrieving cache key 'flexisched-cache::0fbee8bc20ae476de46768e6d88a6bea' from backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 178, in inner
+    ttl, cached = await backend.get_with_ttl(cache_key)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 16, in get_with_ttl
+    return await pipe.ttl(key).get(key).execute()  # type: ignore[union-attr,no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 1392, in execute
+    conn = await self.connection_pool.get_connection("MULTI", self.shard_hint)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:26:14,282 - fastapi_cache.decorator - WARNING - Error setting cache key 'flexisched-cache::0fbee8bc20ae476de46768e6d88a6bea' in backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 191, in inner
+    await backend.set(cache_key, to_cache, expire)
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 22, in set
+    await self.redis.set(key, value, ex=expire)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 513, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:26:14,291 - server - INFO - API call get_courses took 8.1855 seconds
+2025-12-09 16:26:14,296 - fastapi_cache.decorator - WARNING - Error setting cache key 'flexisched-cache::0fbee8bc20ae476de46768e6d88a6bea' in backend:
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 577, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 922, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\vutuk\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1179, in create_connection
+    raise OSError('Multiple exceptions: {}'.format(
+        ', '.join(str(exc) for exc in exceptions)))
+OSError: Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 191, in inner
+    await backend.set(cache_key, to_cache, expire)
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\fastapi_cache\backends\redis.py", line 22, in set
+    await self.redis.set(key, value, ex=expire)  # type: ignore[union-attr]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\client.py", line 513, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 1375, in get_connection
+    await connection.connect()
+  File "c:\Users\vutuk\Downloads\FlexiSched\.venv\Lib\site-packages\redis\asyncio\connection.py", line 585, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:26:14,306 - server - INFO - API call get_courses took 8.1955 seconds
+2025-12-09 16:26:24,425 - server - ERROR - Update course error: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:26:24,426 - server - INFO - API call update_course took 4.1108 seconds
+2025-12-09 16:26:30,571 - server - ERROR - Update course error: Error connecting to localhost:6379. Multiple exceptions: [Errno 10061] Connect call failed ('::1', 6379, 0, 0), [Errno 10061] Connect call failed ('127.0.0.1', 6379).
+2025-12-09 16:26:30,575 - server - INFO - API call update_course took 4.0979 seconds
+2025-12-09 16:30:30,318 - server - INFO - Application shutting down
+2025-12-09 16:30:36,323 - server - INFO - Database indexes created successfully
+2025-12-09 16:30:36,327 - server - INFO - Seed data already initialized
+2025-12-09 16:30:36,328 - server - INFO - Caching is disabled (fastapi-cache not installed)
+2025-12-09 16:30:37,822 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 16:30:37,827 - server - INFO - API call health_check took 0.0000 seconds
+2025-12-09 16:30:38,084 - server - INFO - API call get_courses took 0.0001 seconds
+2025-12-09 16:30:38,085 - server - ERROR - Global exception: You must call init first!
+2025-12-09 16:30:38,456 - server - INFO - API call get_courses took 0.0001 seconds
+2025-12-09 16:30:38,459 - server - ERROR - Global exception: You must call init first!
+2025-12-09 16:34:07,985 - server - INFO - API call get_latest_timetable took 0.0085 seconds
+2025-12-09 16:34:07,992 - server - INFO - API call get_latest_timetable took 0.0108 seconds
+2025-12-09 16:40:21,640 - server - INFO - Application shutting down
+2025-12-09 21:58:58,989 - server - INFO - Database indexes created successfully
+2025-12-09 21:58:58,990 - server - INFO - Seed data already initialized
+2025-12-09 22:03:05,672 - server - INFO - Application shutting down
+2025-12-09 22:05:57,486 - server - INFO - Database indexes created successfully
+2025-12-09 22:05:57,487 - server - INFO - Seed data already initialized
+2025-12-09 22:06:10,570 - server - DEBUG - Update course request data: {'name': 'Data Structures', 'code': 'CS201', 'credits': 4, 'category': 'Major', 'faculty_id': None, 'duration_hours': 2, 'is_lab': False}
+2025-12-09 22:11:09,874 - server - INFO - Application shutting down
+2025-12-09 22:11:11,647 - server - INFO - Database indexes created successfully
+2025-12-09 22:11:11,648 - server - INFO - Seed data already initialized
+2025-12-09 22:11:38,005 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body', 'faculty_id'), 'msg': 'Field required', 'input': {'name': 'Eswar Vutukuri', 'code': 'EV205', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False}, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-09 22:11:38,006 - server - ERROR - Request body: {'name': 'Eswar Vutukuri', 'code': 'EV205', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False}
+2025-12-09 22:11:39,047 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body', 'faculty_id'), 'msg': 'Field required', 'input': {'name': 'Eswar Vutukuri', 'code': 'EV205', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False}, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-09 22:11:39,048 - server - ERROR - Request body: {'name': 'Eswar Vutukuri', 'code': 'EV205', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False}
+2025-12-09 22:11:39,264 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body', 'faculty_id'), 'msg': 'Field required', 'input': {'name': 'Eswar Vutukuri', 'code': 'EV205', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False}, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-09 22:11:39,265 - server - ERROR - Request body: {'name': 'Eswar Vutukuri', 'code': 'EV205', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False}
+2025-12-09 22:13:05,521 - server - DEBUG - Update course request data: {'name': 'Data Structures', 'code': 'CS201', 'credits': 4, 'category': 'Major', 'faculty_id': None, 'duration_hours': 3, 'is_lab': False}
+2025-12-09 22:14:54,740 - server - INFO - Application shutting down
+2025-12-09 22:14:56,502 - server - INFO - Database indexes created successfully
+2025-12-09 22:14:56,503 - server - INFO - Seed data already initialized
+2025-12-09 22:15:17,336 - server - DEBUG - Create course request data: {'name': 'Eswar Vutukuri', 'code': 'EV205', 'credits': 3, 'category': 'Major', 'faculty_id': None, 'duration_hours': 1, 'is_lab': False}
+2025-12-09 23:56:49,922 - server - INFO - Application shutting down
+2025-12-09 23:56:53,487 - server - INFO - Database indexes created successfully
+2025-12-09 23:56:53,490 - server - INFO - Seed data already initialized
+2025-12-10 08:51:04,585 - server - INFO - Database indexes created successfully
+2025-12-10 08:51:04,594 - server - INFO - Seed data already initialized
+2025-12-10 09:23:43,340 - server - INFO - Database indexes created successfully
+2025-12-10 09:23:43,344 - server - INFO - Seed data already initialized
+2025-12-10 09:40:53,561 - server - INFO - Application shutting down
+2025-12-10 09:40:56,661 - server - INFO - Database indexes created successfully
+2025-12-10 09:40:56,663 - server - INFO - Seed data already initialized
+2025-12-10 10:46:55,992 - server - INFO - Application shutting down
+2025-12-10 10:46:58,694 - server - INFO - Database indexes created successfully
+2025-12-10 10:46:58,696 - server - INFO - Seed data already initialized
+2025-12-10 14:54:27,591 - server - INFO - Database indexes created successfully
+2025-12-10 14:54:27,593 - server - INFO - Seed data already initialized
+2025-12-10 14:55:04,711 - server - INFO - Application shutting down
+2025-12-10 14:55:08,046 - server - INFO - Database indexes created successfully
+2025-12-10 14:55:08,047 - server - INFO - Seed data already initialized
+2025-12-10 20:45:49,564 - server - INFO - Database indexes created successfully
+2025-12-10 20:45:49,568 - server - INFO - Seed data already initialized
+2025-12-10 22:09:15,384 - server - INFO - Application shutting down
+2025-12-10 22:09:17,416 - server - INFO - Database indexes created successfully
+2025-12-10 22:09:17,417 - server - INFO - Seed data already initialized
+2025-12-10 23:39:32,612 - server - INFO - Application shutting down
+2025-12-10 23:39:34,478 - server - INFO - Database indexes created successfully
+2025-12-10 23:39:34,479 - server - INFO - Seed data already initialized
+2025-12-10 23:47:25,484 - server - ERROR - Validation error: [{'type': 'greater_than_equal', 'loc': ('body', 'minTeachingHours'), 'msg': 'Input should be greater than or equal to 1', 'input': 0, 'ctx': {'ge': 1}, 'url': 'https://errors.pydantic.dev/2.10/v/greater_than_equal'}]
+2025-12-10 23:47:25,485 - server - ERROR - Request body: {'name': 'Smith', 'email': 'dr.smith@univ.edu', 'phone': '', 'bio': '', 'subjects': [], 'minTeachingHours': 0, 'officeLocation': ''}
+2025-12-11 00:00:28,740 - server - INFO - Application shutting down
+2025-12-11 00:00:30,506 - server - INFO - Database indexes created successfully
+2025-12-11 00:00:30,507 - server - INFO - Seed data already initialized
+2025-12-11 08:54:12,251 - server - INFO - Database indexes created successfully
+2025-12-11 08:54:12,256 - server - INFO - Seed data already initialized
+2025-12-11 08:56:44,530 - server - INFO - Application shutting down
+2025-12-11 08:56:48,839 - server - INFO - Database indexes created successfully
+2025-12-11 08:56:48,843 - server - INFO - Seed data already initialized
+2025-12-11 09:00:55,175 - server - INFO - Application shutting down
+2025-12-11 09:00:58,244 - server - INFO - Database indexes created successfully
+2025-12-11 09:00:58,248 - server - INFO - Seed data already initialized
+2025-12-11 11:38:23,964 - server - INFO - Application shutting down
+2025-12-11 11:38:26,553 - server - INFO - Database indexes created successfully
+2025-12-11 11:38:26,555 - server - INFO - Seed data already initialized
+2025-12-12 11:15:32,288 - server - INFO - Database indexes created successfully
+2025-12-12 11:15:32,331 - server - INFO - Seed data already initialized
+2025-12-12 17:05:41,874 - server - INFO - Database indexes created successfully
+2025-12-12 17:05:41,883 - server - INFO - Seed data already initialized
+2025-12-12 17:29:16,382 - server - INFO - Application shutting down
+2025-12-12 17:29:18,111 - server - INFO - Database indexes created successfully
+2025-12-12 17:29:18,112 - server - INFO - Seed data already initialized
+2025-12-12 17:37:06,207 - server - INFO - Application shutting down
+2025-12-12 17:37:07,988 - server - INFO - Database indexes created successfully
+2025-12-12 17:37:07,991 - server - INFO - Seed data already initialized
+2025-12-12 17:40:24,626 - server - ERROR - Global exception: argument of type 'pydantic_core._pydantic_core.ValidationInfo' is not iterable
+2025-12-12 17:40:40,874 - server - ERROR - Global exception: argument of type 'pydantic_core._pydantic_core.ValidationInfo' is not iterable
+2025-12-12 17:43:42,821 - server - INFO - Application shutting down
+2025-12-12 17:45:30,247 - server - INFO - Database indexes created successfully
+2025-12-12 17:45:30,248 - server - INFO - Seed data already initialized
+2025-12-13 09:14:27,960 - server - INFO - Database indexes created successfully
+2025-12-13 09:14:27,966 - server - INFO - Seed data already initialized
+2025-12-13 10:59:12,674 - server - INFO - Application shutting down
+2025-12-13 10:59:17,401 - server - INFO - Database indexes created successfully
+2025-12-13 10:59:17,404 - server - INFO - Seed data already initialized
+2025-12-13 18:24:23,581 - server - INFO - Database indexes created successfully
+2025-12-13 18:24:23,597 - server - INFO - Seed data already initialized
+2025-12-13 18:29:00,569 - server - INFO - Application shutting down
+2025-12-13 18:29:04,048 - server - INFO - Database indexes created successfully
+2025-12-13 18:29:04,075 - server - INFO - Seed data already initialized
+2025-12-13 18:36:13,507 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-13 18:36:13,508 - server - ERROR - Request body: None
+2025-12-13 18:36:15,565 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-13 18:36:15,565 - server - ERROR - Request body: None
+2025-12-13 18:36:16,289 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-13 18:36:16,290 - server - ERROR - Request body: None
+2025-12-13 18:36:16,452 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-13 18:36:16,454 - server - ERROR - Request body: None
+2025-12-13 18:36:16,779 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-13 18:36:16,779 - server - ERROR - Request body: None
+2025-12-13 18:36:16,948 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-13 18:36:16,949 - server - ERROR - Request body: None
+2025-12-13 18:36:17,325 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-13 18:36:17,327 - server - ERROR - Request body: None
+2025-12-13 18:40:55,686 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-13 18:40:55,687 - server - ERROR - Request body: None
+2025-12-13 23:04:38,561 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-13 23:04:38,563 - server - ERROR - Request body: None
+2025-12-13 23:05:37,471 - server - INFO - Application shutting down
+2025-12-13 23:06:10,528 - server - INFO - Database indexes created successfully
+2025-12-13 23:06:10,534 - server - INFO - Seed data already initialized
+2025-12-13 23:06:17,999 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-13 23:06:18,000 - server - ERROR - Request body: None
+2025-12-13 23:06:31,881 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-13 23:06:31,882 - server - ERROR - Request body: None
+2025-12-14 16:38:25,132 - server - INFO - Database indexes created successfully
+2025-12-14 16:38:25,135 - server - INFO - Seed data already initialized
+2025-12-14 23:38:14,523 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-14 23:38:14,526 - server - ERROR - Request body: None
+2025-12-14 23:38:15,684 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-14 23:38:15,684 - server - ERROR - Request body: None
+2025-12-14 23:38:15,908 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-14 23:38:15,908 - server - ERROR - Request body: None
+2025-12-14 23:38:17,123 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-14 23:38:17,123 - server - ERROR - Request body: None
+2025-12-14 23:38:19,757 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-14 23:38:19,757 - server - ERROR - Request body: None
+2025-12-14 23:38:27,989 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-14 23:38:27,989 - server - ERROR - Request body: None
+2025-12-14 23:39:45,119 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-14 23:39:45,120 - server - ERROR - Request body: None
+2025-12-14 23:42:55,417 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-14 23:42:55,418 - server - ERROR - Request body: None
+2025-12-14 23:42:57,028 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-14 23:42:57,028 - server - ERROR - Request body: None
+2025-12-14 23:42:57,246 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-14 23:42:57,247 - server - ERROR - Request body: None
+2025-12-14 23:43:00,640 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-14 23:43:00,640 - server - ERROR - Request body: None
+2025-12-14 23:43:01,401 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-14 23:43:01,401 - server - ERROR - Request body: None
+2025-12-14 23:43:35,336 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-14 23:43:35,337 - server - ERROR - Request body: None
+2025-12-14 23:46:10,353 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-14 23:46:10,353 - server - ERROR - Request body: None
+2025-12-14 23:46:23,885 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-14 23:46:23,886 - server - ERROR - Request body: None
+2025-12-14 23:47:23,015 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-14 23:47:23,015 - server - ERROR - Request body: None
+2025-12-14 23:47:29,557 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-14 23:47:29,557 - server - ERROR - Request body: None
+2025-12-14 23:59:14,989 - server - INFO - Application shutting down
+2025-12-14 23:59:16,985 - server - INFO - Database indexes created successfully
+2025-12-14 23:59:16,986 - server - INFO - Seed data already initialized
+2025-12-15 00:14:10,380 - server - INFO - Application shutting down
+2025-12-15 00:14:12,243 - server - INFO - Database indexes created successfully
+2025-12-15 00:14:12,245 - server - INFO - Seed data already initialized
+2025-12-15 01:05:11,784 - server - INFO - Application shutting down
+2025-12-15 01:05:14,688 - server - INFO - Database indexes created successfully
+2025-12-15 01:05:14,691 - server - INFO - Seed data already initialized
+2025-12-15 01:07:10,745 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-15 01:07:10,746 - server - ERROR - Request body: None
+2025-12-15 01:07:26,847 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-15 01:07:26,848 - server - ERROR - Request body: None
+2025-12-15 01:08:07,940 - server - ERROR - Validation error: [{'type': 'missing', 'loc': ('body',), 'msg': 'Field required', 'input': None, 'url': 'https://errors.pydantic.dev/2.10/v/missing'}]
+2025-12-15 01:08:07,941 - server - ERROR - Request body: None
+2025-12-15 01:22:48,905 - server - ERROR - Generate student timetable error: Expecting value: line 1 column 1 (char 0)
+2025-12-15 01:23:15,601 - server - ERROR - Generate student timetable error: Expecting value: line 1 column 1 (char 0)
+2025-12-15 01:25:34,861 - server - ERROR - Generate student timetable error: Object of type ObjectId is not JSON serializable
+2025-12-15 01:30:31,429 - server - INFO - Application shutting down
+2025-12-15 01:30:33,931 - server - INFO - Database indexes created successfully
+2025-12-15 01:30:33,933 - server - INFO - Seed data already initialized
+2025-12-15 01:30:48,335 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
+2025-12-15 01:30:51,929 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 200 None
+2025-12-15 09:49:42,334 - server - INFO - Database indexes created successfully
+2025-12-15 09:49:42,335 - server - INFO - Seed data already initialized
+2025-12-15 09:50:01,470 - server - INFO - Application shutting down
+2025-12-15 09:50:09,008 - server - INFO - Database indexes created successfully
+2025-12-15 09:50:09,017 - server - INFO - Seed data already initialized
+2025-12-15 09:50:52,707 - server - INFO - Application shutting down
+2025-12-15 09:50:58,622 - server - INFO - Database indexes created successfully
+2025-12-15 09:50:58,627 - server - INFO - Seed data already initialized
+2025-12-15 18:39:12,353 - server - INFO - Database indexes created successfully
+2025-12-15 18:39:12,378 - server - INFO - Seed data already initialized
+2025-12-15 19:36:32,406 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
+2025-12-15 19:36:33,761 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 200 None
+2025-12-15 19:38:48,072 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
+2025-12-15 19:38:49,016 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 401 None
+2025-12-15 19:38:49,017 - server - ERROR - OpenRouter API error: 401 - {"error":{"message":"User not found.","code":401}}
+2025-12-15 19:39:02,359 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
+2025-12-15 19:39:03,295 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 401 None
+2025-12-15 19:39:03,296 - server - ERROR - OpenRouter API error: 401 - {"error":{"message":"User not found.","code":401}}
+2025-12-15 19:39:14,240 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
+2025-12-15 19:39:14,451 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 401 None
+2025-12-15 19:39:14,452 - server - ERROR - OpenRouter API error: 401 - {"error":{"message":"User not found.","code":401}}
+2025-12-15 19:39:19,059 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
+2025-12-15 19:39:19,980 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 401 None
+2025-12-15 19:39:19,981 - server - ERROR - OpenRouter API error: 401 - {"error":{"message":"User not found.","code":401}}
+2025-12-15 19:39:28,041 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
+2025-12-15 19:39:28,263 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 401 None
+2025-12-15 19:39:28,264 - server - ERROR - OpenRouter API error: 401 - {"error":{"message":"User not found.","code":401}}
+2025-12-15 19:39:32,639 - server - INFO - Application shutting down
+2025-12-15 19:41:43,137 - server - INFO - Database indexes created successfully
+2025-12-15 19:41:43,138 - server - INFO - Seed data already initialized
+2025-12-15 19:42:20,616 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
+2025-12-15 19:42:22,738 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 200 None
+2025-12-15 19:53:18,681 - server - INFO - Application shutting down
+2025-12-15 19:53:21,604 - server - INFO - Database indexes created successfully
+2025-12-15 19:53:21,606 - server - INFO - Admin user not found. Creating all seed data.
+2025-12-15 19:53:23,258 - server - INFO - All seed data created successfully
+2025-12-15 20:17:06,948 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
+2025-12-15 20:17:10,452 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 200 None
