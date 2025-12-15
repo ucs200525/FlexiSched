@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # IDE and editors
@@ -80,3 +81,13 @@ agenthub/agents/youtube/db
 
 # Mobile development
 android-sdk/ 
+=======
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+__pycache__/
+*.pyc
+>>>>>>> 86b39b9d8a5a68ae2bc1617cb8bf803fc34f0916
