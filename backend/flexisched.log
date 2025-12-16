@@ -1613,3 +1613,12 @@ redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple e
 2025-12-16 10:17:18,895 - server - INFO - Database indexes created successfully
 2025-12-16 10:17:18,922 - server - INFO - Demo data already exists
 2025-12-16 10:18:10,661 - server - INFO - Application shutting down
+2025-12-16 10:18:39,443 - server - INFO - Database indexes created successfully
+2025-12-16 10:18:39,471 - server - INFO - Admin user not found. Creating extensive demo data.
+2025-12-16 10:19:19,373 - server - INFO - Extensive demo data created successfully
+2025-12-16 10:22:14,299 - server - WARNING - Login failed for email student1@univ.edu: User not found.
+2025-12-16 10:22:21,063 - server - WARNING - Login failed for email student1@univ.edu: User not found.
+2025-12-16 10:22:32,266 - server - WARNING - Login failed for email student1@univ.edu: User not found.
+2025-12-16 10:22:40,846 - server - WARNING - Login failed for email student1@univ.edu: User not found.
+2025-12-16 10:24:27,180 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
+2025-12-16 10:24:29,692 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 200 None
