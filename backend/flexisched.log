@@ -1622,3 +1622,7 @@ redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple e
 2025-12-16 10:22:40,846 - server - WARNING - Login failed for email student1@univ.edu: User not found.
 2025-12-16 10:24:27,180 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
 2025-12-16 10:24:29,692 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 200 None
+2025-12-16 08:37:27,253 - server - ERROR - Error creating indexes: localhost:27017: [Errno 111] Connection refused, Timeout: 5.0s, Topology Description: <TopologyDescription id: 69411a427e9acf83632980d2, topology_type: Unknown, servers: [<ServerDescription ('localhost', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('localhost:27017: [Errno 111] Connection refused')>]>
+2025-12-16 08:37:32,262 - server - ERROR - Demo data creation error: localhost:27017: [Errno 111] Connection refused, Timeout: 5.0s, Topology Description: <TopologyDescription id: 69411a427e9acf83632980d2, topology_type: Unknown, servers: [<ServerDescription ('localhost', 27017) server_type: Unknown, rtt: None, error=AutoReconnect('localhost:27017: [Errno 111] Connection refused')>]>
+2025-12-16 08:40:57,421 - server - INFO - Database indexes created successfully
+2025-12-16 08:40:57,479 - server - INFO - Demo data already exists
