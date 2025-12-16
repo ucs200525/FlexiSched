@@ -200,19 +200,22 @@ async def create_indexes():
         # Faculty preferences indexes
         await db.faculty_preferences.create_index([("faculty_id", 1)])
         
+        # Student course preferences indexes
+        await db.student_course_preferences.create_index([("student_id", 1)])
+        
         logger.info("Database indexes created successfully")
     except Exception as e:
         logger.error(f"Error creating indexes: {str(e)}")
 
-# Initialize seed data
-async def initialize_seed_data():
+# Initialize extensive demo data
+async def initialize_demo_data():
     try:
         # Check if admin user exists
         admin_exists = await db.users.find_one({'email': 'admin@flexisched.com'})
         
-        # Only clear and recreate data if admin doesn't exist
+        # Only create demo data if admin doesn't exist
         if not admin_exists:
-            logger.info("Admin user not found. Creating all seed data.")
+            logger.info("Admin user not found. Creating extensive demo data.")
             # Clear existing data
             await db.users.delete_many({})
             await db.courses.delete_many({})
@@ -221,6 +224,7 @@ async def initialize_seed_data():
             await db.timetables.delete_many({})
             await db.settings.delete_many({})
             await db.faculty_preferences.delete_many({})
+            await db.student_course_preferences.delete_many({})
             
             # Create admin user
             admin = {
@@ -232,60 +236,180 @@ async def initialize_seed_data():
             }
             await db.users.insert_one(admin)
             
-            # Create faculty
-            faculty_users = [
-                {'email': 'dr.smith@univ.edu', 'name': 'Dr. John Smith', 'password_hash': hash_password('faculty123'), 'role': 'faculty'},
-                {'email': 'dr.patel@univ.edu', 'name': 'Dr. Priya Patel', 'password_hash': hash_password('faculty123'), 'role': 'faculty'},
-                {'email': 'dr.kumar@univ.edu', 'name': 'Dr. Raj Kumar', 'password_hash': hash_password('faculty123'), 'role': 'faculty'},
-                {'email': 'dr.wong@univ.edu', 'name': 'Dr. Lisa Wong', 'password_hash': hash_password('faculty123'), 'role': 'faculty'},
+            # Create 10 faculty members
+            faculty_data = [
+                {'email': 'dr.smith@univ.edu', 'name': 'Dr. John Smith', 'password_hash': hash_password('faculty123'), 'role': 'faculty', 'department': 'Computer Science'},
+                {'email': 'dr.patel@univ.edu', 'name': 'Dr. Priya Patel', 'password_hash': hash_password('faculty123'), 'role': 'faculty', 'department': 'Computer Science'},
+                {'email': 'dr.kumar@univ.edu', 'name': 'Dr. Raj Kumar', 'password_hash': hash_password('faculty123'), 'role': 'faculty', 'department': 'Mathematics'},
+                {'email': 'dr.wong@univ.edu', 'name': 'Dr. Lisa Wong', 'password_hash': hash_password('faculty123'), 'role': 'faculty', 'department': 'Physics'},
+                {'email': 'dr.johnson@univ.edu', 'name': 'Dr. Michael Johnson', 'password_hash': hash_password('faculty123'), 'role': 'faculty', 'department': 'Chemistry'},
+                {'email': 'dr.williams@univ.edu', 'name': 'Dr. Sarah Williams', 'password_hash': hash_password('faculty123'), 'role': 'faculty', 'department': 'Biology'},
+                {'email': 'dr.brown@univ.edu', 'name': 'Dr. James Brown', 'password_hash': hash_password('faculty123'), 'role': 'faculty', 'department': 'English'},
+                {'email': 'dr.davis@univ.edu', 'name': 'Dr. Emily Davis', 'password_hash': hash_password('faculty123'), 'role': 'faculty', 'department': 'Economics'},
+                {'email': 'dr.miller@univ.edu', 'name': 'Dr. Robert Miller', 'password_hash': hash_password('faculty123'), 'role': 'faculty', 'department': 'History'},
+                {'email': 'dr.wilson@univ.edu', 'name': 'Dr. Jennifer Wilson', 'password_hash': hash_password('faculty123'), 'role': 'faculty', 'department': 'Psychology'},
             ]
             
-            for fac in faculty_users:
+            faculty_ids = []
+            for fac in faculty_data:
                 fac['created_at'] = datetime.now(timezone.utc).isoformat()
-                await db.users.insert_one(fac)
+                result = await db.users.insert_one(fac)
+                faculty_ids.append(str(result.inserted_id))
             
-            # Create students
-            student_users = [
-                {'email': 'student1@univ.edu', 'name': 'Alice Johnson', 'password_hash': hash_password('student123'), 'role': 'student'},
-                {'email': 'student2@univ.edu', 'name': 'Bob Williams', 'password_hash': hash_password('student123'), 'role': 'student'},
-                {'email': 'student3@univ.edu', 'name': 'Carol Davis', 'password_hash': hash_password('student123'), 'role': 'student'},
+            # Create 30 students
+            student_data = [
+                {'email': 'alice.johnson@univ.edu', 'name': 'Alice Johnson', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2023'},
+                {'email': 'bob.williams@univ.edu', 'name': 'Bob Williams', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2023'},
+                {'email': 'carol.davis@univ.edu', 'name': 'Carol Davis', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2023'},
+                {'email': 'david.miller@univ.edu', 'name': 'David Miller', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2022'},
+                {'email': 'emma.wilson@univ.edu', 'name': 'Emma Wilson', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2022'},
+                {'email': 'frank.moore@univ.edu', 'name': 'Frank Moore', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2024'},
+                {'email': 'grace.taylor@univ.edu', 'name': 'Grace Taylor', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2024'},
+                {'email': 'henry.anderson@univ.edu', 'name': 'Henry Anderson', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2021'},
+                {'email': 'isabella.thomas@univ.edu', 'name': 'Isabella Thomas', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2021'},
+                {'email': 'jack.jackson@univ.edu', 'name': 'Jack Jackson', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2023'},
+                {'email': 'kate.white@univ.edu', 'name': 'Kate White', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2024'},
+                {'email': 'liam.harris@univ.edu', 'name': 'Liam Harris', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2022'},
+                {'email': 'mia.martin@univ.edu', 'name': 'Mia Martin', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2022'},
+                {'email': 'noah.thompson@univ.edu', 'name': 'Noah Thompson', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2023'},
+                {'email': 'olivia.garcia@univ.edu', 'name': 'Olivia Garcia', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2024'},
+                {'email': 'peter.martinez@univ.edu', 'name': 'Peter Martinez', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2021'},
+                {'email': 'quinn.robinson@univ.edu', 'name': 'Quinn Robinson', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2021'},
+                {'email': 'rachel.clark@univ.edu', 'name': 'Rachel Clark', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2024'},
+                {'email': 'samuel.rodriguez@univ.edu', 'name': 'Samuel Rodriguez', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2023'},
+                {'email': 'taylor.lewis@univ.edu', 'name': 'Taylor Lewis', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2022'},
+                {'email': 'ursula.lee@univ.edu', 'name': 'Ursula Lee', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2024'},
+                {'email': 'victor.walker@univ.edu', 'name': 'Victor Walker', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2021'},
+                {'email': 'wendy.hall@univ.edu', 'name': 'Wendy Hall', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2023'},
+                {'email': 'xavier.allen@univ.edu', 'name': 'Xavier Allen', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2022'},
+                {'email': 'yasmine.young@univ.edu', 'name': 'Yasmine Young', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2024'},
+                {'email': 'zachary.king@univ.edu', 'name': 'Zachary King', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2021'},
+                {'email': 'amy.scott@univ.edu', 'name': 'Amy Scott', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2023'},
+                {'email': 'brian.green@univ.edu', 'name': 'Brian Green', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2024'},
+                {'email': 'chloe.adams@univ.edu', 'name': 'Chloe Adams', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2022'},
+                {'email': 'daniel.baker@univ.edu', 'name': 'Daniel Baker', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2023'},
+                {'email': 'eva.nelson@univ.edu', 'name': 'Eva Nelson', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2024'},
+                {'email': 'felix.carter@univ.edu', 'name': 'Felix Carter', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2021'},
+                {'email': 'georgia.mitchell@univ.edu', 'name': 'Georgia Mitchell', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2022'},
             ]
             
-            for stu in student_users:
+            student_ids = []
+            for stu in student_data:
                 stu['created_at'] = datetime.now(timezone.utc).isoformat()
-                await db.users.insert_one(stu)
+                result = await db.users.insert_one(stu)
+                student_ids.append(str(result.inserted_id))
             
             # Create rooms
             rooms = [
                 {'name': 'Room 101', 'capacity': 60, 'type': 'classroom'},
                 {'name': 'Room 102', 'capacity': 60, 'type': 'classroom'},
                 {'name': 'Room 103', 'capacity': 50, 'type': 'classroom'},
+                {'name': 'Room 104', 'capacity': 50, 'type': 'classroom'},
+                {'name': 'Room 105', 'capacity': 40, 'type': 'classroom'},
+                {'name': 'Room 201', 'capacity': 70, 'type': 'classroom'},
+                {'name': 'Room 202', 'capacity': 70, 'type': 'classroom'},
+                {'name': 'Room 203', 'capacity': 80, 'type': 'classroom'},
                 {'name': 'Lab A', 'capacity': 40, 'type': 'lab'},
                 {'name': 'Lab B', 'capacity': 40, 'type': 'lab'},
-                {'name': 'Auditorium', 'capacity': 200, 'type': 'auditorium'},
+                {'name': 'Lab C', 'capacity': 30, 'type': 'lab'},
+                {'name': 'Lab D', 'capacity': 30, 'type': 'lab'},
+                {'name': 'Auditorium A', 'capacity': 200, 'type': 'auditorium'},
+                {'name': 'Auditorium B', 'capacity': 150, 'type': 'auditorium'},
+                {'name': 'Seminar Room 1', 'capacity': 25, 'type': 'classroom'},
+                {'name': 'Seminar Room 2', 'capacity': 25, 'type': 'classroom'},
+                {'name': 'Conference Room 1', 'capacity': 20, 'type': 'classroom'},
+                {'name': 'Conference Room 2', 'capacity': 20, 'type': 'classroom'},
             ]
             
+            room_ids = []
             for room in rooms:
                 room['created_at'] = datetime.now(timezone.utc).isoformat()
-                await db.rooms.insert_one(room)
+                result = await db.rooms.insert_one(room)
+                room_ids.append(str(result.inserted_id))
             
-            # Create courses
+            # Create 35 courses with faculty assignments
             courses = [
-                {'name': 'Data Structures', 'code': 'CS201', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False},
-                {'name': 'Data Structures Lab', 'code': 'CS201L', 'credits': 2, 'category': 'Major', 'duration_hours': 2, 'is_lab': True},
-                {'name': 'Database Management Systems', 'code': 'CS301', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False},
-                {'name': 'Web Development', 'code': 'CS302', 'credits': 3, 'category': 'Minor', 'duration_hours': 1, 'is_lab': False},
-                {'name': 'Machine Learning', 'code': 'CS401', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False},
-                {'name': 'Cyber Security', 'code': 'CS303', 'credits': 3, 'category': 'SEC', 'duration_hours': 1, 'is_lab': False},
-                {'name': 'Communication Skills', 'code': 'ENG101', 'credits': 2, 'category': 'AEC', 'duration_hours': 1, 'is_lab': False},
-                {'name': 'Environmental Studies', 'code': 'ENV101', 'credits': 2, 'category': 'VAC', 'duration_hours': 1, 'is_lab': False},
+                # Computer Science Courses (Dr. Smith)
+                {'name': 'Data Structures', 'code': 'CS201', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[0]},
+                {'name': 'Data Structures Lab', 'code': 'CS201L', 'credits': 2, 'category': 'Major', 'duration_hours': 2, 'is_lab': True, 'faculty_id': faculty_ids[0]},
+                {'name': 'Algorithms', 'code': 'CS301', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[0]},
+                {'name': 'Database Management Systems', 'code': 'CS302', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[0]},
+                {'name': 'Web Development', 'code': 'CS303', 'credits': 3, 'category': 'Minor', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[0]},
+                
+                # Computer Science Courses (Dr. Patel)
+                {'name': 'Machine Learning', 'code': 'CS401', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[1]},
+                {'name': 'Artificial Intelligence', 'code': 'CS402', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[1]},
+                {'name': 'Computer Networks', 'code': 'CS351', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[1]},
+                {'name': 'Operating Systems', 'code': 'CS352', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[1]},
+                {'name': 'Software Engineering', 'code': 'CS403', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[1]},
+                
+                # Mathematics Courses (Dr. Kumar)
+                {'name': 'Calculus I', 'code': 'MATH101', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[2]},
+                {'name': 'Calculus II', 'code': 'MATH102', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[2]},
+                {'name': 'Linear Algebra', 'code': 'MATH201', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[2]},
+                {'name': 'Differential Equations', 'code': 'MATH301', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[2]},
+                {'name': 'Statistics', 'code': 'MATH202', 'credits': 3, 'category': 'Minor', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[2]},
+                
+                # Physics Courses (Dr. Wong)
+                {'name': 'Physics I', 'code': 'PHY101', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[3]},
+                {'name': 'Physics I Lab', 'code': 'PHY101L', 'credits': 2, 'category': 'Major', 'duration_hours': 2, 'is_lab': True, 'faculty_id': faculty_ids[3]},
+                {'name': 'Physics II', 'code': 'PHY102', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[3]},
+                {'name': 'Quantum Mechanics', 'code': 'PHY401', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[3]},
+                {'name': 'Thermodynamics', 'code': 'PHY301', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[3]},
+                
+                # Chemistry Courses (Dr. Johnson)
+                {'name': 'General Chemistry', 'code': 'CHEM101', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[4]},
+                {'name': 'Chemistry Lab I', 'code': 'CHEM101L', 'credits': 2, 'category': 'Major', 'duration_hours': 2, 'is_lab': True, 'faculty_id': faculty_ids[4]},
+                {'name': 'Organic Chemistry', 'code': 'CHEM201', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[4]},
+                {'name': 'Organic Chemistry Lab', 'code': 'CHEM201L', 'credits': 2, 'category': 'Major', 'duration_hours': 2, 'is_lab': True, 'faculty_id': faculty_ids[4]},
+                {'name': 'Biochemistry', 'code': 'CHEM301', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[4]},
+                
+                # Biology Courses (Dr. Williams)
+                {'name': 'Biology I', 'code': 'BIO101', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[5]},
+                {'name': 'Biology Lab I', 'code': 'BIO101L', 'credits': 2, 'category': 'Major', 'duration_hours': 2, 'is_lab': True, 'faculty_id': faculty_ids[5]},
+                {'name': 'Genetics', 'code': 'BIO201', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[5]},
+                {'name': 'Molecular Biology', 'code': 'BIO301', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[5]},
+                {'name': 'Ecology', 'code': 'BIO202', 'credits': 3, 'category': 'Minor', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[5]},
+                
+                # English Courses (Dr. Brown)
+                {'name': 'English Literature', 'code': 'ENG101', 'credits': 3, 'category': 'AEC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[6]},
+                {'name': 'Creative Writing', 'code': 'ENG201', 'credits': 3, 'category': 'AEC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[6]},
+                {'name': 'Technical Writing', 'code': 'ENG301', 'credits': 2, 'category': 'AEC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[6]},
+                {'name': 'Shakespeare Studies', 'code': 'ENG401', 'credits': 3, 'category': 'Minor', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[6]},
+                
+                # Economics Courses (Dr. Davis)
+                {'name': 'Microeconomics', 'code': 'ECON101', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[7]},
+                {'name': 'Macroeconomics', 'code': 'ECON102', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[7]},
+                {'name': 'International Economics', 'code': 'ECON201', 'credits': 3, 'category': 'Minor', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[7]},
+                {'name': 'Financial Economics', 'code': 'ECON301', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[7]},
+                
+                # History Courses (Dr. Miller)
+                {'name': 'World History', 'code': 'HIST101', 'credits': 3, 'category': 'VAC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[8]},
+                {'name': 'American History', 'code': 'HIST102', 'credits': 3, 'category': 'VAC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[8]},
+                {'name': 'Modern History', 'code': 'HIST201', 'credits': 3, 'category': 'VAC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[8]},
+                {'name': 'Ancient Civilizations', 'code': 'HIST301', 'credits': 3, 'category': 'Minor', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[8]},
+                
+                # Psychology Courses (Dr. Wilson)
+                {'name': 'Introduction to Psychology', 'code': 'PSY101', 'credits': 3, 'category': 'SEC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[9]},
+                {'name': 'Cognitive Psychology', 'code': 'PSY201', 'credits': 3, 'category': 'SEC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[9]},
+                {'name': 'Social Psychology', 'code': 'PSY202', 'credits': 3, 'category': 'SEC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[9]},
+                {'name': 'Abnormal Psychology', 'code': 'PSY301', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[9]},
+                
+                # Additional interdisciplinary courses
+                {'name': 'Environmental Science', 'code': 'ENV101', 'credits': 3, 'category': 'VAC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[5]}, # Dr. Williams
+                {'name': 'Communication Skills', 'code': 'COMM101', 'credits': 2, 'category': 'AEC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[6]}, # Dr. Brown
+                {'name': 'Business Ethics', 'code': 'BUS301', 'credits': 3, 'category': 'SEC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[7]}, # Dr. Davis
+                {'name': 'Digital Marketing', 'code': 'BUS201', 'credits': 3, 'category': 'Minor', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[1]}, # Dr. Patel
+                {'name': 'Data Science', 'code': 'DS401', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[0]}, # Dr. Smith
             ]
             
+            course_ids = []
             for course in courses:
                 course['created_at'] = datetime.now(timezone.utc).isoformat()
-                await db.courses.insert_one(course)
+                result = await db.courses.insert_one(course)
+                course_ids.append(str(result.inserted_id))
             
-            # Create base timetable structure as default
+            # Create base timetable structure
             base_timetable = {
                 'startTime': '09:00',
                 'endTime': '17:00',
@@ -307,86 +431,220 @@ async def initialize_seed_data():
             }
             await db.settings.insert_one(credit_limits)
             
-            logger.info("All seed data created successfully")
+            # Create faculty timetables with preferences
+            faculty_timetables = [
+                {
+                    'faculty_id': faculty_ids[0], # Dr. Smith
+                    'schedule': [
+                        {'day': 'Monday', 'time': '9:00 AM - 10:00 AM', 'course_id': course_ids[0], 'course_name': 'Data Structures', 'room_id': room_ids[0], 'room_name': 'Room 101'},
+                        {'day': 'Monday', 'time': '10:00 AM - 11:00 AM', 'course_id': course_ids[1], 'course_name': 'Data Structures Lab', 'room_id': room_ids[8], 'room_name': 'Lab A'},
+                        {'day': 'Wednesday', 'time': '2:00 PM - 3:00 PM', 'course_id': course_ids[2], 'course_name': 'Algorithms', 'room_id': room_ids[1], 'room_name': 'Room 102'},
+                        {'day': 'Friday', 'time': '11:00 AM - 12:00 PM', 'course_id': course_ids[3], 'course_name': 'Database Management Systems', 'room_id': room_ids[2], 'room_name': 'Room 103'},
+                    ],
+                    'generated_at': datetime.now(timezone.utc).isoformat(),
+                    'generated_by': faculty_ids[0]
+                },
+                {
+                    'faculty_id': faculty_ids[1], # Dr. Patel
+                    'schedule': [
+                        {'day': 'Tuesday', 'time': '9:00 AM - 10:00 AM', 'course_id': course_ids[5], 'course_name': 'Machine Learning', 'room_id': room_ids[5], 'room_name': 'Room 201'},
+                        {'day': 'Tuesday', 'time': '2:00 PM - 3:00 PM', 'course_id': course_ids[6], 'course_name': 'Artificial Intelligence', 'room_id': room_ids[6], 'room_name': 'Room 202'},
+                        {'day': 'Thursday', 'time': '10:00 AM - 11:00 AM', 'course_id': course_ids[7], 'course_name': 'Computer Networks', 'room_id': room_ids[7], 'room_name': 'Room 203'},
+                        {'day': 'Thursday', 'time': '3:00 PM - 4:00 PM', 'course_id': course_ids[8], 'course_name': 'Software Engineering', 'room_id': room_ids[4], 'room_name': 'Room 105'},
+                    ],
+                    'generated_at': datetime.now(timezone.utc).isoformat(),
+                    'generated_by': faculty_ids[1]
+                },
+                {
+                    'faculty_id': faculty_ids[2], # Dr. Kumar
+                    'schedule': [
+                        {'day': 'Monday', 'time': '11:00 AM - 12:00 PM', 'course_id': course_ids[10], 'course_name': 'Calculus I', 'room_id': room_ids[3], 'room_name': 'Room 104'},
+                        {'day': 'Wednesday', 'time': '9:00 AM - 10:00 AM', 'course_id': course_ids[11], 'course_name': 'Calculus II', 'room_id': room_ids[0], 'room_name': 'Room 101'},
+                        {'day': 'Friday', 'time': '2:00 PM - 3:00 PM', 'course_id': course_ids[12], 'course_name': 'Linear Algebra', 'room_id': room_ids[1], 'room_name': 'Room 102'},
+                        {'day': 'Tuesday', 'time': '3:00 PM - 4:00 PM', 'course_id': course_ids[14], 'course_name': 'Statistics', 'room_id': room_ids[2], 'room_name': 'Room 103'},
+                    ],
+                    'generated_at': datetime.now(timezone.utc).isoformat(),
+                    'generated_by': faculty_ids[2]
+                },
+                {
+                    'faculty_id': faculty_ids[3], # Dr. Wong
+                    'schedule': [
+                        {'day': 'Monday', 'time': '2:00 PM - 3:00 PM', 'course_id': course_ids[15], 'course_name': 'Physics I', 'room_id': room_ids[11], 'room_name': 'Auditorium A'},
+                        {'day': 'Monday', 'time': '3:00 PM - 5:00 PM', 'course_id': course_ids[16], 'course_name': 'Physics I Lab', 'room_id': room_ids[9], 'room_name': 'Lab B'},
+                        {'day': 'Wednesday', 'time': '10:00 AM - 11:00 AM', 'course_id': course_ids[17], 'course_name': 'Physics II', 'room_id': room_ids[12], 'room_name': 'Auditorium B'},
+                        {'day': 'Friday', 'time': '9:00 AM - 10:00 AM', 'course_id': course_ids[18], 'course_name': 'Quantum Mechanics', 'room_id': room_ids[5], 'room_name': 'Room 201'},
+                    ],
+                    'generated_at': datetime.now(timezone.utc).isoformat(),
+                    'generated_by': faculty_ids[3]
+                },
+                {
+                    'faculty_id': faculty_ids[4], # Dr. Johnson
+                    'schedule': [
+                        {'day': 'Tuesday', 'time': '10:00 AM - 11:00 AM', 'course_id': course_ids[19], 'course_name': 'General Chemistry', 'room_id': room_ids[6], 'room_name': 'Room 202'},
+                        {'day': 'Tuesday', 'time': '2:00 PM - 4:00 PM', 'course_id': course_ids[20], 'course_name': 'Chemistry Lab I', 'room_id': room_ids[10], 'room_name': 'Lab C'},
+                        {'day': 'Thursday', 'time': '9:00 AM - 10:00 AM', 'course_id': course_ids[21], 'course_name': 'Organic Chemistry', 'room_id': room_ids[7], 'room_name': 'Room 203'},
+                        {'day': 'Thursday', 'time': '3:00 PM - 5:00 PM', 'course_id': course_ids[22], 'course_name': 'Organic Chemistry Lab', 'room_id': room_ids[11], 'room_name': 'Lab D'},
+                    ],
+                    'generated_at': datetime.now(timezone.utc).isoformat(),
+                    'generated_by': faculty_ids[4]
+                },
+                {
+                    'faculty_id': faculty_ids[5], # Dr. Williams
+                    'schedule': [
+                        {'day': 'Monday', 'time': '9:00 AM - 10:00 AM', 'course_id': course_ids[23], 'course_name': 'Biology I', 'room_id': room_ids[13], 'room_name': 'Seminar Room 1'},
+                        {'day': 'Monday', 'time': '2:00 PM - 4:00 PM', 'course_id': course_ids[24], 'course_name': 'Biology Lab I', 'room_id': room_ids[9], 'room_name': 'Lab B'},
+                        {'day': 'Wednesday', 'time': '11:00 AM - 12:00 PM', 'course_id': course_ids[25], 'course_name': 'Genetics', 'room_id': room_ids[14], 'room_name': 'Seminar Room 2'},
+                        {'day': 'Friday', 'time': '10:00 AM - 11:00 AM', 'course_id': course_ids[26], 'course_name': 'Molecular Biology', 'room_id': room_ids[0], 'room_name': 'Room 101'},
+                    ],
+                    'generated_at': datetime.now(timezone.utc).isoformat(),
+                    'generated_by': faculty_ids[5]
+                },
+                {
+                    'faculty_id': faculty_ids[6], # Dr. Brown
+                    'schedule': [
+                        {'day': 'Tuesday', 'time': '11:00 AM - 12:00 PM', 'course_id': course_ids[31], 'course_name': 'English Literature', 'room_id': room_ids[15], 'room_name': 'Conference Room 1'},
+                        {'day': 'Wednesday', 'time': '2:00 PM - 3:00 PM', 'course_id': course_ids[32], 'course_name': 'Creative Writing', 'room_id': room_ids[16], 'room_name': 'Conference Room 2'},
+                        {'day': 'Thursday', 'time': '9:00 AM - 10:00 AM', 'course_id': course_ids[33], 'course_name': 'Technical Writing', 'room_id': room_ids[13], 'room_name': 'Seminar Room 1'},
+                        {'day': 'Friday', 'time': '3:00 PM - 4:00 PM', 'course_id': course_ids[34], 'course_name': 'Shakespeare Studies', 'room_id': room_ids[14], 'room_name': 'Seminar Room 2'},
+                    ],
+                    'generated_at': datetime.now(timezone.utc).isoformat(),
+                    'generated_by': faculty_ids[6]
+                },
+                {
+                    'faculty_id': faculty_ids[7], # Dr. Davis
+                    'schedule': [
+                        {'day': 'Monday', 'time': '10:00 AM - 11:00 AM', 'course_id': course_ids[35], 'course_name': 'Microeconomics', 'room_id': room_ids[1], 'room_name': 'Room 102'},
+                        {'day': 'Wednesday', 'time': '9:00 AM - 10:00 AM', 'course_id': course_ids[36], 'course_name': 'Macroeconomics', 'room_id': room_ids[2], 'room_name': 'Room 103'},
+                        {'day': 'Thursday', 'time': '2:00 PM - 3:00 PM', 'course_id': course_ids[37], 'course_name': 'International Economics', 'room_id': room_ids[3], 'room_name': 'Room 104'},
+                        {'day': 'Friday', 'time': '11:00 AM - 12:00 PM', 'course_id': course_ids[38], 'course_name': 'Financial Economics', 'room_id': room_ids[5], 'room_name': 'Room 201'},
+                    ],
+                    'generated_at': datetime.now(timezone.utc).isoformat(),
+                    'generated_by': faculty_ids[7]
+                },
+                {
+                    'faculty_id': faculty_ids[8], # Dr. Miller
+                    'schedule': [
+                        {'day': 'Tuesday', 'time': '9:00 AM - 10:00 AM', 'course_id': course_ids[39], 'course_name': 'World History', 'room_id': room_ids[4], 'room_name': 'Room 105'},
+                        {'day': 'Wednesday', 'time': '11:00 AM - 12:00 PM', 'course_id': course_ids[40], 'course_name': 'American History', 'room_id': room_ids[6], 'room_name': 'Room 202'},
+                        {'day': 'Thursday', 'time': '10:00 AM - 11:00 AM', 'course_id': course_ids[41], 'course_name': 'Modern History', 'room_id': room_ids[7], 'room_name': 'Room 203'},
+                        {'day': 'Friday', 'time': '2:00 PM - 3:00 PM', 'course_id': course_ids[42], 'course_name': 'Ancient Civilizations', 'room_id': room_ids[0], 'room_name': 'Room 101'},
+                    ],
+                    'generated_at': datetime.now(timezone.utc).isoformat(),
+                    'generated_by': faculty_ids[8]
+                },
+                {
+                    'faculty_id': faculty_ids[9], # Dr. Wilson
+                    'schedule': [
+                        {'day': 'Monday', 'time': '11:00 AM - 12:00 PM', 'course_id': course_ids[43], 'course_name': 'Introduction to Psychology', 'room_id': room_ids[15], 'room_name': 'Conference Room 1'},
+                        {'day': 'Tuesday', 'time': '2:00 PM - 3:00 PM', 'course_id': course_ids[44], 'course_name': 'Cognitive Psychology', 'room_id': room_ids[16], 'room_name': 'Conference Room 2'},
+                        {'day': 'Wednesday', 'time': '10:00 AM - 11:00 AM', 'course_id': course_ids[45], 'course_name': 'Social Psychology', 'room_id': room_ids[13], 'room_name': 'Seminar Room 1'},
+                        {'day': 'Friday', 'time': '9:00 AM - 10:00 AM', 'course_id': course_ids[46], 'course_name': 'Abnormal Psychology', 'room_id': room_ids[14], 'room_name': 'Seminar Room 2'},
+                    ],
+                    'generated_at': datetime.now(timezone.utc).isoformat(),
+                    'generated_by': faculty_ids[9]
+                },
+            ]
+            
+            for ft in faculty_timetables:
+                await db.timetables.insert_one(ft)
+            
+            # Create student timetables and preferences
+            student_timetables = []
+            for i, student_id in enumerate(student_ids):
+                # Assign 4-6 courses per student
+                num_courses = 4 + (i % 3)  # 4-6 courses per student
+                # FIXED: Correctly slice the course_ids list
+                start_idx = i % len(course_ids)
+                end_idx = start_idx + num_courses
+                if end_idx > len(course_ids):
+                    end_idx = len(course_ids)
+                student_courses = course_ids[start_idx:end_idx]
+                
+                # Create course preferences
+                preferences = []
+                for j, course_id in enumerate(student_courses):
+                    preferences.append({
+                        'student_id': student_id,
+                        'course_id': course_id,
+                        'preferred_time': ['morning', 'afternoon', 'no-preference'][j % 3],
+                        'preferred_professor': 'no-preference',
+                        'priority': (j % 3) + 1,
+                        'created_at': datetime.now(timezone.utc).isoformat()
+                    })
+                
+                await db.student_course_preferences.insert_many(preferences)
+                
+                # Create a simple timetable for each student
+                days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+                times = ['9:00 AM - 10:00 AM', '10:00 AM - 11:00 AM', '11:00 AM - 12:00 PM', '2:00 PM - 3:00 PM', '3:00 PM - 4:00 PM', '4:00 PM - 5:00 PM']
+                
+                schedule = []
+                for day_idx, day in enumerate(days):
+                    for time_idx, time in enumerate(times):
+                        if day_idx * len(times) + time_idx < len(student_courses):
+                            course_id = student_courses[day_idx * len(times) + time_idx]
+                            course = await db.courses.find_one({'_id': ObjectId(course_id)})
+                            if course:
+                                # Find a suitable room
+                                suitable_room = None
+                                if course.get('is_lab'):
+                                    suitable_room = await db.rooms.find_one({'type': 'lab'})
+                                else:
+                                    suitable_room = await db.rooms.find_one({'type': 'classroom'})
+                                
+                                if suitable_room:
+                                    # FIXED: Properly handle faculty name assignment
+                                    if course.get('faculty_id'):
+                                        try:
+                                            # Find faculty in faculty_data by matching ID
+                                            faculty_doc = await db.users.find_one({'_id': ObjectId(course.get('faculty_id'))})
+                                            if faculty_doc:
+                                                faculty_name = faculty_doc['name'].split(' ')[-1]  # Get last name
+                                                faculty_name = f"Dr. {faculty_name}"
+                                            else:
+                                                faculty_name = 'TBD'
+                                        except:
+                                            faculty_name = 'TBD'
+                                    else:
+                                        faculty_name = 'TBD'
+                                    
+                                    schedule.append({
+                                        'day': day,
+                                        'time': time,
+                                        'course_id': str(course['_id']),
+                                        'course_name': course['name'],
+                                        'course_code': course['code'],
+                                        'room_id': str(suitable_room['_id']),
+                                        'room_name': suitable_room['name'],
+                                        'faculty_id': str(course.get('faculty_id', '')),
+                                        'faculty_name': faculty_name
+                                    })
+                
+                student_timetable = {
+                    'schedule': schedule,
+                    'summary': f'Timetable for student {i+1}',
+                    'generated_at': datetime.now(timezone.utc).isoformat(),
+                    'generated_by': student_id,
+                    'student_id': student_id
+                }
+                student_timetables.append(student_timetable)
+            
+            # Insert all student timetables
+            await db.timetables.insert_many(student_timetables)
+            
+            logger.info("Extensive demo data created successfully")
         else:
-            # Admin exists, but let's verify other critical data exists
-            logger.info("Admin user exists. Verifying other seed data.")
-            
-            # Check if base timetable exists
-            base_timetable = await db.base_timetables.find_one()
-            if not base_timetable:
-                # Create base timetable structure as default
-                base_timetable = {
-                    'startTime': '09:00',
-                    'endTime': '17:00',
-                    'classDuration': '1',
-                    'lunchBreakDuration': '1',
-                    'days': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-                    'created_at': datetime.now(timezone.utc).isoformat()
-                }
-                await db.base_timetables.insert_one(base_timetable)
-                logger.info("Base timetable created")
-            
-            # Check if credit limits exist
-            credit_limits = await db.settings.find_one({'key': 'credit_limits'})
-            if not credit_limits:
-                # Create default credit limits
-                credit_limits = {
-                    'key': 'credit_limits',
-                    'value': {
-                        'minCredits': 15,
-                        'maxCredits': 25
-                    },
-                    'created_at': datetime.now(timezone.utc).isoformat()
-                }
-                await db.settings.insert_one(credit_limits)
-                logger.info("Credit limits created")
-            
-            # Check if rooms exist
-            room_count = await db.rooms.count_documents({})
-            if room_count == 0:
-                rooms = [
-                    {'name': 'Room 101', 'capacity': 60, 'type': 'classroom'},
-                    {'name': 'Room 102', 'capacity': 60, 'type': 'classroom'},
-                    {'name': 'Room 103', 'capacity': 50, 'type': 'classroom'},
-                    {'name': 'Lab A', 'capacity': 40, 'type': 'lab'},
-                    {'name': 'Lab B', 'capacity': 40, 'type': 'lab'},
-                    {'name': 'Auditorium', 'capacity': 200, 'type': 'auditorium'},
-                ]
-                for room in rooms:
-                    room['created_at'] = datetime.now(timezone.utc).isoformat()
-                    await db.rooms.insert_one(room)
-                logger.info("Rooms created")
-            
-            # Check if courses exist
-            course_count = await db.courses.count_documents({})
-            if course_count == 0:
-                courses = [
-                    {'name': 'Data Structures', 'code': 'CS201', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False},
-                    {'name': 'Data Structures Lab', 'code': 'CS201L', 'credits': 2, 'category': 'Major', 'duration_hours': 2, 'is_lab': True},
-                    {'name': 'Database Management Systems', 'code': 'CS301', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False},
-                    {'name': 'Web Development', 'code': 'CS302', 'credits': 3, 'category': 'Minor', 'duration_hours': 1, 'is_lab': False},
-                    {'name': 'Machine Learning', 'code': 'CS401', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False},
-                    {'name': 'Cyber Security', 'code': 'CS303', 'credits': 3, 'category': 'SEC', 'duration_hours': 1, 'is_lab': False},
-                    {'name': 'Communication Skills', 'code': 'ENG101', 'credits': 2, 'category': 'AEC', 'duration_hours': 1, 'is_lab': False},
-                    {'name': 'Environmental Studies', 'code': 'ENV101', 'credits': 2, 'category': 'VAC', 'duration_hours': 1, 'is_lab': False},
-                ]
-                for course in courses:
-                    course['created_at'] = datetime.now(timezone.utc).isoformat()
-                    await db.courses.insert_one(course)
-                logger.info("Courses created")
-
-            logger.info("Seed data verification complete.")
+            logger.info("Demo data already exists")
         
     except Exception as e:
-        logger.error(f"Seed error: {str(e)}")
+        logger.error(f"Demo data creation error: {str(e)}")
 
 # Lifespan context manager
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
     await create_indexes()
-    await initialize_seed_data()
+    await initialize_demo_data()
     
     yield
     
@@ -788,7 +1046,7 @@ async def get_users(
 @app.post('/api/v1/users')
 async def create_user(
     request: Request,
-    data: RegisterRequest,  # Reuse the RegisterRequest model from auth
+    data: RegisterRequest,  # Reuse RegisterRequest model from auth
     current_user: dict = Depends(require_role(['admin']))
 ):
     try:
@@ -1437,21 +1695,16 @@ async def get_faculty_schedule(
 ):
     try:
         faculty_id = user.get('user_id')
-        timetable = await db.timetables.find_one(sort=[('generated_at', -1)])
+        timetable = await db.timetables.find_one({'faculty_id': faculty_id}, sort=[('generated_at', -1)])
         
         if not timetable:
             return {'schedule': [], 'pagination': {'page': page, 'size': size, 'total': 0, 'pages': 0}}
         
-        # Filter schedule for this faculty
-        faculty_schedule = [
-            slot for slot in timetable.get('schedule', [])
-            if slot.get('faculty_id') == faculty_id
-        ]
-        
         # Paginate schedule
-        total = len(faculty_schedule)
+        schedule = timetable.get('schedule', [])
+        total = len(schedule)
         skip = (page - 1) * size
-        paginated_schedule = faculty_schedule[skip:skip + size]
+        paginated_schedule = schedule[skip:skip + size]
         
         return {
             'schedule': paginated_schedule,
@@ -1477,9 +1730,8 @@ async def get_student_schedule(
     user: dict = Depends(require_role(['student']))
 ):
     try:
-        # For now, return the full timetable
-        # In production, this would filter by student's enrolled courses
-        timetable = await db.timetables.find_one(sort=[('generated_at', -1)])
+        student_id = user.get('user_id')
+        timetable = await db.timetables.find_one({'student_id': student_id}, sort=[('generated_at', -1)])
         
         if not timetable:
             return {'schedule': [], 'pagination': {'page': page, 'size': size, 'total': 0, 'pages': 0}}
@@ -1840,7 +2092,7 @@ async def get_student_profile(
         if not user_doc:
             raise HTTPException(status_code=404, detail='User not found')
         
-        # Get enrolled courses for the student
+        # Get enrolled courses for student
         enrolled_courses = []
         course_ids = user_doc.get('enrolled_courses', [])
         if course_ids:
@@ -1878,6 +2130,138 @@ async def get_student_profile(
         logger.error(f"Get student profile error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to fetch profile')
 
+# Student Course Registration with Preferences
+@app.post('/api/v1/student/register-courses')
+async def register_courses(
+    request: Request,
+    user: dict = Depends(require_role(['student']))
+):
+    try:
+        student_id = user.get('user_id')
+        req_body = await request.json()
+        course_registrations = req_body.get('courses', [])
+        
+        if not course_registrations:
+            raise HTTPException(status_code=400, detail='No course registrations provided')
+        
+        # Validate each course registration
+        for registration in course_registrations:
+            if 'course_id' not in registration:
+                raise HTTPException(status_code=400, detail='Each registration must include a course_id')
+            
+            # Validate course exists
+            course = await db.courses.find_one({'_id': ObjectId(registration['course_id'])})
+            if not course:
+                raise HTTPException(status_code=404, detail=f"Course not found: {registration['course_id']}")
+            
+            # Check if course has a faculty assigned
+            if not course.get('faculty_id'):
+                raise HTTPException(status_code=400, detail=f"Course {course['name']} has no faculty assigned")
+        
+        # Store student's course preferences
+        await db.student_course_preferences.delete_many({'student_id': student_id})
+        
+        if course_registrations:
+            preference_docs = []
+            for registration in course_registrations:
+                # Get course details
+                course = await db.courses.find_one({'_id': ObjectId(registration['course_id'])})
+                
+                preference_docs.append({
+                    'student_id': student_id,
+                    'course_id': registration['course_id'],
+                    'course_name': course.get('name', ''),
+                    'course_code': course.get('code', ''),
+                    'preferred_time': registration.get('preferred_time', ''),
+                    'preferred_professor': registration.get('preferred_professor', ''),
+                    'priority': registration.get('priority', 1),  # Higher number = higher priority
+                    'created_at': datetime.now(timezone.utc).isoformat()
+                })
+            
+            await db.student_course_preferences.insert_many(preference_docs)
+        
+        return {'message': 'Course preferences registered successfully'}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Register courses error: {str(e)}")
+        raise HTTPException(status_code=500, detail='Failed to register course preferences')
+
+# Get student's course preferences
+@app.get('/api/v1/student/course-preferences')
+async def get_student_course_preferences(
+    request: Request,
+    user: dict = Depends(require_role(['student']))
+):
+    try:
+        student_id = user.get('user_id')
+        
+        # Get preferences from database
+        preferences = await db.student_course_preferences.find({'student_id': student_id}).to_list(1000)
+        
+        # Convert ObjectIds to strings
+        for pref in preferences:
+            pref['_id'] = str(pref['_id'])
+            pref['course_id'] = str(pref['course_id'])
+        
+        return preferences
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get student course preferences error: {str(e)}")
+        raise HTTPException(status_code=500, detail='Failed to fetch course preferences')
+
+# Get available faculty for a course
+@app.get('/api/v1/courses/{course_id}/faculty')
+async def get_course_faculty(
+    request: Request,
+    course_id: str,
+    user: dict = Depends(get_current_user)
+):
+    try:
+        # Validate course ID
+        try:
+            obj_id = ObjectId(course_id)
+        except InvalidId:
+            raise HTTPException(status_code=400, detail='Invalid course ID format')
+        
+        # Check if course exists
+        course = await db.courses.find_one({'_id': obj_id})
+        if not course:
+            raise HTTPException(status_code=404, detail='Course not found')
+        
+        # Get faculty assigned to this specific course
+        # First, check if this course has a faculty_id directly assigned
+        if course.get('faculty_id'):
+            faculty = await db.users.find_one({'_id': ObjectId(course['faculty_id'])}, {'password_hash': 0})
+            if faculty:
+                faculty['_id'] = str(faculty['_id'])
+                return [faculty]
+        
+        # If no direct faculty assignment, check faculty preferences for this course
+        faculty_preferences = await db.faculty_preferences.find({'course_id': course_id}).to_list(1000)
+        
+        if not faculty_preferences:
+            return []  # No faculty assigned to this course
+        
+        # Get unique faculty IDs from preferences
+        faculty_ids = list(set([ObjectId(pref['faculty_id']) for pref in faculty_preferences]))
+        
+        # Get faculty details
+        faculty = await db.users.find({'_id': {'$in': faculty_ids}}, {'password_hash': 0}).to_list(1000)
+        
+        # Convert ObjectIds to strings
+        for fac in faculty:
+            fac['_id'] = str(fac['_id'])
+        
+        return faculty
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get course faculty error: {str(e)}")
+        raise HTTPException(status_code=500, detail='Failed to fetch course faculty')
+
+# Update the generate_student_timetable function
 @app.post('/api/v1/timetable/generate-student')
 async def generate_student_timetable(
     request: Request,
@@ -1895,39 +2279,114 @@ async def generate_student_timetable(
         if not selected_course_ids:
             raise HTTPException(status_code=400, detail='No course IDs provided')
 
-        # 2. Fetch all necessary data
-        # Convert string IDs to ObjectId
+        # 2. Convert string IDs to ObjectId and fetch selected courses
         selected_course_object_ids = [ObjectId(cid) for cid in selected_course_ids]
-        
-        # Fetch only the selected courses
         selected_courses_cursor = db.courses.find({'_id': {'$in': selected_course_object_ids}})
         selected_courses = await selected_courses_cursor.to_list(length=None)
         
         if not selected_courses:
             raise HTTPException(status_code=404, detail='Selected courses not found')
 
-        # Fetch all faculty and rooms for availability checks
+        # 3. Fetch all necessary data for AI prompt
         all_faculty = await db.users.find({'role': 'faculty'}, {'password_hash': 0}).to_list(length=None)
         all_rooms = await db.rooms.find({}).to_list(length=None)
         base_timetable = await db.base_timetables.find_one(sort=[('created_at', -1)])
+        
+        # Get student's course preferences
+        student_id = user.get('user_id')
+        student_preferences = await db.student_course_preferences.find({'student_id': student_id}).to_list(1000)
+        
+        # Get existing timetables to check for already scheduled courses
+        existing_timetables = await db.timetables.find({
+            'student_id': {'$ne': None}
+        }).to_list(1000)
+        
+        # Create a map of existing course schedules
+        existing_course_schedules = {}
+        for timetable in existing_timetables:
+            for slot in timetable.get('schedule', []):
+                course_id = slot.get('course_id')
+                if course_id:
+                    if course_id not in existing_course_schedules:
+                        existing_course_schedules[course_id] = []
+                    existing_course_schedules[course_id].append({
+                        'day': slot.get('day'),
+                        'time': slot.get('time'),
+                        'room_id': slot.get('room_id'),
+                        'room_name': slot.get('room_name'),
+                        'room_capacity': 0  # We'll populate this later
+                    })
+        
+        # Add room capacity info to existing schedules
+        for course_id, schedules in existing_course_schedules.items():
+            for schedule in schedules:
+                room = await db.rooms.find_one({'_id': ObjectId(schedule['room_id'])})
+                if room:
+                    schedule['room_capacity'] = room.get('capacity', 0)
+                    schedule['current_students'] = await db.timetables.count_documents({
+                        'schedule': {
+                            '$elemMatch': {
+                                'course_id': course_id,
+                                'room_id': schedule['room_id'],
+                                'day': schedule['day'],
+                                'time': schedule['time']
+                            }
+                        }
+                    })
 
-        # 3. Prepare data for the AI prompt
+        # 4. Prepare data for AI prompt
         courses_data_for_ai = []
+        unassigned_courses = []
+        
         for course in selected_courses:
-            courses_data_for_ai.append({
-                'id': str(course['_id']),  # FIXED: Convert ObjectId to string
+            # Check if course has a faculty assigned
+            if not course.get('faculty_id'):
+                # Check if there are any faculty preferences for this course
+                faculty_prefs = await db.faculty_preferences.find({'course_id': str(course['_id'])}).to_list(1000)
+                if not faculty_prefs:
+                    unassigned_courses.append({
+                        'name': course['name'],
+                        'code': course['code'],
+                        'reason': 'No faculty assigned to this course'
+                    })
+                    continue
+            
+            course_info = {
+                'id': str(course['_id']),
                 'name': course['name'],
                 'code': course['code'],
                 'credits': course['credits'],
                 'category': course['category'],
                 'duration_hours': course.get('duration_hours', 1),
                 'is_lab': course.get('is_lab', False),
-            })
+                'faculty_id': str(course.get('faculty_id')) if course.get('faculty_id') else None
+            }
+            
+            # Add student preferences for this course
+            student_pref = next((pref for pref in student_preferences if pref['course_id'] == str(course['_id'])), None)
+            if student_pref:
+                course_info['preferred_time'] = student_pref.get('preferred_time', '')
+                course_info['preferred_professor'] = student_pref.get('preferred_professor', '')
+                course_info['priority'] = student_pref.get('priority', 1)
+            
+            # Add existing schedule info if available
+            if course_info['id'] in existing_course_schedules:
+                course_info['existing_schedules'] = existing_course_schedules[course_info['id']]
+            
+            courses_data_for_ai.append(course_info)
+
+        # If no courses have faculty assigned, return an error
+        if len(courses_data_for_ai) == 0:
+            return {
+                'schedule': [],
+                'summary': 'None of the selected courses have faculty assigned. Please select different courses or contact the administrator.',
+                'unassigned_courses': unassigned_courses
+            }
 
         faculty_data_for_ai = []
         for fac in all_faculty:
             faculty_data_for_ai.append({
-                'id': str(fac['_id']),  # FIXED: Convert ObjectId to string
+                'id': str(fac['_id']),
                 'name': fac['name'],
                 'email': fac['email']
             })
@@ -1935,14 +2394,13 @@ async def generate_student_timetable(
         rooms_data_for_ai = []
         for room in all_rooms:
             rooms_data_for_ai.append({
-                'id': str(room['_id']),  # FIXED: Convert ObjectId to string
+                'id': str(room['_id']),
                 'name': room['name'],
                 'capacity': room['capacity'],
                 'type': room['type']
             })
 
-        # 4. Create the detailed AI prompt
-        # Handle case where base_timetable might be None
+        # 5. Create the detailed AI prompt
         base_timetable_json = json.dumps(base_timetable, default=str, indent=2) if base_timetable else "{}"
         
         prompt = f"""
@@ -1961,16 +2419,28 @@ BASE TIMETABLE STRUCTURE:
 {base_timetable_json}
 
 SCHEDULING CONSTRAINTS:
-1. CLASH-FREE SCHEDULE:
-   - A professor cannot be assigned to two different courses at the same time
-   - A room cannot be assigned to two different courses at the same time
-   - Lab courses must be scheduled in rooms with type 'lab'
-   - Theory courses must be scheduled in rooms with type 'classroom' or 'auditorium'
+1. FACULTY ASSIGNMENT:
+   - Only schedule courses that have a faculty assigned.
+   - A professor cannot be assigned to two different courses at the same time.
+   - If a student has a preferred professor for a course, try to accommodate that preference.
 
-2. COURSE DURATION:
-   - A course with 'duration_hours' > 1 must span multiple consecutive time slots
-   - A 1-hour course occupies 1 slot
-   - A 2-hour lab course occupies 2 consecutive slots
+2. ROOM ALLOCATION:
+   - For each course, find the best available room based on capacity.
+   - If multiple rooms have sufficient capacity, prioritize rooms that are closest to full.
+   - If a room is at full capacity, look for a larger room with available capacity.
+   - If there's a larger room with available space, consider switching both classes to optimize room usage.
+   - Lab courses must be scheduled in rooms with type 'lab'.
+   - Theory courses must be scheduled in rooms with type 'classroom' or 'auditorium'.
+
+3. COURSE PREFERENCES:
+   - Try to accommodate student's preferred time slots for courses.
+   - Higher priority courses should be scheduled first.
+   - If a course is already scheduled for other students, try to place this student in the same slot if possible.
+
+4. COURSE DURATION:
+   - A course with 'duration_hours' > 1 must span multiple consecutive time slots.
+   - A 1-hour course occupies 1 slot.
+   - A 2-hour lab course occupies 2 consecutive slots.
 
 TASK:
 Generate a JSON weekly schedule that assigns ONLY the student's selected courses to valid time slots, respecting all constraints above.
@@ -1989,10 +2459,11 @@ The "schedule" key must contain a list of objects. Each object represents one sc
 - "faculty_name": "..."
 
 The "summary" key should contain a brief text summary of the generated timetable.
+If a course has no assigned faculty, include a note in the summary.
 Do not use markdown formatting. Return only the raw JSON object.
 """
 
-        # 5. Call the AI
+        # 6. Call the AI
         try:
             response = requests.post(
                 url="https://openrouter.ai/api/v1/chat/completions",
@@ -2009,14 +2480,14 @@ Do not use markdown formatting. Return only the raw JSON object.
                         }
                     ]
                 }),
-                timeout=None  # REMOVED: No timeout - wait indefinitely
+                timeout=None
             )
 
             if response.status_code != 200:
                 logger.error(f"OpenRouter API error: {response.status_code} - {response.text}")
                 raise HTTPException(status_code=500, detail='Failed to generate timetable')
 
-            # 6. Parse and save the AI's response
+            # 7. Parse and save the AI's response
             try:
                 response_text = response.json()['choices'][0]['message']['content']
                 if response_text.startswith('```json'):
@@ -2032,13 +2503,14 @@ Do not use markdown formatting. Return only the raw JSON object.
                 logger.error(f"AI Response: {response_text}")
                 raise HTTPException(status_code=500, detail='Failed to parse AI response')
 
-            # 7. Save the generated timetable to the database
+            # 8. Save the generated timetable to the database
             timetable_record = {
                 'schedule': timetable_data.get('schedule', []),
                 'summary': timetable_data.get('summary', 'AI-generated timetable'),
                 'generated_at': datetime.now(timezone.utc).isoformat(),
                 'generated_by': user.get('user_id'),
-                'student_id': user.get('user_id'), # Link to the student
+                'student_id': user.get('user_id'),
+                'unassigned_courses': unassigned_courses
             }
             
             result = await db.timetables.insert_one(timetable_record)
@@ -2091,7 +2563,7 @@ async def update_student_profile(
         # Get updated user data
         updated_user = await db.users.find_one({'_id': ObjectId(user_id)}, {'password_hash': 0})
         
-        # Get enrolled courses for the student
+        # Get enrolled courses for student
         enrolled_courses = []
         course_ids = updated_user.get('enrolled_courses', [])
         if course_ids:
@@ -2149,6 +2621,7 @@ if __name__ == '__main__':
     uvicorn.run(
         app,
         host="0.0.0.0",
+        port=8000,
         reload=IS_DEVELOPMENT,
         log_level="debug" if IS_DEVELOPMENT else "info"
     )

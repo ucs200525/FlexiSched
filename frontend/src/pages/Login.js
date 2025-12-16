@@ -29,7 +29,7 @@ const Login = () => {
           console.error('Backend health check failed:', error);
         }
         setBackendStatus('offline');
-        toast.error('Backend server is not accessible. Please check if the server is running on http://localhost:8001');
+        toast.error('Backend server is not accessible. Please check if the server is running on http://localhost:8000');
       }
     };
 
@@ -149,7 +149,7 @@ const Login = () => {
               <AlertCircle className="h-5 w-5 mr-2" />
               <div>
                 <p className="font-semibold">Backend Server Offline</p>
-                <p>Please start backend server at <code className="bg-red-100 px-1 py-0.5 rounded text-xs">http://localhost:8001</code></p>
+                <p>Please start backend server at <code className="bg-red-100 px-1 py-0.5 rounded text-xs">http://localhost:8000</code></p>
               </div>
             </div>
           </div>

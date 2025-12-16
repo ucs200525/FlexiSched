@@ -1567,3 +1567,49 @@ redis.exceptions.ConnectionError: Error connecting to localhost:6379. Multiple e
 2025-12-15 19:53:23,258 - server - INFO - All seed data created successfully
 2025-12-15 20:17:06,948 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
 2025-12-15 20:17:10,452 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 200 None
+2025-12-16 00:37:01,913 - server - INFO - Database indexes created successfully
+2025-12-16 00:37:01,916 - server - INFO - Admin user exists. Verifying other seed data.
+2025-12-16 00:37:01,926 - server - INFO - Seed data verification complete.
+2025-12-16 01:11:49,627 - server - INFO - Application shutting down
+2025-12-16 01:11:52,683 - server - INFO - Database indexes created successfully
+2025-12-16 01:11:52,685 - server - INFO - Admin user exists. Verifying other seed data.
+2025-12-16 01:11:52,695 - server - INFO - Seed data verification complete.
+2025-12-16 01:12:09,185 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): openrouter.ai:443
+2025-12-16 01:12:10,327 - urllib3.connectionpool - DEBUG - https://openrouter.ai:443 "POST /api/v1/chat/completions HTTP/1.1" 429 None
+2025-12-16 01:12:10,329 - server - ERROR - OpenRouter API error: 429 - {"error":{"message":"Provider returned error","code":429,"metadata":{"raw":"tngtech/deepseek-r1t2-chimera:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations","provider_name":"Chutes"}},"user_id":"user_34S63yCpaTwatb6I0aqBgEy30XV"}
+2025-12-16 01:36:55,361 - server - INFO - Application shutting down
+2025-12-16 01:36:59,603 - server - INFO - Database indexes created successfully
+2025-12-16 01:36:59,605 - server - INFO - Admin user exists. Verifying other seed data.
+2025-12-16 01:36:59,617 - server - INFO - Seed data verification complete.
+2025-12-16 01:55:41,588 - server - INFO - Application shutting down
+2025-12-16 01:55:43,310 - server - INFO - Database indexes created successfully
+2025-12-16 01:55:43,311 - server - INFO - Admin user exists. Verifying other seed data.
+2025-12-16 01:55:43,313 - server - INFO - Seed data verification complete.
+2025-12-16 09:14:05,356 - server - INFO - Database indexes created successfully
+2025-12-16 09:14:05,486 - server - INFO - Admin user not found. Creating all seed data.
+2025-12-16 09:14:46,276 - server - ERROR - Seed error: list index out of range
+2025-12-16 09:26:43,341 - server - INFO - Application shutting down
+2025-12-16 09:27:11,759 - server - INFO - Database indexes created successfully
+2025-12-16 09:27:12,054 - server - INFO - Demo data already exists
+2025-12-16 09:28:25,918 - server - INFO - Application shutting down
+2025-12-16 09:28:51,627 - server - INFO - Database indexes created successfully
+2025-12-16 09:28:51,933 - server - INFO - Admin user not found. Creating extensive demo data.
+2025-12-16 09:29:59,934 - server - ERROR - Demo data creation error: invalid literal for int() with base 10: '6940d908ac3ed3ede82da527'
+2025-12-16 09:35:11,449 - server - INFO - Application shutting down
+2025-12-16 09:35:54,709 - server - INFO - Database indexes created successfully
+2025-12-16 09:35:55,430 - server - INFO - Admin user not found. Creating extensive demo data.
+2025-12-16 09:37:08,955 - server - ERROR - Demo data creation error: invalid literal for int() with base 10: '6940daadb4bd76da9a5c404b'
+2025-12-16 09:58:10,342 - server - INFO - Application shutting down
+2025-12-16 09:58:21,892 - server - INFO - Database indexes created successfully
+2025-12-16 09:58:21,921 - server - INFO - Demo data already exists
+2025-12-16 09:58:29,228 - server - INFO - Application shutting down
+2025-12-16 10:05:26,435 - server - INFO - Database indexes created successfully
+2025-12-16 10:05:26,472 - server - INFO - Admin user not found. Creating extensive demo data.
+2025-12-16 10:05:48,589 - server - ERROR - Demo data creation error: invalid literal for int() with base 10: '6940e193502310eecca73503'
+2025-12-16 10:15:53,586 - server - INFO - Application shutting down
+2025-12-16 10:16:04,710 - server - INFO - Database indexes created successfully
+2025-12-16 10:16:04,753 - server - INFO - Admin user not found. Creating extensive demo data.
+2025-12-16 10:16:49,894 - server - INFO - Extensive demo data created successfully
+2025-12-16 10:17:18,895 - server - INFO - Database indexes created successfully
+2025-12-16 10:17:18,922 - server - INFO - Demo data already exists
+2025-12-16 10:18:10,661 - server - INFO - Application shutting down
