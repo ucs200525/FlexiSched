@@ -2334,7 +2334,11 @@ async def generate_student_timetable(
                         }
                     })
 
-        # 4. Prepare data for AI prompt
+        # Get the number of working days from base timetable
+        working_days = base_timetable.get('days', ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])
+        num_working_days = len(working_days)
+
+        # 4. Prepare data for AI prompt with credit-based class scheduling
         courses_data_for_ai = []
         unassigned_courses = []
         
@@ -2351,6 +2355,19 @@ async def generate_student_timetable(
                     })
                     continue
             
+            # Calculate number of classes per week based on credits
+            # For theory courses: 1 credit = 1 class, 2 credits = 2 classes, etc.
+            # For lab courses: always 1 class per week
+            is_lab = course.get('is_lab', False)
+            credits = course.get('credits', 1)
+            
+            if is_lab:
+                # Lab courses always have 1 class per week
+                classes_per_week = 1
+            else:
+                # Theory courses: classes per week based on credits, capped by working days
+                classes_per_week = min(credits, num_working_days)
+            
             course_info = {
                 'id': str(course['_id']),
                 'name': course['name'],
@@ -2359,7 +2376,9 @@ async def generate_student_timetable(
                 'category': course['category'],
                 'duration_hours': course.get('duration_hours', 1),
                 'is_lab': course.get('is_lab', False),
-                'faculty_id': str(course.get('faculty_id')) if course.get('faculty_id') else None
+                'faculty_id': str(course.get('faculty_id')) if course.get('faculty_id') else None,
+                'classes_per_week': classes_per_week,  # NEW: Number of classes per week
+                'no_same_day': True  # NEW: Constraint to avoid scheduling the same course twice in one day
             }
             
             # Add student preferences for this course
@@ -2400,7 +2419,7 @@ async def generate_student_timetable(
                 'type': room['type']
             })
 
-        # 5. Create the detailed AI prompt
+        # 5. Create the detailed AI prompt with credit-based scheduling
         base_timetable_json = json.dumps(base_timetable, default=str, indent=2) if base_timetable else "{}"
         
         prompt = f"""
@@ -2417,6 +2436,25 @@ ALL AVAILABLE ROOMS:
 
 BASE TIMETABLE STRUCTURE:
 {base_timetable_json}
+
+CREDIT-BASED SCHEDULING RULES:
+1. For THEORY courses:
+   - 1 credit = 1 class per week
+   - 2 credits = 2 classes per week
+   - 3 credits = 3 classes per week
+   - 4 credits = 4 classes per week
+   - 5+ credits = 5 classes per week (maximum)
+
+2. For LAB courses:
+   - Always 1 class per week, regardless of credits
+
+3. WORKING DAYS CONSTRAINT:
+   - The college operates for {num_working_days} days per week: {', '.join(working_days)}.
+   - The maximum number of classes for ANY course in a week cannot exceed {num_working_days}.
+   - For example, if the college is open only 3 days a week, a 4-credit course can have a maximum of 3 classes that week.
+
+4. CRITICAL CONSTRAINT: No course should be scheduled more than once on the same day.
+   If a course needs 3 classes per week, they must be on 3 different days.
 
 SCHEDULING CONSTRAINTS:
 1. FACULTY ASSIGNMENT:
@@ -2444,6 +2482,8 @@ SCHEDULING CONSTRAINTS:
 
 TASK:
 Generate a JSON weekly schedule that assigns ONLY the student's selected courses to valid time slots, respecting all constraints above.
+Make sure to schedule the correct number of classes per week for each course based on its credits, type, and the number of working days.
+Never schedule the same course more than once on the same day.
 
 OUTPUT FORMAT:
 Return ONLY a single JSON object with two keys: "schedule" and "summary".
