@@ -62,6 +62,7 @@ chainlit.md
 .vercel
 .env
 .venv
+flexisched.log
 
 # Data and databases
 agenthub/agents/youtube/db
@@ -80,7 +81,6 @@ agenthub/agents/youtube/db
 
 # Mobile development
 android-sdk/ 
-=======
 node_modules
 dist
 .DS_Store
@@ -89,4 +89,3 @@ vite.config.ts.*
 *.tar.gz
 __pycache__/
 *.pyc
->>>>>>> 86b39b9d8a5a68ae2bc1617cb8bf803fc34f0916
