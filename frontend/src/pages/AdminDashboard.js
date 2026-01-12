@@ -1,4 +1,3 @@
-// frontend/src/pages/AdminDashboard.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { apiRequest, endpoints } from '../config/api';
@@ -19,7 +18,7 @@ const AdminDashboard = () => {
       console.log('AdminDashboard component mounted');
     }
     fetchStats();
-  }, []); // fetchRecentActivities call removed
+  }, []);
 
   const fetchStats = async () => {
     if (process.env.NODE_ENV === 'development') {
@@ -46,8 +45,6 @@ const AdminDashboard = () => {
       setLoading(false);
     }
   };
-
-  // fetchRecentActivities function removed
 
   const handleRetry = () => {
     setLoading(true);

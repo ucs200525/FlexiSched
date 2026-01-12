@@ -1,4 +1,3 @@
-// frontend/src/pages/Users.js
 import React, { useState, useEffect } from 'react';
 import { apiRequest, endpoints } from '../config/api';
 import { Button } from '../components/ui/button.jsx';
@@ -37,7 +36,6 @@ const Users = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Client-side validation
     if (!formData.name || formData.name.trim().length < 2) {
       toast.error('Name must be at least 2 characters long');
       return;
@@ -54,7 +52,6 @@ const Users = () => {
     }
 
     try {
-      // Properly structure data according to backend's RegisterRequest model
       const data = {
         name: formData.name.trim(),
         email: formData.email.trim().toLowerCase(),

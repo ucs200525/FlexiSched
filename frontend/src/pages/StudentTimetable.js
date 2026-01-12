@@ -1,4 +1,3 @@
-// frontend/src/pages/StudentTimetable.js
 import React, { useState, useEffect } from 'react';
 import { apiRequest, endpoints } from '../config/api';
 import { Button } from '../components/ui/button.jsx';
@@ -38,7 +37,6 @@ const StudentTimetable = () => {
             setAvailableCourses(coursesRes || []);
             setCreditLimits(limitsRes || { minCredits: 15, maxCredits: 25 });
 
-            // Set up course preferences if they exist
             if (preferencesRes && preferencesRes.length > 0) {
                 const prefs = {};
                 preferencesRes.forEach(pref => {
@@ -50,7 +48,6 @@ const StudentTimetable = () => {
                 });
                 setCoursePreferences(prefs);
 
-                // Set selected course IDs based on preferences
                 setSelectedCourseIds(Object.keys(prefs));
             }
         } catch (error) {
@@ -63,13 +60,11 @@ const StudentTimetable = () => {
     const handleCourseSelection = (courseId) => {
         setSelectedCourseIds(prev => {
             if (prev.includes(courseId)) {
-                // Remove course from selection and preferences
                 const newPrefs = { ...coursePreferences };
                 delete newPrefs[courseId];
                 setCoursePreferences(newPrefs);
                 return prev.filter(id => id !== courseId);
             } else {
-                // Add course to selection with default preferences
                 setCoursePreferences(prev => ({
                     ...prev,
                     [courseId]: {
@@ -96,12 +91,9 @@ const StudentTimetable = () => {
     const openPreferencesDialog = async (courseId) => {
         setCurrentPreferenceCourse(courseId);
 
-        // Fetch available faculty for this course
         try {
             const facultyRes = await apiRequest(`/courses/${courseId}/faculty`);
             setAvailableFaculty(facultyRes || []);
-
-            // If no faculty is assigned to this course, show a warning
             if (!facultyRes || facultyRes.length === 0) {
                 toast.warning('No faculty is currently assigned to this course.');
             }
@@ -149,7 +141,6 @@ const StudentTimetable = () => {
             return;
         }
 
-        // Save preferences before generating
         await saveCoursePreferences();
 
         try {
@@ -157,7 +148,7 @@ const StudentTimetable = () => {
             const response = await apiRequest('/timetable/generate-student', {
                 method: 'POST',
                 data: { courseIds: selectedCourseIds },
-                timeout: 0 // No timeout
+                timeout: 0
             });
 
             setGeneratedTimetable(response);
@@ -169,7 +160,6 @@ const StudentTimetable = () => {
         }
     };
 
-    // Function to get background color based on course category
     const getCourseColor = (category) => {
         switch (category) {
             case 'Major': return 'bg-blue-100 text-blue-800 border-blue-200';
@@ -181,7 +171,6 @@ const StudentTimetable = () => {
         }
     };
 
-    // Function to convert time string to minutes for comparison
     const timeToMinutes = (timeStr) => {
         const [time, period] = timeStr.split(' ');
         const [hours, minutes] = time.split(':').map(Number);
@@ -189,20 +178,16 @@ const StudentTimetable = () => {
         return period.includes('PM') && hours !== 12 ? totalMinutes + 12 * 60 : totalMinutes;
     };
 
-    // Function to generate time slots for the grid
     const generateTimeSlots = () => {
         if (!generatedTimetable || !generatedTimetable.schedule) return [];
 
-        // Extract all unique time slots from the schedule
         const timeSlots = [...new Set(generatedTimetable.schedule.map(slot => slot.time))];
 
-        // Sort time slots chronologically
         timeSlots.sort((a, b) => timeToMinutes(a) - timeToMinutes(b));
 
         return timeSlots;
     };
 
-    // Function to get course for a specific day and time slot
     const getCourseForSlot = (day, timeSlot) => {
         if (!generatedTimetable || !generatedTimetable.schedule) return null;
 

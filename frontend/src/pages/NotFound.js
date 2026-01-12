@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Home, ArrowLeft } from 'lucide-react';
 
 const NotFound = () => {
-    // Log the 404 error in development mode
     React.useEffect(() => {
         if (process.env.NODE_ENV === 'development') {
             console.log('404: Page not found', {

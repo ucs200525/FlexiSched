@@ -23,7 +23,7 @@ const FacultyTimeSlots = () => {
             } else {
                 setLoading(true);
             }
-            
+
             const [baseTimetableRes, coursesRes, preferencesRes] = await Promise.all([
                 apiRequest(endpoints.timetable.base.get),
                 apiRequest(endpoints.faculty.courses),
@@ -57,7 +57,6 @@ const FacultyTimeSlots = () => {
         }
     };
 
-    // --- REFACTORED: generateTimeSlots function ---
     const generateTimeSlots = () => {
         if (!baseTimetable) return [];
 
@@ -109,8 +108,7 @@ const FacultyTimeSlots = () => {
 
         return slots;
     };
-    
-    // --- MAJOR REFACTOR: handleSlotClick for multi-hour classes ---
+
     const handleSlotClick = (day, timeSlot) => {
         if (timeSlot.isLunchBreak) {
             toast.error('The lunch break period is not available for scheduling.');
@@ -135,15 +133,13 @@ const FacultyTimeSlots = () => {
             toast.error('Invalid time slot selected.');
             return;
         }
-        
-        // --- NEW: Check if course fits in remaining time ---
+
         const courseEndTime = clickedSlotIndex + courseDuration;
         if (courseEndTime > timeSlots.length) {
             toast.error(`Insufficient time for a ${courseDuration}-hour class at this time. The class would run past the end of the day.`);
             return;
         }
 
-        // --- NEW: Check for clashes with existing assignments ---
         for (let i = clickedSlotIndex; i < courseEndTime; i++) {
             const slotToCheck = timeSlots[i];
             if (slotToCheck.isLunchBreak) {
@@ -160,7 +156,6 @@ const FacultyTimeSlots = () => {
             }
         }
 
-        // --- NEW: If all checks pass, assign course to all required slots ---
         const newPreferences = { ...preferences };
         for (let i = clickedSlotIndex; i < courseEndTime; i++) {
             const slotKey = `${day}-${timeSlots[i].value}`;
@@ -170,10 +165,10 @@ const FacultyTimeSlots = () => {
                 course_code: course.code,
                 day,
                 start_time: timeSlots[i].value,
-                end_time: timeSlots[courseEndTime - 1].time.split(' - ')[1] // The end time of the last slot
+                end_time: timeSlots[courseEndTime - 1].time.split(' - ')[1]
             };
         }
-        
+
         setPreferences(newPreferences);
         toast.success(`${course.name} scheduled successfully.`);
     };
@@ -182,7 +177,6 @@ const FacultyTimeSlots = () => {
         try {
             setSaving(true);
             const preferencesArray = Object.values(preferences);
-            // FIXED: Use 'data' instead of 'body'
             await apiRequest(endpoints.faculty.timetablePreferences, {
                 method: 'PUT',
                 data: { preferences: preferencesArray }
@@ -205,35 +199,32 @@ const FacultyTimeSlots = () => {
     const timeSlots = generateTimeSlots();
     const days = baseTimetable?.days || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
-    // --- NEW: Helper to determine if a slot should be rendered ---
     const shouldRenderSlot = (day, slotIndex) => {
         const slot = timeSlots[slotIndex];
         const key = `${day}-${slot.value}`;
         const pref = preferences[key];
 
-        if (!pref) return true; // Always render if no preference
+        if (!pref) return true;
 
-        // Check if this is the start of the selected course
         if (pref.course_id === selectedCourse) {
-            return true; // Render start slot
+            return true;
         }
 
-        // For all other preferences, check if this slot index is part of course duration
         const course = facultyCourses.find(c => c._id === pref.course_id);
         if (course) {
             const courseDuration = parseInt(course.duration_hours);
             const courseStartIndex = timeSlots.findIndex(s => s.value === pref.start_time);
-            
+
             if (courseStartIndex !== -1) {
                 for (let i = 0; i < courseDuration; i++) {
                     if (courseStartIndex + i === slotIndex) {
-                        return true; // Render slots that are part of the course
+                        return true;
                     }
                 }
             }
         }
-        
-        return false; // Hide slots that are occupied by a multi-hour class
+
+        return false;
     };
 
     if (loading) {
@@ -359,25 +350,23 @@ const FacultyTimeSlots = () => {
                                                 </div>
                                             </td>
                                             {days.map(day => {
-                                                // FIXED: Added missing closing parenthesis
                                                 if (!shouldRenderSlot(day, slotIndex)) {
-                                                    return null; // Don't render this cell
+                                                    return null;
                                                 }
 
                                                 const key = `${day}-${slot.value}`;
                                                 const pref = preferences[key];
                                                 const isSelected = pref && pref.course_id === selectedCourse;
-                                                
+
                                                 return (
                                                     <td
                                                         key={key}
                                                         onClick={() => handleSlotClick(day, slot)}
-                                                        className={`px-6 py-4 whitespace-nowrap text-sm cursor-pointer hover:bg-gray-100 ${
-                                                            slot.isLunchBreak ? 'bg-orange-100 text-orange-800 font-medium' :
+                                                        className={`px-6 py-4 whitespace-nowrap text-sm cursor-pointer hover:bg-gray-100 ${slot.isLunchBreak ? 'bg-orange-100 text-orange-800 font-medium' :
                                                                 isSelected ? 'bg-blue-100 text-blue-800 font-medium' :
-                                                                    pref ? 'bg-red-100 text-red-800' : // Occupied by another course
-                                                                        'text-gray-500' // Available
-                                                        }`}
+                                                                    pref ? 'bg-red-100 text-red-800' :
+                                                                        'text-gray-500'
+                                                            }`}
                                                     >
                                                         {pref ? (
                                                             <div className="flex items-center justify-between">

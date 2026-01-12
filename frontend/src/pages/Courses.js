@@ -1,4 +1,3 @@
-// frontend/src/pages/Courses.js
 import React, { useState, useEffect } from 'react';
 import { apiRequest, endpoints } from '../config/api';
 import { Button } from '../components/ui/button.jsx';
@@ -29,7 +28,6 @@ const Courses = () => {
     }
   });
 
-  // New state for credit limits
   const [creditLimits, setCreditLimits] = useState({
     minCredits: 15,
     maxCredits: 25
@@ -59,7 +57,6 @@ const Courses = () => {
     }
   };
 
-  // New function to fetch credit limits
   const fetchCreditLimits = async () => {
     try {
       const response = await apiRequest(endpoints.settings.creditLimits);
@@ -68,28 +65,24 @@ const Courses = () => {
         setCreditLimitsForm(response);
       }
     } catch (error) {
-      // If endpoint doesn't exist yet, we'll use default values
       if (process.env.NODE_ENV === 'development') {
         console.log('Credit limits not configured, using defaults');
       }
     }
   };
 
-  // --- REFACTORED: Handle both create and update operations ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
 
     try {
       if (editingCourse) {
-        // --- UPDATE LOGIC ---
-        // When updating, we only send data for single course being edited.
         const updateData = {
           name: formData.name,
           code: formData.code,
-          credits: parseInt(formData.credits), // Convert to integer
+          credits: parseInt(formData.credits),
           category: formData.category,
-          duration_hours: parseInt(formData.duration_hours), // Convert to integer
+          duration_hours: parseInt(formData.duration_hours),
         };
 
         await apiRequest(endpoints.courses.update(editingCourse._id), {
@@ -99,14 +92,12 @@ const Courses = () => {
         toast.success('Course updated successfully');
 
       } else {
-        // --- CREATE LOGIC ---
-        // First, create main theory course
         const theoryCourseData = {
           name: formData.name,
           code: formData.code,
-          credits: parseInt(formData.credits), // Convert to integer
+          credits: parseInt(formData.credits),
           category: formData.category,
-          duration_hours: parseInt(formData.duration_hours), // Convert to integer
+          duration_hours: parseInt(formData.duration_hours),
           is_lab: false,
         };
 
@@ -115,14 +106,13 @@ const Courses = () => {
           data: theoryCourseData,
         });
 
-        // If course has a lab component, create lab course as well
         if (formData.hasLab && formData.labDetails.name && formData.labDetails.code && formData.labDetails.credits) {
           const labCourseData = {
             name: formData.labDetails.name,
             code: formData.labDetails.code,
-            credits: parseInt(formData.labDetails.credits), // Convert to integer
+            credits: parseInt(formData.labDetails.credits),
             category: formData.category,
-            duration_hours: parseInt(formData.labDetails.duration_hours), // Convert to integer
+            duration_hours: parseInt(formData.labDetails.duration_hours),
             is_lab: true,
           };
 
@@ -135,7 +125,6 @@ const Courses = () => {
         toast.success(formData.hasLab ? 'Theory and Lab courses created successfully' : 'Course created successfully');
       }
 
-      // Close dialog and reset form
       setDialogOpen(false);
       setEditingCourse(null);
       setFormData({
@@ -152,7 +141,7 @@ const Courses = () => {
           duration_hours: '2'
         }
       });
-      fetchCourses(); // Refresh list
+      fetchCourses();
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.error('Save course error:', error);
@@ -163,18 +152,15 @@ const Courses = () => {
     }
   };
 
-  // New function to handle credit limits submission
   const handleCreditLimitsSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // Validate that min is less than max
       if (parseInt(creditLimitsForm.minCredits) >= parseInt(creditLimitsForm.maxCredits)) {
         toast.error('Minimum credits must be less than maximum credits');
         return;
       }
 
-      // Ensure numbers are sent as integers
       const data = {
         minCredits: parseInt(creditLimitsForm.minCredits),
         maxCredits: parseInt(creditLimitsForm.maxCredits)
@@ -202,14 +188,13 @@ const Courses = () => {
 
   const handleEdit = (course) => {
     setEditingCourse(course);
-    // When editing, we populate form but don't use lab creation logic
     setFormData({
       name: course.name,
       code: course.code,
       credits: course.credits.toString(),
       category: course.category,
       duration_hours: course.duration_hours.toString(),
-      hasLab: false, // Reset lab creation option on edit
+      hasLab: false,
       labDetails: {
         name: '',
         code: '',
@@ -237,12 +222,10 @@ const Courses = () => {
     }
   };
 
-  // --- REFINED: Auto-fill lab details when theory course details change ---
   const handleTheoryCourseChange = (field, value) => {
     setFormData(prev => {
       const newData = { ...prev, [field]: value };
 
-      // If 'hasLab' is true, auto-update corresponding lab details
       if (prev.hasLab) {
         if (field === 'name') {
           newData.labDetails.name = `${value} Lab`;
@@ -255,10 +238,8 @@ const Courses = () => {
     });
   };
 
-  // --- REFINED: Handle checkbox change to set default lab details ---
   const handleHasLabChange = (hasLab) => {
     setFormData(prev => {
-      // If checking the box, set default lab details based on current theory course values
       if (hasLab) {
         return {
           ...prev,
@@ -271,13 +252,11 @@ const Courses = () => {
           }
         };
       } else {
-        // If unchecking, just update hasLab flag
         return { ...prev, hasLab: false };
       }
     });
   };
 
-  // Validate form before submission
   const validateForm = () => {
     if (!formData.name.trim()) {
       toast.error('Course name is required');

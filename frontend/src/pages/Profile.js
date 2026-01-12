@@ -1,4 +1,3 @@
-// frontend/src/pages/Profile.js
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { apiRequest, endpoints } from '../config/api';
@@ -29,28 +28,23 @@ const Profile = () => {
         name: '',
         email: '',
         role: '',
-        // Faculty specific
         subjects: [],
         availableSlots: [],
         minTeachingHours: 0,
-        // Student specific
         courses: [],
         enrollmentYear: '',
-        // Admin specific
         department: '',
         phone: '',
         officeLocation: '',
         bio: ''
     });
 
-    // Password change state
     const [passwordData, setPasswordData] = useState({
         currentPassword: '',
         newPassword: '',
         confirmPassword: ''
     });
 
-    // Form state for editing
     const [editMode, setEditMode] = useState(false);
     const [formData, setFormData] = useState({});
 
@@ -71,7 +65,6 @@ const Profile = () => {
                 role: user?.role || ''
             }));
 
-            // Fetch role-specific data
             if (hasRole('faculty')) {
                 const facultyData = await apiRequest(endpoints.profile.faculty);
                 setProfileData(prev => ({
@@ -156,10 +149,8 @@ const Profile = () => {
                     ? endpoints.profile.student
                     : endpoints.profile.admin;
 
-            // Clean data before sending
             const cleanData = { ...formData };
-            
-            // Remove fields that shouldn't be sent
+
             if (hasRole('faculty')) {
                 delete cleanData.enrollmentYear;
                 delete cleanData.department;
@@ -180,7 +171,6 @@ const Profile = () => {
                 data: cleanData
             });
 
-            // Update local state
             if (cleanData.name !== user.name) {
                 const updatedUser = { ...user, name: cleanData.name };
                 localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -322,11 +312,10 @@ const Profile = () => {
                     <nav className="flex space-x-8" aria-label="Tabs">
                         <button
                             onClick={() => setActiveTab('profile')}
-                            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                                activeTab === 'profile'
+                            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'profile'
                                     ? 'border-blue-500 text-blue-500'
                                     : 'border-transparent text-blue-300 hover:text-blue-400 hover:border-blue-300'
-                            }`}
+                                }`}
                         >
                             <User className="w-5 h-5 mr-2" />
                             Profile Information
@@ -334,11 +323,10 @@ const Profile = () => {
 
                         <button
                             onClick={() => setActiveTab('security')}
-                            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                                activeTab === 'security'
+                            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'security'
                                     ? 'border-blue-500 text-blue-500'
                                     : 'border-transparent text-blue-300 hover:text-blue-400 hover:border-blue-300'
-                            }`}
+                                }`}
                         >
                             <Lock className="w-5 h-5 mr-2" />
                             Security

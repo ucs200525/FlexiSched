@@ -1,4 +1,3 @@
-// frontend/src/pages/StudentDashboard.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { apiRequest, endpoints } from '../config/api';
@@ -36,26 +35,21 @@ const StudentDashboard = () => {
     try {
       setError(null);
 
-      // Fetch all necessary data in parallel
       const [profileRes, timetableRes] = await Promise.all([
         apiRequest(endpoints.profile.student),
-        apiRequest(endpoints.timetable.latest).catch(() => null) // Timetable might not exist yet
+        apiRequest(endpoints.timetable.latest).catch(() => null)
       ]);
 
-      // Set courses from profile
       const enrolledCourses = profileRes.courses || [];
       setCourses(enrolledCourses);
 
-      // Calculate stats
       const totalCredits = enrolledCourses.reduce((sum, course) => sum + course.credits, 0);
-
-      // Calculate upcoming classes (next 7 days)
       let upcomingClasses = 0;
       let weeklyClasses = 0;
 
       if (timetableRes && timetableRes.schedule) {
         const today = new Date();
-        const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const dayOfWeek = today.getDay();
         const currentHour = today.getHours();
         const currentMinute = today.getMinutes();
         const currentTimeInMinutes = currentHour * 60 + currentMinute;
@@ -65,12 +59,9 @@ const StudentDashboard = () => {
         timetableRes.schedule.forEach(slot => {
           const slotDayIndex = dayMap.indexOf(slot.day);
 
-          // Count weekly classes
-          if (slotDayIndex >= 1 && slotDayIndex <= 5) { // Monday to Friday
+          if (slotDayIndex >= 1 && slotDayIndex <= 5) {
             weeklyClasses++;
           }
-
-          // Count upcoming classes
           if (slotDayIndex > dayOfWeek ||
             (slotDayIndex === dayOfWeek && slot.startTime > currentTimeInMinutes)) {
             upcomingClasses++;
@@ -85,7 +76,6 @@ const StudentDashboard = () => {
         weeklyClasses
       });
 
-      // Set timetable
       setTimetable(timetableRes);
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
@@ -113,7 +103,6 @@ const StudentDashboard = () => {
     }
   };
 
-  // Format schedule as text
   const formatScheduleAsText = () => {
     if (!timetable || !timetable.schedule) return {};
 
@@ -124,14 +113,12 @@ const StudentDashboard = () => {
       const daySlots = timetable.schedule.filter(slot => slot.day === day);
 
       if (daySlots.length > 0) {
-        // Sort slots by start time
         daySlots.sort((a, b) => {
           const timeA = a.time.split(' - ')[0];
           const timeB = b.time.split(' - ')[0];
           return timeA.localeCompare(timeB);
         });
 
-        // FIXED: Create an array of strings for proper line breaks
         scheduleText[day] = daySlots.map(slot =>
           `${slot.time}: ${slot.course_code || 'Unknown'} (${slot.course_name || 'Unknown Course'}) - ${slot.room_name || 'Unknown Room'}`
         );

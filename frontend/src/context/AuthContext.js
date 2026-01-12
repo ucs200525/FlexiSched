@@ -1,12 +1,9 @@
-// src/context/AuthContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { apiRequest, endpoints, healthCheck } from '../config/api';
 import toast from 'react-hot-toast';
 
-// Create context
 const AuthContext = createContext();
 
-// Custom hook to use auth context
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
@@ -15,23 +12,19 @@ export const useAuth = () => {
     return context;
 };
 
-// Auth provider component
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [token, setToken] = useState(localStorage.getItem('token'));
     const [backendAvailable, setBackendAvailable] = useState(false);
 
-    // Check if user is authenticated on mount
     useEffect(() => {
         const checkAuth = async () => {
-            // Only log in development mode
             if (process.env.NODE_ENV === 'development') {
                 console.log('Checking authentication status...');
             }
 
             try {
-                // Check if backend is accessible first
                 try {
                     await healthCheck();
                     setBackendAvailable(true);
@@ -80,7 +73,6 @@ export const AuthProvider = ({ children }) => {
         checkAuth();
     }, []);
 
-    // Login function
     const login = async (email, password) => {
         if (process.env.NODE_ENV === 'development') {
             console.log('Attempting login with email:', email);
@@ -101,12 +93,9 @@ export const AuthProvider = ({ children }) => {
 
             const { token: newToken, user: userData } = response;
 
-            // Save token to localStorage
             localStorage.setItem('token', newToken);
             localStorage.setItem('user', JSON.stringify(userData));
             setToken(newToken);
-
-            // Update user state
             setUser(userData);
 
             toast.success('Login successful!');
@@ -121,7 +110,6 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // Register function
     const register = async (userData) => {
         if (process.env.NODE_ENV === 'development') {
             console.log('Attempting registration with data:', userData);
@@ -139,12 +127,9 @@ export const AuthProvider = ({ children }) => {
 
             const { token: newToken, user: newUser } = response;
 
-            // Save token to localStorage
             localStorage.setItem('token', newToken);
             localStorage.setItem('user', JSON.stringify(newUser));
             setToken(newToken);
-
-            // Update user state
             setUser(newUser);
 
             toast.success('Registration successful!');
@@ -159,24 +144,19 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // Logout function
     const logout = () => {
         if (process.env.NODE_ENV === 'development') {
             console.log('Logging out user');
         }
 
-        // Remove token from localStorage
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setToken(null);
-
-        // Clear user state
         setUser(null);
 
         toast.success('Logged out successfully');
     };
 
-    // Update password function
     const updatePassword = async (currentPassword, newPassword) => {
         if (process.env.NODE_ENV === 'development') {
             console.log('Attempting password update');
@@ -203,7 +183,6 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // Check if user has specific role
     const hasRole = (role) => {
         if (process.env.NODE_ENV === 'development') {
             console.log('Checking if user has role:', role, 'User role:', user?.role);
@@ -211,7 +190,6 @@ export const AuthProvider = ({ children }) => {
         return user?.role === role;
     };
 
-    // Check if user has any of specified roles
     const hasAnyRole = (roles) => {
         if (process.env.NODE_ENV === 'development') {
             console.log('Checking if user has any of roles:', roles, 'User role:', user?.role);

@@ -1,4 +1,3 @@
-// frontend/src/pages/FacultyDashboard.js
 import React, { useState, useEffect } from 'react';
 import { apiRequest, endpoints } from '../config/api';
 import { toast } from 'react-hot-toast';
@@ -36,16 +35,13 @@ const FacultyDashboard = () => {
     try {
       setError(null);
 
-      // Fetch all necessary data in parallel
       const [coursesRes, preferencesRes] = await Promise.all([
         apiRequest(endpoints.faculty.courses),
-        apiRequest(endpoints.faculty.timetablePreferences).catch(() => ({ preferences: [] })) // Preferences might not exist yet
+        apiRequest(endpoints.faculty.timetablePreferences).catch(() => ({ preferences: [] }))
       ]);
 
-      // Set courses
       setCourses(coursesRes || []);
 
-      // Set preferences
       const preferencesMap = {};
       const preferences = preferencesRes.preferences || preferencesRes || [];
 
@@ -55,10 +51,8 @@ const FacultyDashboard = () => {
       });
       setPreferences(preferencesMap);
 
-      // Calculate stats
       const totalCourses = coursesRes ? coursesRes.length : 0;
       const scheduledHours = Object.values(preferencesMap).reduce((total, pref) => {
-        // Calculate duration for each slot
         const [startHour, startMin] = pref.start_time.split(':').map(Number);
         const [endHour, endMin] = pref.end_time.split(':').map(Number);
 
@@ -73,13 +67,11 @@ const FacultyDashboard = () => {
 
       const weeklyClasses = Object.keys(preferencesMap).length;
 
-      // Calculate upcoming classes (next 7 days)
       const today = new Date();
       const nextWeek = new Date(today);
       nextWeek.setDate(today.getDate() + 7);
 
       const upcomingClasses = Object.values(preferencesMap).filter(pref => {
-        // Get day of week for this preference
         const dayIndex = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].indexOf(pref.day);
         const prefDate = new Date(today);
         const currentDay = today.getDay();
@@ -121,7 +113,6 @@ const FacultyDashboard = () => {
     }
   };
 
-  // --- UPDATED: Format schedule as text instead of grid ---
   const formatScheduleAsText = () => {
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
     const scheduleText = {};
@@ -130,14 +121,12 @@ const FacultyDashboard = () => {
       const dayPreferences = Object.values(preferences).filter(pref => pref.day === day);
 
       if (dayPreferences.length > 0) {
-        // Sort preferences by start time
         dayPreferences.sort((a, b) => {
           const timeA = a.start_time.split(':').map(Number);
           const timeB = b.start_time.split(':').map(Number);
           return timeA[0] * 60 + timeA[1] - (timeB[0] * 60 + timeB[1]);
         });
 
-        // FIXED: Create an array of strings for proper line breaks
         scheduleText[day] = dayPreferences.map(pref =>
           `${pref.start_time} - ${pref.end_time}: ${pref.course_code || 'Unknown'} (${pref.course_name || 'Unknown Course'})`
         );

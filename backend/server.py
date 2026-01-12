@@ -1,5 +1,8 @@
 # backend/server.py
 from fastapi import FastAPI, HTTPException, Depends, status, Request, Response, BackgroundTasks, Query
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.openapi.utils import get_openapi
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -22,10 +25,6 @@ import requests
 import json
 from pydantic import BaseModel, Field, field_validator, model_validator, EmailStr, ConfigDict
 from pydantic.types import constr
-from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.openapi.utils import get_openapi
-from fastapi import status
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from contextlib import asynccontextmanager
 import socket
 
@@ -128,29 +127,25 @@ class UserUpdateRequest(BaseModel):
     email: Optional[EmailStr] = None
     role: Optional[str] = Field(None, pattern=r'^(admin|faculty|student)$')
 
-# --- NEW: Pydantic model for credit limits ---
 class CreditLimitsRequest(BaseModel):
     minCredits: int = Field(..., ge=1, le=30)
     maxCredits: int = Field(..., ge=1, le=30)
     
     @model_validator(mode='after')
     def validate_credits(self):
-        # 'self' now contains the validated model with all field values
         if self.maxCredits <= self.minCredits:
             raise ValueError('Maximum credits must be greater than minimum credits')
         return self
 
-# --- NEW: Pydantic model for base timetable request ---
 class BaseTimetableRequest(BaseModel):
     startTime: str = '09:00'
     endTime: str = '17:00'
     classDuration: float = 1.0
     lunchBreakDuration: float = 1.0
-    lunchBreakPosition: str = 'middle'  # 'middle', 'afternoon', 'morning'
+    lunchBreakPosition: str = 'middle'
     days: List[str] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
-    includeShortBreaks: bool = True # New field with a default value
+    includeShortBreaks: bool = True
 
-# --- NEW: Pydantic models for profile requests ---
 class AvailableSlot(BaseModel):
     day: str
     startTime: str
@@ -173,50 +168,28 @@ class AdminProfileRequest(BaseModel):
     email: Optional[EmailStr] = None
     department: Optional[str] = None
 
-# Create indexes for better performance
 async def create_indexes():
     try:
-        # User indexes
         await db.users.create_index("email", unique=True)
         await db.users.create_index("role")
-        
-        # Course indexes
         await db.courses.create_index("code", unique=True)
         await db.courses.create_index("faculty_id")
-        
-        # Room indexes
         await db.rooms.create_index("name", unique=True)
-        
-        # Base timetable indexes
         await db.base_timetables.create_index("created_at")
-        
-        # AI timetable indexes
         await db.timetables.create_index("generated_at")
         await db.timetables.create_index("generated_by")
-        
-        # Settings indexes
         await db.settings.create_index("key", unique=True)
-        
-        # Faculty preferences indexes
         await db.faculty_preferences.create_index([("faculty_id", 1)])
-        
-        # Student course preferences indexes
         await db.student_course_preferences.create_index([("student_id", 1)])
-        
         logger.info("Database indexes created successfully")
     except Exception as e:
         logger.error(f"Error creating indexes: {str(e)}")
 
-# Initialize extensive demo data
 async def initialize_demo_data():
     try:
-        # Check if admin user exists
         admin_exists = await db.users.find_one({'email': 'admin@flexisched.com'})
-        
-        # Only create demo data if admin doesn't exist
         if not admin_exists:
             logger.info("Admin user not found. Creating extensive demo data.")
-            # Clear existing data
             await db.users.delete_many({})
             await db.courses.delete_many({})
             await db.rooms.delete_many({})
@@ -236,7 +209,6 @@ async def initialize_demo_data():
             }
             await db.users.insert_one(admin)
             
-            # Create 10 faculty members
             faculty_data = [
                 {'email': 'dr.smith@univ.edu', 'name': 'Dr. John Smith', 'password_hash': hash_password('faculty123'), 'role': 'faculty', 'department': 'Computer Science'},
                 {'email': 'dr.patel@univ.edu', 'name': 'Dr. Priya Patel', 'password_hash': hash_password('faculty123'), 'role': 'faculty', 'department': 'Computer Science'},
@@ -256,7 +228,6 @@ async def initialize_demo_data():
                 result = await db.users.insert_one(fac)
                 faculty_ids.append(str(result.inserted_id))
             
-            # Create 30 students
             student_data = [
                 {'email': 'alice.johnson@univ.edu', 'name': 'Alice Johnson', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2023'},
                 {'email': 'bob.williams@univ.edu', 'name': 'Bob Williams', 'password_hash': hash_password('student123'), 'role': 'student', 'enrollment_year': '2023'},
@@ -299,7 +270,6 @@ async def initialize_demo_data():
                 result = await db.users.insert_one(stu)
                 student_ids.append(str(result.inserted_id))
             
-            # Create rooms
             rooms = [
                 {'name': 'Room 101', 'capacity': 60, 'type': 'classroom'},
                 {'name': 'Room 102', 'capacity': 60, 'type': 'classroom'},
@@ -327,80 +297,58 @@ async def initialize_demo_data():
                 result = await db.rooms.insert_one(room)
                 room_ids.append(str(result.inserted_id))
             
-            # Create 35 courses with faculty assignments
             courses = [
-                # Computer Science Courses (Dr. Smith)
                 {'name': 'Data Structures', 'code': 'CS201', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[0]},
                 {'name': 'Data Structures Lab', 'code': 'CS201L', 'credits': 2, 'category': 'Major', 'duration_hours': 2, 'is_lab': True, 'faculty_id': faculty_ids[0]},
                 {'name': 'Algorithms', 'code': 'CS301', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[0]},
                 {'name': 'Database Management Systems', 'code': 'CS302', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[0]},
                 {'name': 'Web Development', 'code': 'CS303', 'credits': 3, 'category': 'Minor', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[0]},
-                
-                # Computer Science Courses (Dr. Patel)
                 {'name': 'Machine Learning', 'code': 'CS401', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[1]},
                 {'name': 'Artificial Intelligence', 'code': 'CS402', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[1]},
                 {'name': 'Computer Networks', 'code': 'CS351', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[1]},
                 {'name': 'Operating Systems', 'code': 'CS352', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[1]},
                 {'name': 'Software Engineering', 'code': 'CS403', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[1]},
-                
-                # Mathematics Courses (Dr. Kumar)
                 {'name': 'Calculus I', 'code': 'MATH101', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[2]},
                 {'name': 'Calculus II', 'code': 'MATH102', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[2]},
                 {'name': 'Linear Algebra', 'code': 'MATH201', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[2]},
                 {'name': 'Differential Equations', 'code': 'MATH301', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[2]},
                 {'name': 'Statistics', 'code': 'MATH202', 'credits': 3, 'category': 'Minor', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[2]},
-                
-                # Physics Courses (Dr. Wong)
                 {'name': 'Physics I', 'code': 'PHY101', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[3]},
                 {'name': 'Physics I Lab', 'code': 'PHY101L', 'credits': 2, 'category': 'Major', 'duration_hours': 2, 'is_lab': True, 'faculty_id': faculty_ids[3]},
                 {'name': 'Physics II', 'code': 'PHY102', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[3]},
                 {'name': 'Quantum Mechanics', 'code': 'PHY401', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[3]},
                 {'name': 'Thermodynamics', 'code': 'PHY301', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[3]},
-                
-                # Chemistry Courses (Dr. Johnson)
                 {'name': 'General Chemistry', 'code': 'CHEM101', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[4]},
                 {'name': 'Chemistry Lab I', 'code': 'CHEM101L', 'credits': 2, 'category': 'Major', 'duration_hours': 2, 'is_lab': True, 'faculty_id': faculty_ids[4]},
                 {'name': 'Organic Chemistry', 'code': 'CHEM201', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[4]},
                 {'name': 'Organic Chemistry Lab', 'code': 'CHEM201L', 'credits': 2, 'category': 'Major', 'duration_hours': 2, 'is_lab': True, 'faculty_id': faculty_ids[4]},
                 {'name': 'Biochemistry', 'code': 'CHEM301', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[4]},
-                
-                # Biology Courses (Dr. Williams)
                 {'name': 'Biology I', 'code': 'BIO101', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[5]},
                 {'name': 'Biology Lab I', 'code': 'BIO101L', 'credits': 2, 'category': 'Major', 'duration_hours': 2, 'is_lab': True, 'faculty_id': faculty_ids[5]},
                 {'name': 'Genetics', 'code': 'BIO201', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[5]},
                 {'name': 'Molecular Biology', 'code': 'BIO301', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[5]},
                 {'name': 'Ecology', 'code': 'BIO202', 'credits': 3, 'category': 'Minor', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[5]},
-                
-                # English Courses (Dr. Brown)
                 {'name': 'English Literature', 'code': 'ENG101', 'credits': 3, 'category': 'AEC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[6]},
                 {'name': 'Creative Writing', 'code': 'ENG201', 'credits': 3, 'category': 'AEC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[6]},
                 {'name': 'Technical Writing', 'code': 'ENG301', 'credits': 2, 'category': 'AEC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[6]},
                 {'name': 'Shakespeare Studies', 'code': 'ENG401', 'credits': 3, 'category': 'Minor', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[6]},
-                
-                # Economics Courses (Dr. Davis)
                 {'name': 'Microeconomics', 'code': 'ECON101', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[7]},
                 {'name': 'Macroeconomics', 'code': 'ECON102', 'credits': 3, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[7]},
                 {'name': 'International Economics', 'code': 'ECON201', 'credits': 3, 'category': 'Minor', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[7]},
                 {'name': 'Financial Economics', 'code': 'ECON301', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[7]},
-                
-                # History Courses (Dr. Miller)
                 {'name': 'World History', 'code': 'HIST101', 'credits': 3, 'category': 'VAC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[8]},
                 {'name': 'American History', 'code': 'HIST102', 'credits': 3, 'category': 'VAC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[8]},
                 {'name': 'Modern History', 'code': 'HIST201', 'credits': 3, 'category': 'VAC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[8]},
                 {'name': 'Ancient Civilizations', 'code': 'HIST301', 'credits': 3, 'category': 'Minor', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[8]},
-                
-                # Psychology Courses (Dr. Wilson)
                 {'name': 'Introduction to Psychology', 'code': 'PSY101', 'credits': 3, 'category': 'SEC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[9]},
                 {'name': 'Cognitive Psychology', 'code': 'PSY201', 'credits': 3, 'category': 'SEC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[9]},
                 {'name': 'Social Psychology', 'code': 'PSY202', 'credits': 3, 'category': 'SEC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[9]},
                 {'name': 'Abnormal Psychology', 'code': 'PSY301', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[9]},
-                
-                # Additional interdisciplinary courses
-                {'name': 'Environmental Science', 'code': 'ENV101', 'credits': 3, 'category': 'VAC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[5]}, # Dr. Williams
-                {'name': 'Communication Skills', 'code': 'COMM101', 'credits': 2, 'category': 'AEC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[6]}, # Dr. Brown
-                {'name': 'Business Ethics', 'code': 'BUS301', 'credits': 3, 'category': 'SEC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[7]}, # Dr. Davis
-                {'name': 'Digital Marketing', 'code': 'BUS201', 'credits': 3, 'category': 'Minor', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[1]}, # Dr. Patel
-                {'name': 'Data Science', 'code': 'DS401', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[0]}, # Dr. Smith
+                {'name': 'Environmental Science', 'code': 'ENV101', 'credits': 3, 'category': 'VAC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[5]},
+                {'name': 'Communication Skills', 'code': 'COMM101', 'credits': 2, 'category': 'AEC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[6]},
+                {'name': 'Business Ethics', 'code': 'BUS301', 'credits': 3, 'category': 'SEC', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[7]},
+                {'name': 'Digital Marketing', 'code': 'BUS201', 'credits': 3, 'category': 'Minor', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[1]},
+                {'name': 'Data Science', 'code': 'DS401', 'credits': 4, 'category': 'Major', 'duration_hours': 1, 'is_lab': False, 'faculty_id': faculty_ids[0]},
             ]
             
             course_ids = []
@@ -409,7 +357,6 @@ async def initialize_demo_data():
                 result = await db.courses.insert_one(course)
                 course_ids.append(str(result.inserted_id))
             
-            # Create base timetable structure
             base_timetable = {
                 'startTime': '09:00',
                 'endTime': '17:00',
@@ -431,10 +378,9 @@ async def initialize_demo_data():
             }
             await db.settings.insert_one(credit_limits)
             
-            # Create faculty timetables with preferences
             faculty_timetables = [
                 {
-                    'faculty_id': faculty_ids[0], # Dr. Smith
+                    'faculty_id': faculty_ids[0],
                     'schedule': [
                         {'day': 'Monday', 'time': '9:00 AM - 10:00 AM', 'course_id': course_ids[0], 'course_name': 'Data Structures', 'room_id': room_ids[0], 'room_name': 'Room 101'},
                         {'day': 'Monday', 'time': '10:00 AM - 11:00 AM', 'course_id': course_ids[1], 'course_name': 'Data Structures Lab', 'room_id': room_ids[8], 'room_name': 'Lab A'},
@@ -445,7 +391,7 @@ async def initialize_demo_data():
                     'generated_by': faculty_ids[0]
                 },
                 {
-                    'faculty_id': faculty_ids[1], # Dr. Patel
+                    'faculty_id': faculty_ids[1],
                     'schedule': [
                         {'day': 'Tuesday', 'time': '9:00 AM - 10:00 AM', 'course_id': course_ids[5], 'course_name': 'Machine Learning', 'room_id': room_ids[5], 'room_name': 'Room 201'},
                         {'day': 'Tuesday', 'time': '2:00 PM - 3:00 PM', 'course_id': course_ids[6], 'course_name': 'Artificial Intelligence', 'room_id': room_ids[6], 'room_name': 'Room 202'},
@@ -456,7 +402,7 @@ async def initialize_demo_data():
                     'generated_by': faculty_ids[1]
                 },
                 {
-                    'faculty_id': faculty_ids[2], # Dr. Kumar
+                    'faculty_id': faculty_ids[2],
                     'schedule': [
                         {'day': 'Monday', 'time': '11:00 AM - 12:00 PM', 'course_id': course_ids[10], 'course_name': 'Calculus I', 'room_id': room_ids[3], 'room_name': 'Room 104'},
                         {'day': 'Wednesday', 'time': '9:00 AM - 10:00 AM', 'course_id': course_ids[11], 'course_name': 'Calculus II', 'room_id': room_ids[0], 'room_name': 'Room 101'},
@@ -467,7 +413,7 @@ async def initialize_demo_data():
                     'generated_by': faculty_ids[2]
                 },
                 {
-                    'faculty_id': faculty_ids[3], # Dr. Wong
+                    'faculty_id': faculty_ids[3],
                     'schedule': [
                         {'day': 'Monday', 'time': '2:00 PM - 3:00 PM', 'course_id': course_ids[15], 'course_name': 'Physics I', 'room_id': room_ids[11], 'room_name': 'Auditorium A'},
                         {'day': 'Monday', 'time': '3:00 PM - 5:00 PM', 'course_id': course_ids[16], 'course_name': 'Physics I Lab', 'room_id': room_ids[9], 'room_name': 'Lab B'},
@@ -478,7 +424,7 @@ async def initialize_demo_data():
                     'generated_by': faculty_ids[3]
                 },
                 {
-                    'faculty_id': faculty_ids[4], # Dr. Johnson
+                    'faculty_id': faculty_ids[4],
                     'schedule': [
                         {'day': 'Tuesday', 'time': '10:00 AM - 11:00 AM', 'course_id': course_ids[19], 'course_name': 'General Chemistry', 'room_id': room_ids[6], 'room_name': 'Room 202'},
                         {'day': 'Tuesday', 'time': '2:00 PM - 4:00 PM', 'course_id': course_ids[20], 'course_name': 'Chemistry Lab I', 'room_id': room_ids[10], 'room_name': 'Lab C'},
@@ -489,7 +435,7 @@ async def initialize_demo_data():
                     'generated_by': faculty_ids[4]
                 },
                 {
-                    'faculty_id': faculty_ids[5], # Dr. Williams
+                    'faculty_id': faculty_ids[5],
                     'schedule': [
                         {'day': 'Monday', 'time': '9:00 AM - 10:00 AM', 'course_id': course_ids[23], 'course_name': 'Biology I', 'room_id': room_ids[13], 'room_name': 'Seminar Room 1'},
                         {'day': 'Monday', 'time': '2:00 PM - 4:00 PM', 'course_id': course_ids[24], 'course_name': 'Biology Lab I', 'room_id': room_ids[9], 'room_name': 'Lab B'},
@@ -500,7 +446,7 @@ async def initialize_demo_data():
                     'generated_by': faculty_ids[5]
                 },
                 {
-                    'faculty_id': faculty_ids[6], # Dr. Brown
+                    'faculty_id': faculty_ids[6],
                     'schedule': [
                         {'day': 'Tuesday', 'time': '11:00 AM - 12:00 PM', 'course_id': course_ids[31], 'course_name': 'English Literature', 'room_id': room_ids[15], 'room_name': 'Conference Room 1'},
                         {'day': 'Wednesday', 'time': '2:00 PM - 3:00 PM', 'course_id': course_ids[32], 'course_name': 'Creative Writing', 'room_id': room_ids[16], 'room_name': 'Conference Room 2'},
@@ -511,7 +457,7 @@ async def initialize_demo_data():
                     'generated_by': faculty_ids[6]
                 },
                 {
-                    'faculty_id': faculty_ids[7], # Dr. Davis
+                    'faculty_id': faculty_ids[7],
                     'schedule': [
                         {'day': 'Monday', 'time': '10:00 AM - 11:00 AM', 'course_id': course_ids[35], 'course_name': 'Microeconomics', 'room_id': room_ids[1], 'room_name': 'Room 102'},
                         {'day': 'Wednesday', 'time': '9:00 AM - 10:00 AM', 'course_id': course_ids[36], 'course_name': 'Macroeconomics', 'room_id': room_ids[2], 'room_name': 'Room 103'},
@@ -522,7 +468,7 @@ async def initialize_demo_data():
                     'generated_by': faculty_ids[7]
                 },
                 {
-                    'faculty_id': faculty_ids[8], # Dr. Miller
+                    'faculty_id': faculty_ids[8],
                     'schedule': [
                         {'day': 'Tuesday', 'time': '9:00 AM - 10:00 AM', 'course_id': course_ids[39], 'course_name': 'World History', 'room_id': room_ids[4], 'room_name': 'Room 105'},
                         {'day': 'Wednesday', 'time': '11:00 AM - 12:00 PM', 'course_id': course_ids[40], 'course_name': 'American History', 'room_id': room_ids[6], 'room_name': 'Room 202'},
@@ -533,7 +479,7 @@ async def initialize_demo_data():
                     'generated_by': faculty_ids[8]
                 },
                 {
-                    'faculty_id': faculty_ids[9], # Dr. Wilson
+                    'faculty_id': faculty_ids[9],
                     'schedule': [
                         {'day': 'Monday', 'time': '11:00 AM - 12:00 PM', 'course_id': course_ids[43], 'course_name': 'Introduction to Psychology', 'room_id': room_ids[15], 'room_name': 'Conference Room 1'},
                         {'day': 'Tuesday', 'time': '2:00 PM - 3:00 PM', 'course_id': course_ids[44], 'course_name': 'Cognitive Psychology', 'room_id': room_ids[16], 'room_name': 'Conference Room 2'},
@@ -548,19 +494,14 @@ async def initialize_demo_data():
             for ft in faculty_timetables:
                 await db.timetables.insert_one(ft)
             
-            # Create student timetables and preferences
             student_timetables = []
             for i, student_id in enumerate(student_ids):
-                # Assign 4-6 courses per student
-                num_courses = 4 + (i % 3)  # 4-6 courses per student
-                # FIXED: Correctly slice the course_ids list
+                num_courses = 4 + (i % 3)
                 start_idx = i % len(course_ids)
                 end_idx = start_idx + num_courses
                 if end_idx > len(course_ids):
                     end_idx = len(course_ids)
                 student_courses = course_ids[start_idx:end_idx]
-                
-                # Create course preferences
                 preferences = []
                 for j, course_id in enumerate(student_courses):
                     preferences.append({
@@ -574,7 +515,6 @@ async def initialize_demo_data():
                 
                 await db.student_course_preferences.insert_many(preferences)
                 
-                # Create a simple timetable for each student
                 days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
                 times = ['9:00 AM - 10:00 AM', '10:00 AM - 11:00 AM', '11:00 AM - 12:00 PM', '2:00 PM - 3:00 PM', '3:00 PM - 4:00 PM', '4:00 PM - 5:00 PM']
                 
@@ -585,7 +525,6 @@ async def initialize_demo_data():
                             course_id = student_courses[day_idx * len(times) + time_idx]
                             course = await db.courses.find_one({'_id': ObjectId(course_id)})
                             if course:
-                                # Find a suitable room
                                 suitable_room = None
                                 if course.get('is_lab'):
                                     suitable_room = await db.rooms.find_one({'type': 'lab'})
@@ -593,13 +532,11 @@ async def initialize_demo_data():
                                     suitable_room = await db.rooms.find_one({'type': 'classroom'})
                                 
                                 if suitable_room:
-                                    # FIXED: Properly handle faculty name assignment
                                     if course.get('faculty_id'):
                                         try:
-                                            # Find faculty in faculty_data by matching ID
                                             faculty_doc = await db.users.find_one({'_id': ObjectId(course.get('faculty_id'))})
                                             if faculty_doc:
-                                                faculty_name = faculty_doc['name'].split(' ')[-1]  # Get last name
+                                                faculty_name = faculty_doc['name'].split(' ')[-1]
                                                 faculty_name = f"Dr. {faculty_name}"
                                             else:
                                                 faculty_name = 'TBD'
@@ -629,9 +566,7 @@ async def initialize_demo_data():
                 }
                 student_timetables.append(student_timetable)
             
-            # Insert all student timetables
             await db.timetables.insert_many(student_timetables)
-            
             logger.info("Extensive demo data created successfully")
         else:
             logger.info("Demo data already exists")
@@ -639,19 +574,14 @@ async def initialize_demo_data():
     except Exception as e:
         logger.error(f"Demo data creation error: {str(e)}")
 
-# Lifespan context manager
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
     await create_indexes()
     await initialize_demo_data()
     
     yield
-    
-    # Shutdown
     logger.info("Application shutting down")
 
-# Create FastAPI app with /api prefix
 app = FastAPI(
     title="FlexiSched API",
     description="API for NEP 2020 compliant university timetable scheduling system",
@@ -661,13 +591,11 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Add trusted host middleware for security
 app.add_middleware(
     TrustedHostMiddleware,
     allowed_hosts=["*"] if IS_DEVELOPMENT else os.environ.get('ALLOWED_HOSTS', 'localhost').split(',')
 )
 
-# Add CORS middleware early
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
@@ -676,10 +604,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Add compression middleware with proper cleanup
 app.add_middleware(GZipMiddleware, minimum_size=500)
 
-# Custom exception handler for better error responses
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Global exception: {str(exc)}")
@@ -688,13 +614,10 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"detail": "Internal server error", "error": str(exc) if IS_DEVELOPMENT else None}
     )
 
-# Custom validation error handler to provide more detailed information
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     logger.error(f"Validation error: {exc.errors()}")
     logger.error(f"Request body: {exc.body}")
-    
-    # Extract field-specific error messages
     errors = {}
     for error in exc.errors():
         field = ".".join(str(x) for x in error["loc"])
@@ -705,7 +628,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={"detail": "Validation failed", "errors": errors}
     )
 
-# Helper functions
 def hash_password(password):
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
@@ -729,7 +651,6 @@ def decode_token(token):
     except jwt.InvalidTokenError:
         return None
 
-# Authentication dependency
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     token = credentials.credentials
     payload = decode_token(token)
@@ -737,7 +658,6 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         raise HTTPException(status_code=401, detail='Token is invalid or expired')
     return payload
 
-# Role checking
 def require_role(allowed_roles: List[str]):
     async def role_checker(user: dict = Depends(get_current_user)):
         if user.get('role') not in allowed_roles:
@@ -745,28 +665,18 @@ def require_role(allowed_roles: List[str]):
         return user
     return role_checker
 
-# Background task for notifying users
 async def notify_users(message: str):
-    # Implementation to notify users via email, push notifications, etc.
     logger.info(f"Notifying users: {message}")
-    # In a real implementation, this would send emails, push notifications, etc.
 
-# Background task for processing timetable updates
 async def process_timetable_update(timetable_id: str):
-    # Implementation to process timetable updates
     logger.info(f"Processing timetable update for {timetable_id}")
-    # In a real implementation, this might update caches, send notifications, etc.
 
-# API v1 Routes
 @app.post('/api/v1/auth/register')
 async def register(request: Request, data: RegisterRequest):
     try:
-        # Check if user exists
         existing_user = await db.users.find_one({'email': data.email})
         if existing_user:
             raise HTTPException(status_code=400, detail='User already exists')
-        
-        # Create user
         user_data = {
             'email': data.email,
             'password_hash': hash_password(data.password),
@@ -858,7 +768,6 @@ async def update_password(
         logger.error(f"Update password error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to update password')
 
-# Dashboard Stats
 @app.get('/api/v1/dashboard/stats')
 async def get_dashboard_stats(
     request: Request, 
@@ -882,7 +791,6 @@ async def get_dashboard_stats(
         logger.error(f"Stats error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to fetch stats')
 
-# Course Routes
 @app.get('/api/v1/courses')
 async def get_courses(
     request: Request,
@@ -894,10 +802,8 @@ async def get_courses(
         courses = await db.courses.find({}).skip(skip).limit(limit).to_list(1000)
         for course in courses:
             course['_id'] = str(course['_id'])
-            # Convert faculty_id to string if it exists
             if 'faculty_id' in course and course['faculty_id']:
                 course['faculty_id'] = str(course['faculty_id'])
-            
         return courses
     except HTTPException:
         raise
@@ -912,12 +818,9 @@ async def create_course(
     user: dict = Depends(require_role(['admin']))
 ):
     try:
-        # Check if course code already exists
         existing_course = await db.courses.find_one({'code': data.code})
         if existing_course:
             raise HTTPException(status_code=400, detail='Course code already exists')
-        
-        # Create course without a faculty_id, as frontend doesn't provide one
         course = {
             'name': data.name,
             'code': data.code,
@@ -951,17 +854,13 @@ async def update_course(
         except InvalidId:
             raise HTTPException(status_code=400, detail='Invalid course ID format')
 
-        # Check if course exists
         existing_course = await db.courses.find_one({'_id': obj_id})
         if not existing_course:
             raise HTTPException(status_code=404, detail='Course not found')
-        
-        # Build update data only with provided fields
         update_data = {}
         if data.name is not None:
             update_data['name'] = data.name
         if data.code is not None:
-            # Check if course code is being changed and if that new code already exists
             if existing_course['code'] != data.code:
                 code_exists = await db.courses.find_one({'code': data.code, '_id': {'$ne': obj_id}})
                 if code_exists:
@@ -1008,12 +907,9 @@ async def delete_course(
             obj_id = ObjectId(course_id)
         except InvalidId:
             raise HTTPException(status_code=400, detail='Invalid course ID format')
-            
-        # Check if course exists
         existing_course = await db.courses.find_one({'_id': obj_id})
         if not existing_course:
             raise HTTPException(status_code=404, detail='Course not found')
-            
         await db.courses.delete_one({'_id': obj_id})
         
         return {'message': 'Course deleted successfully'}
@@ -1023,7 +919,6 @@ async def delete_course(
         logger.error(f"Delete course error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to delete course')
 
-# User Management Routes
 @app.get('/api/v1/users')
 async def get_users(
     request: Request,
@@ -1046,16 +941,14 @@ async def get_users(
 @app.post('/api/v1/users')
 async def create_user(
     request: Request,
-    data: RegisterRequest,  # Reuse RegisterRequest model from auth
+    data: RegisterRequest,
     current_user: dict = Depends(require_role(['admin']))
 ):
     try:
-        # Check if user already exists
         existing_user = await db.users.find_one({'email': data.email})
         if existing_user:
             raise HTTPException(status_code=400, detail='User already exists')
         
-        # Create user
         new_user = {
             'email': data.email,
             'password_hash': hash_password(data.password),
@@ -1067,7 +960,6 @@ async def create_user(
         result = await db.users.insert_one(new_user)
         user_id = str(result.inserted_id)
         
-        # Return user data without password hash
         return {
             'id': user_id,
             'email': data.email,
@@ -1118,16 +1010,13 @@ async def update_user(
         except InvalidId:
             raise HTTPException(status_code=400, detail='Invalid user ID format')
 
-        # Check if user exists
         existing_user = await db.users.find_one({'_id': obj_id})
         if not existing_user:
             raise HTTPException(status_code=404, detail='User not found')
         
-        # Don't allow role changes for self
         if user_id == current_user.get('user_id') and 'role' in data.model_dump():
             del data.role
         
-        # Check if email is being changed and if that new email already exists
         if data.email and existing_user['email'] != data.email:
             email_exists = await db.users.find_one({'email': data.email, '_id': {'$ne': obj_id}})
             if email_exists:
@@ -1161,11 +1050,9 @@ async def delete_user(
         except InvalidId:
             raise HTTPException(status_code=400, detail='Invalid user ID format')
 
-        # Don't allow self-deletion
         if user_id == current_user.get('user_id'):
             raise HTTPException(status_code=403, detail='Cannot delete your own account')
         
-        # Check if user exists
         existing_user = await db.users.find_one({'_id': obj_id})
         if not existing_user:
             raise HTTPException(status_code=404, detail='User not found')
@@ -1179,7 +1066,6 @@ async def delete_user(
         logger.error(f"Delete user error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to delete user')
 
-# Room Routes
 @app.get('/api/v1/rooms')
 async def get_rooms(
     request: Request,
@@ -1202,11 +1088,10 @@ async def get_rooms(
 @app.post('/api/v1/rooms')
 async def create_room(
     request: Request,
-    data: RoomRequest, 
+    data: RoomRequest,
     user: dict = Depends(require_role(['admin']))
 ):
     try:
-        # Check if room name already exists
         existing_room = await db.rooms.find_one({'name': data.name})
         if existing_room:
             raise HTTPException(status_code=400, detail='Room name already exists')
@@ -1241,12 +1126,10 @@ async def update_room(
         except InvalidId:
             raise HTTPException(status_code=400, detail='Invalid room ID format')
 
-        # Check if room exists
         existing_room = await db.rooms.find_one({'_id': obj_id})
         if not existing_room:
             raise HTTPException(status_code=404, detail='Room not found')
             
-        # Build update data only with provided fields
         update_data = {}
         if data.name is not None:
             update_data['name'] = data.name
@@ -1284,7 +1167,6 @@ async def delete_room(
         except InvalidId:
             raise HTTPException(status_code=400, detail='Invalid room ID format')
             
-        # Check if room exists
         existing_room = await db.rooms.find_one({'_id': obj_id})
         if not existing_room:
             raise HTTPException(status_code=404, detail='Room not found')
@@ -1297,8 +1179,7 @@ async def delete_room(
     except Exception as e:
         logger.error(f"Delete room error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to delete room')
-
-# Base Timetable Routes
+        
 @app.get('/api/v1/timetable/base')
 async def get_base_timetable(
     request: Request,
@@ -1317,27 +1198,23 @@ async def get_base_timetable(
         logger.error(f"Get base timetable error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to fetch base timetable')
 
-# --- POST endpoint remains admin-only ---
 @app.post('/api/v1/timetable/base')
 async def create_base_timetable(
     request: Request,
-    data: BaseTimetableRequest, # Use the new Pydantic model
-    user: dict = Depends(require_role(['admin'])) # <--- This is correct, only admin can create/update
+    data: BaseTimetableRequest,
+    user: dict = Depends(require_role(['admin']))
 ):
     try:
-        # ... (rest of the POST endpoint code remains the same)
         start_time = data.startTime
         end_time = data.endTime
         class_duration = data.classDuration
         lunch_break_duration = data.lunchBreakDuration
         lunch_break_position = data.lunchBreakPosition
         days = data.days
-        include_short_breaks = data.includeShortBreaks # Get the new flag
+        include_short_breaks = data.includeShortBreaks
         
-        # Check if base timetable already exists
         existing = await db.base_timetables.find_one()
         if existing:
-            # Update existing
             update_data = {
                 'startTime': start_time,
                 'endTime': end_time,
@@ -1351,12 +1228,10 @@ async def create_base_timetable(
             
             await db.base_timetables.update_one({}, {'$set': update_data})
             
-            # Return updated document
             base_timetable = await db.base_timetables.find_one()
             base_timetable['_id'] = str(base_timetable['_id'])
             return base_timetable
         else:
-            # Create new base timetable
             base_timetable = {
                 'startTime': start_time,
                 'endTime': end_time,
@@ -1364,7 +1239,7 @@ async def create_base_timetable(
                 'lunchBreakDuration': str(lunch_break_duration),
                 'lunchBreakPosition': lunch_break_position,
                 'days': days,
-                'includeShortBreaks': include_short_breaks, # Save the new flag
+                'includeShortBreaks': include_short_breaks,
                 'created_at': datetime.now(timezone.utc).isoformat(),
                 'created_by': user.get('user_id')
             }
@@ -1379,18 +1254,15 @@ async def create_base_timetable(
         logger.error(f"Create base timetable error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to create base timetable')
 
-# Credit Limits Routes (NEW)
 @app.get('/api/v1/settings/credit-limits')
 async def get_credit_limits(
     request: Request,
     user: dict = Depends(get_current_user)
 ):
     try:
-        # Get credit limits from settings
         setting = await db.settings.find_one({'key': 'credit_limits'})
         
         if not setting:
-            # Return default values if not found
             return {
                 'minCredits': 15,
                 'maxCredits': 25
@@ -1413,11 +1285,9 @@ async def update_credit_limits(
     user: dict = Depends(require_role(['admin']))
 ):
     try:
-        # Check if credit limits setting already exists
         existing = await db.settings.find_one({'key': 'credit_limits'})
         
-        if existing:
-            # Update existing
+        if existing:      
             await db.settings.update_one(
                 {'key': 'credit_limits'},
                 {
@@ -1431,7 +1301,6 @@ async def update_credit_limits(
                 }
             )
         else:
-            # Create new
             await db.settings.insert_one({
                 'key': 'credit_limits',
                 'value': {
@@ -1451,23 +1320,20 @@ async def update_credit_limits(
         logger.error(f"Update credit limits error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to update credit limits')
 
-# AI Timetable Generation Routes (Only for Users)
 @app.post('/api/v1/timetable/generate')
 async def generate_timetable(
     request: Request,
     background_tasks: BackgroundTasks,
-    user: dict = Depends(require_role(['faculty', 'student']))  # Only faculty and students can generate
+    user: dict = Depends(require_role(['faculty', 'student']))
 ):
     try:
         if not OPENROUTER_API_KEY:
             raise HTTPException(status_code=500, detail='AI generation service is not configured')
             
-        # Fetch all data
         courses = await db.courses.find({}).to_list(1000)
         rooms = await db.rooms.find({}).to_list(1000)
         faculty = await db.users.find({'role': 'faculty'}, {'password_hash': 0}).to_list(1000)
         
-        # Get credit limits
         credit_limits_setting = await db.settings.find_one({'key': 'credit_limits'})
         credit_limits = credit_limits_setting.get('value', {
             'minCredits': 15,
@@ -1477,7 +1343,6 @@ async def generate_timetable(
             'maxCredits': 25
         }
         
-        # Prepare data for AI
         courses_data = []
         for course in courses:
             courses_data.append({
@@ -1508,7 +1373,6 @@ async def generate_timetable(
                 'email': fac['email']
             })
         
-        # Create AI prompt
         prompt = f"""
 You are a timetable scheduling expert for a NEP 2020 compliant university.
 
@@ -1559,7 +1423,6 @@ Generate a JSON response with this structure:
 Return ONLY valid JSON, no markdown formatting.
 """
         
-        # Call AI using OpenRouter directly
         try:
             response = requests.post(
                 url="https://openrouter.ai/api/v1/chat/completions",
@@ -1576,16 +1439,14 @@ Return ONLY valid JSON, no markdown formatting.
                         }
                     ]
                 }),
-                timeout=None  # REMOVED: No timeout - wait indefinitely
+                timeout=None
             )
             
             if response.status_code != 200:
                 logger.error(f"OpenRouter API error: {response.status_code} - {response.text}")
                 raise HTTPException(status_code=500, detail='Failed to generate timetable')
             
-            # Parse AI response
             try:
-                # Remove markdown code blocks if present
                 response_text = response.json()['choices'][0]['message']['content']
                 if response_text.startswith('```json'):
                     response_text = response_text[7:]
@@ -1600,7 +1461,6 @@ Return ONLY valid JSON, no markdown formatting.
                 logger.error(f"AI Response: {response_text}")
                 raise HTTPException(status_code=500, detail='Failed to parse AI response')
             
-            # Save to database
             timetable_record = {
                 'schedule': timetable_data.get('schedule', []),
                 'summary': timetable_data.get('summary', ''),
@@ -1611,7 +1471,6 @@ Return ONLY valid JSON, no markdown formatting.
             result = await db.timetables.insert_one(timetable_record)
             timetable_record['_id'] = str(result.inserted_id)
             
-            # Add background task to notify users
             background_tasks.add_task(notify_users, "New timetable has been generated")
             
             return timetable_record
@@ -1626,7 +1485,6 @@ Return ONLY valid JSON, no markdown formatting.
         logger.error(f"Generate timetable error: {str(e)}")
         raise HTTPException(status_code=500, detail=f'Failed to generate timetable: {str(e)}')
 
-# Get latest timetable with pagination
 @app.get('/api/v1/timetable/latest')
 async def get_latest_timetable(
     request: Request,
@@ -1640,7 +1498,6 @@ async def get_latest_timetable(
         if not timetable:
             raise HTTPException(status_code=404, detail='No timetable found')
         
-        # Paginate schedule
         schedule = timetable.get('schedule', [])
         total = len(schedule)
         skip = (page - 1) * size
@@ -1665,7 +1522,6 @@ async def get_latest_timetable(
         logger.error(f"Get timetable error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to fetch timetable')
 
-# Get all timetables
 @app.get('/api/v1/timetable/all')
 async def get_all_timetables(
     request: Request,
@@ -1685,7 +1541,6 @@ async def get_all_timetables(
         logger.error(f"Get all timetables error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to fetch timetables')
 
-# Faculty Schedule
 @app.get('/api/v1/faculty/schedule')
 async def get_faculty_schedule(
     request: Request,
@@ -1700,7 +1555,6 @@ async def get_faculty_schedule(
         if not timetable:
             return {'schedule': [], 'pagination': {'page': page, 'size': size, 'total': 0, 'pages': 0}}
         
-        # Paginate schedule
         schedule = timetable.get('schedule', [])
         total = len(schedule)
         skip = (page - 1) * size
@@ -1721,7 +1575,6 @@ async def get_faculty_schedule(
         logger.error(f"Get faculty schedule error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to fetch schedule')
 
-# Student Schedule
 @app.get('/api/v1/student/schedule')
 async def get_student_schedule(
     request: Request,
@@ -1736,7 +1589,6 @@ async def get_student_schedule(
         if not timetable:
             return {'schedule': [], 'pagination': {'page': page, 'size': size, 'total': 0, 'pages': 0}}
         
-        # Paginate schedule
         schedule = timetable.get('schedule', [])
         total = len(schedule)
         skip = (page - 1) * size
@@ -1757,9 +1609,6 @@ async def get_student_schedule(
         logger.error(f"Get student schedule error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to fetch schedule')
 
-# Add these endpoints to server.py
-
-# Get courses assigned to a specific faculty
 @app.get('/api/v1/faculty/courses')
 async def get_faculty_courses(
     request: Request,
@@ -1768,25 +1617,19 @@ async def get_faculty_courses(
     try:
         faculty_id = user.get('user_id')
         
-        # Get faculty document
         faculty_doc = await db.users.find_one({'_id': ObjectId(faculty_id)})
         if not faculty_doc:
             raise HTTPException(status_code=404, detail='Faculty not found')
         
-        # Get assigned course IDs
         assigned_course_ids = faculty_doc.get('assigned_courses', [])
         
-        # If no assigned courses, return empty list
         if not assigned_course_ids:
             return []
         
-        # Convert string IDs to ObjectIds
         course_object_ids = [ObjectId(course_id) for course_id in assigned_course_ids]
         
-        # Get course details
         courses = await db.courses.find({'_id': {'$in': course_object_ids}}).to_list(1000)
         
-        # Convert ObjectIds to strings
         for course in courses:
             course['_id'] = str(course['_id'])
         
@@ -1797,7 +1640,6 @@ async def get_faculty_courses(
         logger.error(f"Get faculty courses error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to fetch faculty courses')
 
-# Update courses assigned to a faculty
 @app.put('/api/v1/faculty/courses')
 async def update_faculty_courses(
     request: Request,
@@ -1808,7 +1650,6 @@ async def update_faculty_courses(
         faculty_id = user.get('user_id')
         course_ids = data.get('courseIds', [])
         
-        # Validate that all course IDs exist
         if course_ids:
             course_object_ids = [ObjectId(course_id) for course_id in course_ids]
             existing_courses = await db.courses.find({'_id': {'$in': course_object_ids}}).to_list(len(course_ids))
@@ -1816,7 +1657,6 @@ async def update_faculty_courses(
             if len(existing_courses) != len(course_ids):
                 raise HTTPException(status_code=400, detail='One or more course IDs are invalid')
         
-        # Update faculty document with assigned courses
         await db.users.update_one(
             {'_id': ObjectId(faculty_id)},
             {'$set': {'assigned_courses': course_ids, 'updated_at': datetime.now(timezone.utc).isoformat()}}
@@ -1829,7 +1669,6 @@ async def update_faculty_courses(
         logger.error(f"Update faculty courses error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to update faculty courses')
 
-# Profile endpoints
 @app.get('/api/v1/admin/profile')
 async def get_admin_profile(
     request: Request,
@@ -1842,7 +1681,6 @@ async def get_admin_profile(
         if not user_doc:
             raise HTTPException(status_code=404, detail='User not found')
         
-        # Get additional profile data
         profile = {
             'id': str(user_doc['_id']),
             'name': user_doc.get('name', ''),
@@ -1859,7 +1697,6 @@ async def get_admin_profile(
         logger.error(f"Get admin profile error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to fetch profile')
     
-# Save faculty's timetable preferences
 @app.put('/api/v1/faculty/timetable-preferences')
 async def update_faculty_timetable_preferences(
     request: Request,
@@ -1870,23 +1707,19 @@ async def update_faculty_timetable_preferences(
         faculty_id = user.get('user_id')
         preferences = data.get('preferences', [])
         
-        # Validate preferences structure
         valid_days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         
-        # Create a new document or update existing one
         await db.faculty_preferences.delete_many({'faculty_id': faculty_id})
         
         if preferences:
             preference_docs = []
             for pref in preferences:
-                # FIX: Check if required fields exist before accessing them
                 if 'course_id' not in pref or 'day' not in pref or 'start_time' not in pref:
                     raise HTTPException(status_code=400, detail='Invalid preference format')
                 
                 if pref['day'] not in valid_days:
                     raise HTTPException(status_code=400, detail=f"Invalid day: {pref['day']}")
                 
-                # Verify course exists and is assigned to this faculty
                 course = await db.courses.find_one({'_id': ObjectId(pref['course_id'])})
                 if not course:
                     raise HTTPException(status_code=400, detail=f"Course not found: {pref['course_id']}")
@@ -1897,12 +1730,11 @@ async def update_faculty_timetable_preferences(
                 if pref['course_id'] not in assigned_courses:
                     raise HTTPException(status_code=403, detail=f"You are not assigned to course: {course['code']}")
                 
-                # --- FIX: Ensure course details are included in the preference ---
                 preference_docs.append({
                     'faculty_id': faculty_id,
                     'course_id': pref['course_id'],
-                    'course_name': course.get('name', ''), # Add course name
-                    'course_code': course.get('code', ''), # Add course code
+                    'course_name': course.get('name', ''),
+                    'course_code': course.get('code', ''),
                     'day': pref['day'],
                     'start_time': pref['start_time'],
                     'end_time': pref.get('end_time', ''),
@@ -1918,7 +1750,6 @@ async def update_faculty_timetable_preferences(
         logger.error(f"Update faculty timetable preferences error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to update timetable preferences')
 
-# Get faculty's timetable preferences
 @app.get('/api/v1/faculty/timetable-preferences')
 async def get_faculty_timetable_preferences(
     request: Request,
@@ -1926,11 +1757,7 @@ async def get_faculty_timetable_preferences(
 ):
     try:
         faculty_id = user.get('user_id')
-        
-        # Get preferences from database
         preferences = await db.faculty_preferences.find({'faculty_id': faculty_id}).to_list(1000)
-        
-        # Convert ObjectIds to strings
         for pref in preferences:
             pref['_id'] = str(pref['_id'])
             pref['course_id'] = str(pref['course_id'])
@@ -1955,13 +1782,11 @@ async def update_admin_profile(
         if not user_doc:
             raise HTTPException(status_code=404, detail='User not found')
         
-        # Check if email is being changed and if that new email already exists
         if data.email and user_doc['email'] != data.email:
             email_exists = await db.users.find_one({'email': data.email, '_id': {'$ne': ObjectId(user_id)}})
             if email_exists:
                 raise HTTPException(status_code=400, detail='Email already exists')
         
-        # Build update data only with provided fields
         update_data = {}
         if data.name is not None:
             update_data['name'] = data.name
@@ -1974,7 +1799,6 @@ async def update_admin_profile(
             update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
             await db.users.update_one({'_id': ObjectId(user_id)}, {'$set': update_data})
         
-        # Get updated user data
         updated_user = await db.users.find_one({'_id': ObjectId(user_id)}, {'password_hash': 0})
         
         return {
@@ -2003,8 +1827,6 @@ async def get_faculty_profile(
         
         if not user_doc:
             raise HTTPException(status_code=404, detail='User not found')
-        
-        # Get additional profile data
         profile = {
             'id': str(user_doc['_id']),
             'name': user_doc.get('name', ''),
@@ -2036,13 +1858,11 @@ async def update_faculty_profile(
         if not user_doc:
             raise HTTPException(status_code=404, detail='User not found')
         
-        # Check if email is being changed and if that new email already exists
         if data.email and user_doc['email'] != data.email:
             email_exists = await db.users.find_one({'email': data.email, '_id': {'$ne': ObjectId(user_id)}})
             if email_exists:
                 raise HTTPException(status_code=400, detail='Email already exists')
         
-        # Build update data only with provided fields
         update_data = {}
         if data.name is not None:
             update_data['name'] = data.name
@@ -2051,7 +1871,6 @@ async def update_faculty_profile(
         if data.subjects is not None:
             update_data['subjects'] = data.subjects
         if data.availableSlots is not None:
-            # Convert Pydantic models to dict
             update_data['available_slots'] = [slot.model_dump() for slot in data.availableSlots]
         if data.minTeachingHours is not None:
             update_data['min_teaching_hours'] = data.minTeachingHours
@@ -2060,7 +1879,6 @@ async def update_faculty_profile(
             update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
             await db.users.update_one({'_id': ObjectId(user_id)}, {'$set': update_data})
         
-        # Get updated user data
         updated_user = await db.users.find_one({'_id': ObjectId(user_id)}, {'password_hash': 0})
         
         return {
@@ -2092,11 +1910,9 @@ async def get_student_profile(
         if not user_doc:
             raise HTTPException(status_code=404, detail='User not found')
         
-        # Get enrolled courses for student
         enrolled_courses = []
         course_ids = user_doc.get('enrolled_courses', [])
         if course_ids:
-            # FIX: Handle the case where course_ids might be invalid
             try:
                 courses = await db.courses.find({'_id': {'$in': [ObjectId(cid) for cid in course_ids]}}).to_list(100)
                 enrolled_courses = [
@@ -2112,7 +1928,6 @@ async def get_student_profile(
                 logger.error(f"Error fetching enrolled courses: {str(e)}")
                 enrolled_courses = []
         
-        # Get additional profile data
         profile = {
             'id': str(user_doc['_id']),
             'name': user_doc.get('name', ''),
@@ -2130,7 +1945,6 @@ async def get_student_profile(
         logger.error(f"Get student profile error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to fetch profile')
 
-# Student Course Registration with Preferences
 @app.post('/api/v1/student/register-courses')
 async def register_courses(
     request: Request,
@@ -2144,27 +1958,22 @@ async def register_courses(
         if not course_registrations:
             raise HTTPException(status_code=400, detail='No course registrations provided')
         
-        # Validate each course registration
         for registration in course_registrations:
             if 'course_id' not in registration:
                 raise HTTPException(status_code=400, detail='Each registration must include a course_id')
             
-            # Validate course exists
             course = await db.courses.find_one({'_id': ObjectId(registration['course_id'])})
             if not course:
                 raise HTTPException(status_code=404, detail=f"Course not found: {registration['course_id']}")
             
-            # Check if course has a faculty assigned
             if not course.get('faculty_id'):
                 raise HTTPException(status_code=400, detail=f"Course {course['name']} has no faculty assigned")
         
-        # Store student's course preferences
         await db.student_course_preferences.delete_many({'student_id': student_id})
         
         if course_registrations:
             preference_docs = []
             for registration in course_registrations:
-                # Get course details
                 course = await db.courses.find_one({'_id': ObjectId(registration['course_id'])})
                 
                 preference_docs.append({
@@ -2174,7 +1983,7 @@ async def register_courses(
                     'course_code': course.get('code', ''),
                     'preferred_time': registration.get('preferred_time', ''),
                     'preferred_professor': registration.get('preferred_professor', ''),
-                    'priority': registration.get('priority', 1),  # Higher number = higher priority
+                    'priority': registration.get('priority', 1),
                     'created_at': datetime.now(timezone.utc).isoformat()
                 })
             
@@ -2187,7 +1996,6 @@ async def register_courses(
         logger.error(f"Register courses error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to register course preferences')
 
-# Get student's course preferences
 @app.get('/api/v1/student/course-preferences')
 async def get_student_course_preferences(
     request: Request,
@@ -2196,10 +2004,8 @@ async def get_student_course_preferences(
     try:
         student_id = user.get('user_id')
         
-        # Get preferences from database
         preferences = await db.student_course_preferences.find({'student_id': student_id}).to_list(1000)
         
-        # Convert ObjectIds to strings
         for pref in preferences:
             pref['_id'] = str(pref['_id'])
             pref['course_id'] = str(pref['course_id'])
@@ -2211,7 +2017,6 @@ async def get_student_course_preferences(
         logger.error(f"Get student course preferences error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to fetch course preferences')
 
-# Get available faculty for a course
 @app.get('/api/v1/courses/{course_id}/faculty')
 async def get_course_faculty(
     request: Request,
@@ -2219,38 +2024,28 @@ async def get_course_faculty(
     user: dict = Depends(get_current_user)
 ):
     try:
-        # Validate course ID
         try:
             obj_id = ObjectId(course_id)
         except InvalidId:
             raise HTTPException(status_code=400, detail='Invalid course ID format')
         
-        # Check if course exists
         course = await db.courses.find_one({'_id': obj_id})
         if not course:
             raise HTTPException(status_code=404, detail='Course not found')
         
-        # Get faculty assigned to this specific course
-        # First, check if this course has a faculty_id directly assigned
         if course.get('faculty_id'):
             faculty = await db.users.find_one({'_id': ObjectId(course['faculty_id'])}, {'password_hash': 0})
             if faculty:
                 faculty['_id'] = str(faculty['_id'])
                 return [faculty]
         
-        # If no direct faculty assignment, check faculty preferences for this course
         faculty_preferences = await db.faculty_preferences.find({'course_id': course_id}).to_list(1000)
         
         if not faculty_preferences:
-            return []  # No faculty assigned to this course
+            return []
         
-        # Get unique faculty IDs from preferences
         faculty_ids = list(set([ObjectId(pref['faculty_id']) for pref in faculty_preferences]))
-        
-        # Get faculty details
         faculty = await db.users.find({'_id': {'$in': faculty_ids}}, {'password_hash': 0}).to_list(1000)
-        
-        # Convert ObjectIds to strings
         for fac in faculty:
             fac['_id'] = str(fac['_id'])
         
@@ -2261,7 +2056,6 @@ async def get_course_faculty(
         logger.error(f"Get course faculty error: {str(e)}")
         raise HTTPException(status_code=500, detail='Failed to fetch course faculty')
 
-# Update the generate_student_timetable function
 @app.post('/api/v1/timetable/generate-student')
 async def generate_student_timetable(
     request: Request,
@@ -2272,36 +2066,29 @@ async def generate_student_timetable(
         if not OPENROUTER_API_KEY:
             raise HTTPException(status_code=500, detail='AI generation service is not configured')
 
-        # 1. Get student's selected course IDs from the request body
         req_body = await request.json()
         selected_course_ids = req_body.get('courseIds', [])
         
         if not selected_course_ids:
             raise HTTPException(status_code=400, detail='No course IDs provided')
 
-        # 2. Convert string IDs to ObjectId and fetch selected courses
         selected_course_object_ids = [ObjectId(cid) for cid in selected_course_ids]
         selected_courses_cursor = db.courses.find({'_id': {'$in': selected_course_object_ids}})
         selected_courses = await selected_courses_cursor.to_list(length=None)
         
         if not selected_courses:
             raise HTTPException(status_code=404, detail='Selected courses not found')
-
-        # 3. Fetch all necessary data for AI prompt
         all_faculty = await db.users.find({'role': 'faculty'}, {'password_hash': 0}).to_list(length=None)
         all_rooms = await db.rooms.find({}).to_list(length=None)
         base_timetable = await db.base_timetables.find_one(sort=[('created_at', -1)])
         
-        # Get student's course preferences
         student_id = user.get('user_id')
         student_preferences = await db.student_course_preferences.find({'student_id': student_id}).to_list(1000)
         
-        # Get existing timetables to check for already scheduled courses
         existing_timetables = await db.timetables.find({
             'student_id': {'$ne': None}
         }).to_list(1000)
         
-        # Create a map of existing course schedules
         existing_course_schedules = {}
         for timetable in existing_timetables:
             for slot in timetable.get('schedule', []):
@@ -2314,10 +2101,9 @@ async def generate_student_timetable(
                         'time': slot.get('time'),
                         'room_id': slot.get('room_id'),
                         'room_name': slot.get('room_name'),
-                        'room_capacity': 0  # We'll populate this later
+                        'room_capacity': 0
                     })
         
-        # Add room capacity info to existing schedules
         for course_id, schedules in existing_course_schedules.items():
             for schedule in schedules:
                 room = await db.rooms.find_one({'_id': ObjectId(schedule['room_id'])})
@@ -2334,11 +2120,9 @@ async def generate_student_timetable(
                         }
                     })
 
-        # Get the number of working days from base timetable
         working_days = base_timetable.get('days', ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'])
         num_working_days = len(working_days)
 
-        # 4. Prepare data for AI prompt with credit-based class scheduling
         courses_data_for_ai = []
         unassigned_courses = []
         
@@ -2355,17 +2139,12 @@ async def generate_student_timetable(
                     })
                     continue
             
-            # Calculate number of classes per week based on credits
-            # For theory courses: 1 credit = 1 class, 2 credits = 2 classes, etc.
-            # For lab courses: always 1 class per week
             is_lab = course.get('is_lab', False)
             credits = course.get('credits', 1)
             
             if is_lab:
-                # Lab courses always have 1 class per week
                 classes_per_week = 1
             else:
-                # Theory courses: classes per week based on credits, capped by working days
                 classes_per_week = min(credits, num_working_days)
             
             course_info = {
@@ -2381,20 +2160,17 @@ async def generate_student_timetable(
                 'no_same_day': True  # NEW: Constraint to avoid scheduling the same course twice in one day
             }
             
-            # Add student preferences for this course
             student_pref = next((pref for pref in student_preferences if pref['course_id'] == str(course['_id'])), None)
             if student_pref:
                 course_info['preferred_time'] = student_pref.get('preferred_time', '')
                 course_info['preferred_professor'] = student_pref.get('preferred_professor', '')
                 course_info['priority'] = student_pref.get('priority', 1)
             
-            # Add existing schedule info if available
             if course_info['id'] in existing_course_schedules:
                 course_info['existing_schedules'] = existing_course_schedules[course_info['id']]
             
             courses_data_for_ai.append(course_info)
 
-        # If no courses have faculty assigned, return an error
         if len(courses_data_for_ai) == 0:
             return {
                 'schedule': [],
@@ -2419,7 +2195,6 @@ async def generate_student_timetable(
                 'type': room['type']
             })
 
-        # 5. Create the detailed AI prompt with credit-based scheduling
         base_timetable_json = json.dumps(base_timetable, default=str, indent=2) if base_timetable else "{}"
         
         prompt = f"""
@@ -2503,7 +2278,6 @@ If a course has no assigned faculty, include a note in the summary.
 Do not use markdown formatting. Return only the raw JSON object.
 """
 
-        # 6. Call the AI
         try:
             response = requests.post(
                 url="https://openrouter.ai/api/v1/chat/completions",
@@ -2527,7 +2301,6 @@ Do not use markdown formatting. Return only the raw JSON object.
                 logger.error(f"OpenRouter API error: {response.status_code} - {response.text}")
                 raise HTTPException(status_code=500, detail='Failed to generate timetable')
 
-            # 7. Parse and save the AI's response
             try:
                 response_text = response.json()['choices'][0]['message']['content']
                 if response_text.startswith('```json'):
@@ -2542,8 +2315,6 @@ Do not use markdown formatting. Return only the raw JSON object.
                 logger.error(f"JSON decode error: {str(e)}")
                 logger.error(f"AI Response: {response_text}")
                 raise HTTPException(status_code=500, detail='Failed to parse AI response')
-
-            # 8. Save the generated timetable to the database
             timetable_record = {
                 'schedule': timetable_data.get('schedule', []),
                 'summary': timetable_data.get('summary', 'AI-generated timetable'),
@@ -2581,13 +2352,11 @@ async def update_student_profile(
         if not user_doc:
             raise HTTPException(status_code=404, detail='User not found')
         
-        # Check if email is being changed and if that new email already exists
         if data.email and user_doc['email'] != data.email:
             email_exists = await db.users.find_one({'email': data.email, '_id': {'$ne': ObjectId(user_id)}})
             if email_exists:
                 raise HTTPException(status_code=400, detail='Email already exists')
         
-        # Build update data only with provided fields
         update_data = {}
         if data.name is not None:
             update_data['name'] = data.name
@@ -2600,14 +2369,11 @@ async def update_student_profile(
             update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
             await db.users.update_one({'_id': ObjectId(user_id)}, {'$set': update_data})
         
-        # Get updated user data
         updated_user = await db.users.find_one({'_id': ObjectId(user_id)}, {'password_hash': 0})
         
-        # Get enrolled courses for student
         enrolled_courses = []
         course_ids = updated_user.get('enrolled_courses', [])
         if course_ids:
-            # FIX: Handle the case where course_ids might be invalid
             try:
                 courses = await db.courses.find({'_id': {'$in': [ObjectId(cid) for cid in course_ids]}}).to_list(100)
                 enrolled_courses = [
@@ -2643,7 +2409,6 @@ async def update_student_profile(
 async def health_check(request: Request):
     return {'status': 'healthy', 'timestamp': datetime.now(timezone.utc).isoformat()}
 
-# Custom OpenAPI schema
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema

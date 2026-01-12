@@ -1,4 +1,3 @@
-// frontend/src/pages/FacultyCourses.js
 import React, { useState, useEffect } from 'react';
 import { apiRequest, endpoints } from '../config/api';
 import { toast } from 'react-hot-toast';
@@ -31,7 +30,6 @@ const FacultyCourses = () => {
         }
     };
 
-    // CORRECTED: Use endpoint from endpoints object
     const fetchFacultyCourses = async () => {
         try {
             const response = await apiRequest(endpoints.faculty.courses);
@@ -52,13 +50,12 @@ const FacultyCourses = () => {
         }
     };
 
-    // FIXED: Use correct data property and endpoint
     const handleSaveCourses = async () => {
         try {
             setSaving(true);
             await apiRequest(endpoints.faculty.courses, {
                 method: 'PUT',
-                data: { courseIds: selectedCourses }  // Changed from 'body' to 'data'
+                data: { courseIds: selectedCourses }
             });
             toast.success('Courses updated successfully');
         } catch (error) {
@@ -74,7 +71,7 @@ const FacultyCourses = () => {
     const filteredCourses = courses.filter(course => {
         const matchesSearch = course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             course.code.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = filterCategory === 'all' || course.category === filterCategory; // FIXED: Added missing closing parenthesis
+        const matchesCategory = filterCategory === 'all' || course.category === filterCategory;
         return matchesSearch && matchesCategory;
     });
 

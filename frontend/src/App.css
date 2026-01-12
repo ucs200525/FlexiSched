@@ -1,9 +1,5 @@
-/* frontend/src/App.css */
-
-/* Import Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* CSS Variables for a Centralized Theme */
 :root {
   --color-primary: #4f46e5;
   --color-primary-hover: #4338ca;
@@ -21,7 +17,6 @@
   --header-height: 70px;
 }
 
-/* Global Styles & Resets */
 * {
   margin: 0;
   padding: 0;
@@ -41,13 +36,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Main Application Layout */
 .app-container {
   display: flex;
   min-height: 100vh;
 }
 
-/* Sidebar */
 .sidebar {
   width: var(--sidebar-width);
   background-color: var(--color-surface);
@@ -109,14 +102,12 @@ body {
   background-color: var(--color-primary);
 }
 
-/* Main Content Area */
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-/* Header */
 .header {
   height: var(--header-height);
   background-color: var(--color-surface);
@@ -151,14 +142,12 @@ body {
   font-weight: 600;
 }
 
-/* Page Content */
 .content {
   flex: 1;
   padding: 2rem;
   overflow-y: auto;
 }
 
-/* Page Header */
 .page-header {
   margin-bottom: 2rem;
 }
@@ -175,7 +164,6 @@ body {
   font-size: 1rem;
 }
 
-/* Buttons */
 .btn {
   padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
@@ -221,7 +209,6 @@ body {
   background-color: #dc2626;
 }
 
-/* Forms */
 .form-group {
   margin-bottom: 1.5rem;
 }
@@ -250,7 +237,6 @@ body {
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
-/* Tables */
 .table-container {
   background-color: var(--color-surface);
   border-radius: 0.75rem;
@@ -298,7 +284,6 @@ body {
   background-color: var(--color-background);
 }
 
-/* --- MODERN BADGES --- */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -318,28 +303,71 @@ body {
   font-size: 0.875rem;
 }
 
-/* Category Badges */
-.badge-major { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; }
-.badge-minor { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
-.badge-sec { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
-.badge-aec { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; }
-.badge-vac { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); color: white; }
+.badge-major {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+}
 
-/* Role Badges */
-.badge-admin { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
-.badge-faculty { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; }
-.badge-student { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+.badge-minor {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
 
-/* Room Type Badges */
-.badge-classroom { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; }
-.badge-lab { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); color: white; }
-.badge-auditorium { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+.badge-sec {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
 
-/* Course Type Badges */
-.badge-theory { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; }
-.badge-practical { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); color: white; }
+.badge-aec {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
 
-/* Action Buttons */
+.badge-vac {
+  background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+  color: white;
+}
+
+.badge-admin {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.badge-faculty {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+.badge-student {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.badge-classroom {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+}
+
+.badge-lab {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  color: white;
+}
+
+.badge-auditorium {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.badge-theory {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+}
+
+.badge-practical {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  color: white;
+}
+
 .btn-action {
   padding: 0.375rem 0.75rem;
   margin-right: 0.5rem;
@@ -355,24 +383,36 @@ body {
   background-color: var(--color-primary);
   color: var(--color-surface);
 }
-.btn-edit:hover { background-color: var(--color-primary-hover); }
+
+.btn-edit:hover {
+  background-color: var(--color-primary-hover);
+}
 
 .btn-delete {
   background-color: var(--color-error);
   color: var(--color-surface);
 }
-.btn-delete:hover { background-color: #dc2626; }
 
-/* Cards */
-.stats-grid, .quick-actions {
+.btn-delete:hover {
+  background-color: #dc2626;
+}
+
+.stats-grid,
+.quick-actions {
   display: grid;
   gap: 1.5rem;
 }
 
-.stats-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-.quick-actions { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.stats-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
 
-.stat-card, .action-card {
+.quick-actions {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.stat-card,
+.action-card {
   background-color: var(--color-surface);
   border-radius: 0.75rem;
   padding: 1.5rem;
@@ -380,7 +420,8 @@ body {
   transition: all 0.3s ease;
 }
 
-.stat-card:hover, .action-card:hover {
+.stat-card:hover,
+.action-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
@@ -394,7 +435,8 @@ body {
   align-items: center;
 }
 
-.stat-icon, .action-icon {
+.stat-icon,
+.action-icon {
   width: 48px;
   height: 48px;
   display: flex;
@@ -405,18 +447,50 @@ body {
   margin-bottom: 1rem;
 }
 
-.icon-blue { background-color: #dbeafe; color: #1e40af; }
-.icon-green { background-color: #d1fae5; color: #065f46; }
-.icon-purple { background-color: #e9d5ff; color: #6b21a8; }
-.icon-orange { background-color: #fed7aa; color: #9a3412; }
+.icon-blue {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
 
-.stat-label { color: var(--color-text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem; }
-.stat-value { font-size: 2rem; font-weight: 700; color: var(--color-text-primary); }
+.icon-green {
+  background-color: #d1fae5;
+  color: #065f46;
+}
 
-.action-title { font-size: 1.125rem; font-weight: 600; color: var(--color-text-primary); margin-bottom: 0.5rem; }
-.action-description { color: var(--color-text-secondary); font-size: 0.875rem; }
+.icon-purple {
+  background-color: #e9d5ff;
+  color: #6b21a8;
+}
 
-/* --- FINAL TIMETABLE TABLE STYLES --- */
+.icon-orange {
+  background-color: #fed7aa;
+  color: #9a3412;
+}
+
+.stat-label {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.action-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.action-description {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
 .timetable-table-container {
   margin-top: 2rem;
   border-radius: 0.75rem;
@@ -429,7 +503,7 @@ body {
   border-collapse: collapse;
   border: 1px solid var(--color-border);
   background-color: var(--color-surface);
-  table-layout: fixed; /* Ensures column widths are predictable */
+  table-layout: fixed;
 }
 
 .timetable-table th,
@@ -451,7 +525,7 @@ body {
 }
 
 .timetable-table th:first-child {
-  width: 180px; /* Fixed width for the time column */
+  width: 180px;
   text-align: left;
 }
 
@@ -480,9 +554,8 @@ body {
   border-bottom: none;
 }
 
-
-/* Utility & State Classes */
-.loading-state, .empty-state {
+.loading-state,
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -502,11 +575,15 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
-/* Responsive Design */
 @media (max-width: 1024px) {
   .sidebar {
     position: fixed;
@@ -515,18 +592,38 @@ body {
     height: 100%;
     z-index: 50;
   }
-  .sidebar.open { left: 0; }
-  .main-content { margin-left: 0; }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
 }
 
 @media (max-width: 640px) {
-  .content { padding: 1rem; }
-  .stats-grid, .quick-actions { grid-template-columns: 1fr; }
-  .table-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
-  .data-table th, .data-table td { padding: 0.75rem; }
+  .content {
+    padding: 1rem;
+  }
+
+  .stats-grid,
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.75rem;
+  }
 }
 
-/* Add this with the other timetable styles */
 .timetable-table .short-break-slot {
   background-color: #f1f5f9;
   color: var(--color-text-secondary);
@@ -534,12 +631,9 @@ body {
   font-size: 0.8rem;
 }
 
-/* Add these styles to the end of your App.css file */
-
-/* --- SEGMENTED CONTROL STYLES --- */
 .segmented-control {
   display: flex;
-  background-color: #f1f5f9; /* var(--color-background) */
+  background-color: #f1f5f9;
   border-radius: 0.5rem;
   padding: 0.25rem;
   border: 1px solid var(--color-border);
@@ -561,7 +655,7 @@ body {
 }
 
 .segmented-option:hover {
-  background-color: rgba(79, 70, 229, 0.05); /* var(--color-primary) with opacity */
+  background-color: rgba(79, 70, 229, 0.05);
 }
 
 .segmented-option.active {
@@ -580,7 +674,6 @@ body {
   border-bottom-right-radius: 0.375rem;
 }
 
-/* Login Page Styles */
 .login-container {
   min-height: 100vh;
   display: flex;
@@ -616,7 +709,6 @@ body {
   font-size: 0.875rem;
 }
 
-/* Profile Page Styles */
 .profile-header {
   margin-bottom: 2rem;
 }
@@ -633,7 +725,6 @@ body {
   font-size: 1rem;
 }
 
-/* Profile Form Styles */
 .profile-form {
   background-color: var(--color-surface);
   border-radius: 0.75rem;
@@ -655,7 +746,6 @@ body {
   color: var(--color-text-primary);
 }
 
-/* Profile Info Cards */
 .profile-info-card {
   background-color: var(--color-surface);
   border-radius: 0.75rem;
@@ -692,7 +782,6 @@ body {
   font-weight: bold;
 }
 
-/* Role Specific Sections */
 .admin-info,
 .faculty-info,
 .student-info {
@@ -711,7 +800,6 @@ body {
   margin-bottom: 0.5rem;
 }
 
-/* Password Change Dialog */
 .password-dialog-content {
   max-width: 400px;
 }
@@ -722,7 +810,6 @@ body {
   gap: 1rem;
 }
 
-/* Profile Avatar */
 .profile-avatar {
   width: 60px;
   height: 60px;
@@ -738,7 +825,6 @@ body {
   box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }
 
-/* Profile Stats */
 .profile-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -766,7 +852,6 @@ body {
   color: var(--color-text-primary);
 }
 
-/* Form Enhancements */
 .profile-input {
   transition: all 0.2s ease;
 }
@@ -785,7 +870,6 @@ body {
   box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
 }
 
-/* Role Badges */
 .role-badge {
   display: inline-flex;
   align-items: center;
@@ -797,7 +881,6 @@ body {
   margin-left: 0.5rem;
 }
 
-/* Security Section */
 .security-section {
   border: 1px solid var(--color-border);
   border-radius: 0.5rem;
@@ -821,16 +904,15 @@ body {
   color: var(--color-warning);
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .profile-stats {
     grid-template-columns: 1fr;
   }
-  
+
   .profile-info-card {
     padding: 1rem;
   }
-  
+
   .password-dialog-content {
     max-width: 95vw;
     margin: 1rem;
@@ -843,11 +925,11 @@ body {
     height: 50px;
     font-size: 1.25rem;
   }
-  
+
   .profile-form {
     padding: 1rem;
   }
-  
+
   .admin-info,
   .faculty-info,
   .student-info {
@@ -855,12 +937,12 @@ body {
   }
 }
 
-/* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -871,14 +953,12 @@ body {
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Disabled Input Styles */
 input:disabled {
   background-color: #f8fafc;
   cursor: not-allowed;
   opacity: 0.7;
 }
 
-/* Button Variants */
 .btn-secondary {
   background-color: transparent;
   color: var(--color-text-secondary);
@@ -890,7 +970,6 @@ input:disabled {
   color: var(--color-text-primary);
 }
 
-/* Loading States */
 .loading-overlay {
   position: absolute;
   top: 0;
@@ -910,9 +989,6 @@ input:disabled {
   font-weight: 500;
 }
 
-/* Add these styles to your App.css file */
-
-/* Enhanced Login Page Styles */
 .login-container {
   min-height: 100vh;
   display: flex;
@@ -969,7 +1045,6 @@ input:disabled {
   font-size: 0.875rem;
 }
 
-/* Form Input Enhancements */
 .login-input-group {
   position: relative;
 }
@@ -987,7 +1062,6 @@ input:disabled {
   padding-left: 40px;
 }
 
-/* Password Toggle Button */
 .password-toggle {
   position: absolute;
   right: 12px;
@@ -998,7 +1072,6 @@ input:disabled {
   z-index: 1;
 }
 
-/* Demo Credentials Section */
 .demo-credentials {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
@@ -1078,7 +1151,6 @@ input:disabled {
   background-color: rgba(79, 70, 229, 0.1);
 }
 
-/* Enhanced Button Styles */
 .login-button {
   width: 100%;
   padding: 0.75rem;
@@ -1109,7 +1181,6 @@ input:disabled {
   box-shadow: none;
 }
 
-/* Enhanced Form Styles */
 .login-form {
   margin-bottom: 1.5rem;
 }
@@ -1145,18 +1216,17 @@ input:disabled {
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
-/* Responsive Design */
 @media (max-width: 480px) {
   .login-card {
     padding: 1.5rem;
   }
-  
+
   .demo-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .demo-use-button {
     align-self: flex-end;
   }

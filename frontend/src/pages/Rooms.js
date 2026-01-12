@@ -1,5 +1,3 @@
-// frontend/src/pages/Rooms.js
-
 import React, { useState, useEffect } from 'react';
 import { apiRequest, endpoints } from '../config/api';
 import { Button } from '../components/ui/button.jsx';
@@ -47,13 +45,13 @@ const Rooms = () => {
       if (editingRoom) {
         await apiRequest(endpoints.rooms.update(editingRoom._id), {
           method: 'PUT',
-          data: data,  // Fixed: Pass data directly, not as stringified body
+          data: data,
         });
         toast.success('Room updated successfully');
       } else {
         await apiRequest(endpoints.rooms.create, {
           method: 'POST',
-          data: data,  // Fixed: Pass data directly, not as stringified body
+          data: data,
         });
         toast.success('Room created successfully');
       }

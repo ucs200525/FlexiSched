@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -24,13 +23,10 @@ function AppRoutes() {
   const { user, loading, backendAvailable } = useAuth();
 
   useEffect(() => {
-    // Only log in development mode
     if (process.env.NODE_ENV === 'development') {
       console.log('App mounted, user:', user, 'loading:', loading);
     }
   }, [user, loading, backendAvailable]);
-
-  // Show a more informative loading state
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">

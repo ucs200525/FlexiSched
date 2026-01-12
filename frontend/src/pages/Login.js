@@ -1,4 +1,3 @@
-// frontend/src/pages/Login.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -19,7 +18,6 @@ const Login = () => {
   const { login, user } = useAuth();
 
   useEffect(() => {
-    // Check backend health on component mount
     const checkBackend = async () => {
       try {
         await healthCheck();
@@ -35,7 +33,6 @@ const Login = () => {
 
     checkBackend();
 
-    // If user is already logged in, redirect to appropriate dashboard
     if (user) {
       if (user.role === 'admin') {
         navigate('/admin/dashboard');
@@ -55,14 +52,12 @@ const Login = () => {
       return;
     }
 
-    // FIXED: Correct email validation regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       toast.error('Please enter a valid email address');
       return;
     }
 
-    // Validate password length
     if (password.length < 6) {
       toast.error('Password must be at least 6 characters long');
       return;
@@ -81,7 +76,6 @@ const Login = () => {
         if (process.env.NODE_ENV === 'development') {
           console.log('Login successful:', result.user);
         }
-        // Redirect based on role
         if (result.user.role === 'admin') {
           navigate('/admin/dashboard');
         } else if (result.user.role === 'faculty') {
@@ -96,7 +90,6 @@ const Login = () => {
         console.error('Error message:', error.message);
       }
 
-      // Show more specific error message
       if (error.message.includes('Invalid credentials')) {
         toast.error('Invalid email or password');
       } else if (error.message.includes('validation')) {

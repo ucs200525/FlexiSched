@@ -1,4 +1,3 @@
-// frontend/src/pages/GenerateTimetable.js
 import React, { useState, useEffect } from 'react';
 import { apiRequest, endpoints } from '../config/api';
 import { Button } from '../components/ui/button.jsx';
@@ -7,7 +6,6 @@ import { Label } from '../components/ui/label.jsx';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog.jsx';
 import { toast } from 'react-hot-toast';
 
-// --- NEW SEGMENTED CONTROL COMPONENT ---
 const SegmentedControl = ({ options, value, onChange, name }) => {
   return (
     <div className="segmented-control" data-testid={`${name}-segmented-control`}>
@@ -43,13 +41,12 @@ const GenerateTimetable = () => {
   }, []);
 
   const fetchBaseTimetable = async () => {
-    setFetching(true); // Set fetching to true at start
+    setFetching(true);
     try {
-      // Using the correct endpoint structure
       const response = await apiRequest(endpoints.timetable.base.get);
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('Successfully fetched base timetable:', response); // DEBUG LOG
+        console.log('Successfully fetched base timetable:', response);
       }
 
       if (response) {
@@ -59,14 +56,12 @@ const GenerateTimetable = () => {
           ...response,
         }));
       } else {
-        // Handle case where response is empty but not an error
         setBaseTimetable(null);
       }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching base timetable:', error); // DEBUG LOG
+        console.error('Error fetching base timetable:', error);
       }
-      // No base timetable exists yet, ensure form is in a default state
       setBaseTimetable(null);
       setFormData({
         startTime: '09:00',
@@ -93,7 +88,6 @@ const GenerateTimetable = () => {
         days: formData.days,
       };
 
-      // FIXED: Use the correct endpoint structure
       await apiRequest(endpoints.timetable.base.create, {
         method: 'POST',
         data: data,
@@ -102,8 +96,6 @@ const GenerateTimetable = () => {
       toast.success('Base timetable structure saved successfully!');
       setDialogOpen(false);
 
-      // After saving, re-fetch data to ensure UI is up-to-date.
-      // This is the most reliable way to update the state.
       await fetchBaseTimetable();
 
     } catch (error) {
@@ -116,20 +108,16 @@ const GenerateTimetable = () => {
     }
   };
 
-  // Helper to convert "HH:MM" to total minutes
   const timeToMinutes = (timeStr) => {
     const [hours, minutes] = timeStr.split(':').map(Number);
     return hours * 60 + minutes;
   };
-
-  // Helper to convert minutes back to "HH:MM" format
   const minutesToTime = (totalMinutes) => {
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   };
 
-  // --- SIMPLIFIED SLOT GENERATION (NO SHORT BREAKS) ---
   const generateTimeSlots = (baseTimetable) => {
     const { startTime, endTime, classDuration, lunchBreakDuration } = baseTimetable;
 
@@ -141,8 +129,7 @@ const GenerateTimetable = () => {
     const allSlots = [];
     let currentMinutes = startMinutes;
 
-    // --- SMART LUNCH LOGIC ---
-    const defaultLunchStart = 13 * 60; // 13:00 in minutes
+    const defaultLunchStart = 13 * 60;
     let lunchStartMinutes = null;
     let lunchEndMinutes = null;
 
@@ -151,9 +138,7 @@ const GenerateTimetable = () => {
       lunchEndMinutes = lunchStartMinutes + lunchDurationMinutes;
     }
 
-    // Generate class slots with lunch break
     while (currentMinutes < endMinutes) {
-      // Check if we're in lunch time
       if (lunchStartMinutes && currentMinutes >= lunchStartMinutes && currentMinutes < lunchEndMinutes) {
         allSlots.push({
           time: `${minutesToTime(lunchStartMinutes)} - ${minutesToTime(lunchEndMinutes)}`,
@@ -167,11 +152,8 @@ const GenerateTimetable = () => {
 
       const nextSlotEnd = currentMinutes + classDurationMinutes;
 
-      // Check if we can fit a full class slot
       if (nextSlotEnd <= endMinutes) {
-        // Make sure we don't overlap with lunch
         if (lunchStartMinutes && currentMinutes < lunchStartMinutes && nextSlotEnd > lunchStartMinutes) {
-          // Slot would overlap with lunch, create a slot up to lunch
           allSlots.push({
             time: `${minutesToTime(currentMinutes)} - ${minutesToTime(lunchStartMinutes)}`,
             startTime: minutesToTime(currentMinutes),
@@ -180,7 +162,6 @@ const GenerateTimetable = () => {
           });
           currentMinutes = lunchStartMinutes;
         } else {
-          // Normal class slot
           allSlots.push({
             time: `${minutesToTime(currentMinutes)} - ${minutesToTime(nextSlotEnd)}`,
             startTime: minutesToTime(currentMinutes),
@@ -190,12 +171,9 @@ const GenerateTimetable = () => {
           currentMinutes = nextSlotEnd;
         }
       } else {
-        // Not enough time for a full class slot, break loop
         break;
       }
     }
-
-    // Sort all slots by start time
     const finalSlots = allSlots.sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 
     return finalSlots;
@@ -263,8 +241,6 @@ const GenerateTimetable = () => {
           <DialogTrigger asChild>
             <Button
               onClick={() => {
-                // No need to fetch here, main useEffect handles it.
-                // Fetching here could cause a flicker if data is already present.
               }}
               data-testid="create-base-timetable-button"
             >
@@ -341,7 +317,6 @@ const GenerateTimetable = () => {
                         id={`day-${day}`}
                         checked={formData.days.includes(day)}
                         onChange={(e) => {
-                          // FIXED: Added missing parentheses around the if condition
                           if (e.target.checked) {
                             setFormData({ ...formData, days: [...formData.days, day] });
                           } else {

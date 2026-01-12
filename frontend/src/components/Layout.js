@@ -1,4 +1,3 @@
-// src/components/Layout.js
 import React, { useState, useMemo } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -32,7 +31,6 @@ const Layout = () => {
     }
   };
 
-  // UPDATED: Navigate to correct role-based profile page
   const handleProfileClick = () => {
     if (user?.role) {
       const profilePath = `/${user.role}/profile`;
@@ -47,7 +45,6 @@ const Layout = () => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
-  // Use useMemo to prevent re-calculating navItems on every render
   const navItems = useMemo(() => {
     const items = [];
 
@@ -109,7 +106,7 @@ const Layout = () => {
           icon: LayoutDashboard
         },
         {
-          label: 'My Timetable',  // ADDED: Timetable option for students
+          label: 'My Timetable',
           path: '/student/timetable',
           icon: Calendar
         }
@@ -117,7 +114,7 @@ const Layout = () => {
     }
 
     return items;
-  }, [user, hasRole]); // Dependency array: only recalculate if user or hasRole changes
+  }, [user, hasRole]);
 
   return (
     <div className="flex h-screen bg-gray-100">
