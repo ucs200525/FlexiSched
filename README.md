@@ -196,6 +196,12 @@ The system is designed to comply with the National Education Policy 2020 guideli
    - Clear demo data if needed: `db.users.deleteMany({})`
    - Restart backend to reinitialize demo data
 
+## License
+
+This project is licensed under the **MIT License** — see the [LICENSE](./LICENSE) file for details.
+
+© 2026 Eswar Vutukuri, Upadhyayula Chandra Sekhar, Hari Kiran, Kaif Sharif, Vutla Yasaswi Venkat
+
 ## Acknowledgments
 
 Thanks to:
