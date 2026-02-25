@@ -200,7 +200,7 @@ The system is designed to comply with the National Education Policy 2020 guideli
 
 This project is licensed under the **MIT License** — see the [LICENSE](./LICENSE) file for details.
 
-© 2026 Eswar Vutukuri, Upadhyayula Chandra Sekhar, Hari Kiran, Kaif Sharif, Vutla Yasaswi Venkat
+© 2026 Eswar Vutukuri, Upadhyayula Chandra Sekhar, Hari Kiran, Kaif Sharif, Vutla Yasaswi Venkat, Satwika Malla
 
 ## Acknowledgments
 
