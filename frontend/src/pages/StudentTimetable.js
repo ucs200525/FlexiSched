@@ -217,7 +217,6 @@ const StudentTimetable = () => {
                 <p className="page-subtitle">Select your courses, set preferences, and generate a personalized schedule</p>
             </div>
 
-            {/* Credit Limit Information */}
             <Card className="mb-6">
                 <CardHeader>
                     <CardTitle>Credit Limits</CardTitle>
@@ -235,7 +234,6 @@ const StudentTimetable = () => {
             </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Course Selection */}
                 <div className="lg:col-span-1">
                     <Card>
                         <CardHeader>
@@ -279,7 +277,6 @@ const StudentTimetable = () => {
                     </Card>
                 </div>
 
-                {/* Generated Timetable Display */}
                 <div className="lg:col-span-2">
                     <Card>
                         <CardHeader>
@@ -339,7 +336,6 @@ const StudentTimetable = () => {
                 </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="mt-6 flex justify-center">
                 <Button
                     onClick={handleGenerateTimetable}
@@ -360,7 +356,6 @@ const StudentTimetable = () => {
                 </Button>
             </div>
 
-            {/* Course Preferences Dialog */}
             <Dialog open={preferencesDialogOpen} onOpenChange={setPreferencesDialogOpen}>
                 <DialogContent>
                     <DialogHeader>

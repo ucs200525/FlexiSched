@@ -227,7 +227,6 @@ const Users = () => {
                   </td>
                   <td>{new Date(user.created_at).toLocaleDateString()}</td>
                   <td>
-                    {/* Only show delete button for non-admin users */}
                     {user.role !== 'admin' && (
                       <button
                         className="btn-action btn-delete"

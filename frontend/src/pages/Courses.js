@@ -294,7 +294,6 @@ const Courses = () => {
         <p className="page-subtitle">Manage all courses in the system</p>
       </div>
 
-      {/* New section for credit limits */}
       <div style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', marginBottom: '2rem', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
@@ -466,7 +465,6 @@ const Courses = () => {
                   />
                 </div>
 
-                {/* Only show "has lab" option when creating a new course */}
                 {!editingCourse && (
                   <div style={{ marginBottom: '1.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -482,7 +480,6 @@ const Courses = () => {
                   </div>
                 )}
 
-                {/* Lab details section - only shown when hasLab is true and not editing */}
                 {formData.hasLab && !editingCourse && (
                   <div style={{
                     padding: '1rem',

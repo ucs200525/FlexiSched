@@ -1,4 +1,3 @@
-# backend/server.py
 from fastapi import FastAPI, HTTPException, Depends, status, Request, Response, BackgroundTasks, Query
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
@@ -28,14 +27,10 @@ from pydantic.types import constr
 from contextlib import asynccontextmanager
 import socket
 
-# Configuration
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# Environment-specific configuration
 IS_DEVELOPMENT = os.getenv('ENVIRONMENT', 'development').lower() == 'development'
-
-# Logging configuration
 logging.basicConfig(
     level=logging.DEBUG if IS_DEVELOPMENT else logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -46,7 +41,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# MongoDB connection with connection pooling
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 client = AsyncIOMotorClient(
     mongo_url,
@@ -57,19 +51,15 @@ client = AsyncIOMotorClient(
 )
 db = client[os.environ.get('DB_NAME', 'flexisched_db')]
 
-# Security
 security = HTTPBearer()
 
-# JWT Configuration
 JWT_SECRET = os.environ.get('JWT_SECRET', 'flexisched-jwt-secret-key-2025-change-in-production')
 JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_HOURS = 24
 
-# OpenRouter API Configuration
 OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY')
 OPENROUTER_MODEL = os.environ.get('OPENROUTER_MODEL', 'nvidia/nemotron-nano-12b-v2-vl:free')
 
-# Pydantic models with better validation
 class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=6)
@@ -199,7 +189,6 @@ async def initialize_demo_data():
             await db.faculty_preferences.delete_many({})
             await db.student_course_preferences.delete_many({})
             
-            # Create admin user
             admin = {
                 'email': 'admin@flexisched.com',
                 'password_hash': hash_password('admin123'),
@@ -367,7 +356,6 @@ async def initialize_demo_data():
             }
             await db.base_timetables.insert_one(base_timetable)
             
-            # Create default credit limits
             credit_limits = {
                 'key': 'credit_limits',
                 'value': {
@@ -1183,7 +1171,7 @@ async def delete_room(
 @app.get('/api/v1/timetable/base')
 async def get_base_timetable(
     request: Request,
-    user: dict = Depends(require_role(['admin', 'faculty'])) # <--- CHANGED: Now allows faculty
+    user: dict = Depends(require_role(['admin', 'faculty']))
 ):
     try:
         base_timetable = await db.base_timetables.find_one(sort=[('created_at', -1)])
@@ -1222,7 +1210,7 @@ async def create_base_timetable(
                 'lunchBreakDuration': str(lunch_break_duration),
                 'lunchBreakPosition': lunch_break_position,
                 'days': days,
-                'includeShortBreaks': include_short_breaks, # Save the new flag
+                'includeShortBreaks': include_short_breaks,
                 'updated_at': datetime.now(timezone.utc).isoformat()
             }
             
@@ -2127,9 +2115,7 @@ async def generate_student_timetable(
         unassigned_courses = []
         
         for course in selected_courses:
-            # Check if course has a faculty assigned
             if not course.get('faculty_id'):
-                # Check if there are any faculty preferences for this course
                 faculty_prefs = await db.faculty_preferences.find({'course_id': str(course['_id'])}).to_list(1000)
                 if not faculty_prefs:
                     unassigned_courses.append({
@@ -2156,8 +2142,8 @@ async def generate_student_timetable(
                 'duration_hours': course.get('duration_hours', 1),
                 'is_lab': course.get('is_lab', False),
                 'faculty_id': str(course.get('faculty_id')) if course.get('faculty_id') else None,
-                'classes_per_week': classes_per_week,  # NEW: Number of classes per week
-                'no_same_day': True  # NEW: Constraint to avoid scheduling the same course twice in one day
+                'classes_per_week': classes_per_week,
+                'no_same_day': True
             }
             
             student_pref = next((pref for pref in student_preferences if pref['course_id'] == str(course['_id'])), None)

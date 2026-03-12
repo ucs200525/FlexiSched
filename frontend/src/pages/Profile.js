@@ -307,14 +307,13 @@ const Profile = () => {
                     </div>
                 </div>
 
-                {/* Tab Navigation */}
                 <div className="mt-8 border-b border-blue-400 border-opacity-25">
                     <nav className="flex space-x-8" aria-label="Tabs">
                         <button
                             onClick={() => setActiveTab('profile')}
                             className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'profile'
-                                    ? 'border-blue-500 text-blue-500'
-                                    : 'border-transparent text-blue-300 hover:text-blue-400 hover:border-blue-300'
+                                ? 'border-blue-500 text-blue-500'
+                                : 'border-transparent text-blue-300 hover:text-blue-400 hover:border-blue-300'
                                 }`}
                         >
                             <User className="w-5 h-5 mr-2" />
@@ -324,8 +323,8 @@ const Profile = () => {
                         <button
                             onClick={() => setActiveTab('security')}
                             className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'security'
-                                    ? 'border-blue-500 text-blue-500'
-                                    : 'border-transparent text-blue-300 hover:text-blue-400 hover:border-blue-300'
+                                ? 'border-blue-500 text-blue-500'
+                                : 'border-transparent text-blue-300 hover:text-blue-400 hover:border-blue-300'
                                 }`}
                         >
                             <Lock className="w-5 h-5 mr-2" />
@@ -334,7 +333,6 @@ const Profile = () => {
                     </nav>
                 </div>
 
-                {/* Tab Content */}
                 <div className="mt-6">
                     {activeTab === 'profile' && (
                         <div>
@@ -474,7 +472,6 @@ const Profile = () => {
                                     </div>
                                 )}
 
-                                {/* Bio field - spans both columns */}
                                 <div className="md:col-span-2">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Bio
@@ -493,7 +490,6 @@ const Profile = () => {
                                 </div>
                             </div>
 
-                            {/* Faculty-specific fields */}
                             {hasRole('faculty') && editMode && (
                                 <div className="mt-6 space-y-6">
                                     <div>

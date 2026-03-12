@@ -43,10 +43,8 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {/* Public Routes */}
       <Route path="/login" element={<Login />} />
 
-      {/* Admin Routes */}
       <Route
         path="/admin/*"
         element={
@@ -64,7 +62,6 @@ function AppRoutes() {
         <Route path="" element={<Navigate to="dashboard" replace />} />
       </Route>
 
-      {/* Faculty Routes */}
       <Route
         path="/faculty/*"
         element={
@@ -80,7 +77,6 @@ function AppRoutes() {
         <Route path="" element={<Navigate to="dashboard" replace />} />
       </Route>
 
-      {/* Student Routes */}
       <Route
         path="/student/*"
         element={
@@ -95,10 +91,8 @@ function AppRoutes() {
         <Route path="" element={<Navigate to="dashboard" replace />} />
       </Route>
 
-      {/* 404 Page */}
       <Route path="*" element={<NotFound />} />
 
-      {/* Default redirect */}
       <Route path="/" element={<Navigate to="/login" replace />} />
     </Routes>
   );

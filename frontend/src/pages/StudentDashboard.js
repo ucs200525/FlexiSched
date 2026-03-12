@@ -195,7 +195,6 @@ const StudentDashboard = () => {
             </div>
           </div>
 
-          {/* Stats Cards */}
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-6">
             <div className="bg-white overflow-hidden shadow rounded-lg">
               <div className="p-5">
@@ -262,7 +261,6 @@ const StudentDashboard = () => {
             </div>
           </div>
 
-          {/* Quick Actions */}
           <div className="mt-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -286,11 +284,9 @@ const StudentDashboard = () => {
             </div>
           </div>
 
-          {/* Teaching Schedule */}
           <div className="mt-6">
             <div className="bg-white shadow overflow-hidden sm:rounded-lg">
               <div className="px-4 py-5 sm:p-6">
-                {/* FIXED: Separated the title and subtitle into different containers */}
                 <div className="flex items-center">
                   <Calendar className="h-6 w-6 text-gray-400 mr-3" />
                   <h3 className="text-lg leading-6 font-medium text-gray-900">
@@ -309,7 +305,6 @@ const StudentDashboard = () => {
                       <div key={day} className="border-b border-gray-200 pb-4 last:border-b-0">
                         <h4 className="text-base font-medium text-gray-900 mb-2">{day}</h4>
                         <div className="bg-gray-50 p-4 rounded-md">
-                          {/* FIXED: Changed from pre tag to a list for better line breaks */}
                           <div className="space-y-2">
                             {schedule.map((item, index) => (
                               <div key={index} className="text-sm text-gray-700">
